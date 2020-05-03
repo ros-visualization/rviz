@@ -35,38 +35,45 @@
 
 namespace rviz
 {
-
-class StatusProperty: public Property
+class StatusProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  enum Level { Ok = 0, Warn = 1, Error = 2 }; // values index into status_colors_ array.
+  enum Level
+  {
+    Ok = 0,
+    Warn = 1,
+    Error = 2
+  }; // values index into status_colors_ array.
 
-  StatusProperty( const QString& name, const QString& text, Level level, Property* parent );
+  StatusProperty(const QString& name, const QString& text, Level level, Property* parent);
 
   /** @brief Set the status text.  Overridden from Property. */
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue(const QVariant& new_value) override;
 
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this StatusProperty.
    */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData(int column, int role) const override;
 
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this StatusProperty. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags(int column) const override;
 
   /** @brief Return the color appropriate for the given status level. */
-  static QColor statusColor( Level level );
+  static QColor statusColor(Level level);
 
   /** @brief Return the word appropriate for the given status level:
    * "Ok", "Warn", or "Error". */
-  static QString statusWord( Level level );
+  static QString statusWord(Level level);
 
-  QIcon statusIcon( Level level ) const;
+  QIcon statusIcon(Level level) const;
 
-  virtual void setLevel( Level level );
-  virtual Level getLevel() const { return level_; }
+  virtual void setLevel(Level level);
+  virtual Level getLevel() const
+  {
+    return level_;
+  }
 
 protected:
   Level level_;

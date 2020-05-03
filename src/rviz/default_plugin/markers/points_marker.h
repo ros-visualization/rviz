@@ -44,21 +44,19 @@ class PointCloud;
 
 namespace rviz
 {
-
 class PointsMarker : public MarkerBase
 {
 public:
   PointsMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~PointsMarker();
-  void setHighlightColor( float r, float g, float b );
+  ~PointsMarker() override;
+  void setHighlightColor(float r, float g, float b);
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   PointCloud* points_;
 };
 
-}
+} // namespace rviz
 
 #endif
-

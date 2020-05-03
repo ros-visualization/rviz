@@ -9,7 +9,7 @@
 
 interactive_markers::InteractiveMarkerServer* server;
 
-void makeMarker( )
+void makeMarker()
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
@@ -20,7 +20,7 @@ void makeMarker( )
   int_marker.pose.orientation.y = 0.0;
   int_marker.pose.orientation.z = 1.0;
   int_marker.pose.orientation.w = 1.0;
-  int_marker.pose.position.y = - 2.0;
+  int_marker.pose.position.y = -2.0;
   int_marker.scale = 2.3;
 
   visualization_msgs::Marker marker;
@@ -43,10 +43,10 @@ void makeMarker( )
   // create a non-interactive control which contains the box
   visualization_msgs::InteractiveMarkerControl control;
   control.always_visible = true;
-  control.markers.push_back( marker );
+  control.markers.push_back(marker);
 
   // add the control to the interactive marker
-  int_marker.controls.push_back( control );
+  int_marker.controls.push_back(control);
 
   visualization_msgs::InteractiveMarkerControl linear_control;
   linear_control.name = "rotate_z";
@@ -68,11 +68,11 @@ void makeMarker( )
   marker.pose.orientation.z = 0.0;
   marker.pose.orientation.w = 1.0;
   control.markers.clear();
-  control.markers.push_back( marker );
+  control.markers.push_back(marker);
 
   // add the control to the interactive marker
   int_marker.controls.clear();
-  int_marker.controls.push_back( control );
+  int_marker.controls.push_back(control);
 
   server->insert(int_marker);
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
   ros::Timer publish_timer = n.createTimer(ros::Duration(0.1), boost::bind(&publishCallback, _1));
 
   server = new interactive_markers::InteractiveMarkerServer("rviz_logo");
-  makeMarker( );
+  makeMarker();
 
   ros::spin();
 }

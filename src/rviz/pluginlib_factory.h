@@ -45,9 +45,8 @@
 
 namespace rviz
 {
-
-template<class Type>
-class PluginlibFactory: public ClassIdRecordingFactory<Type>
+template <class Type>
+class PluginlibFactory : public ClassIdRecordingFactory<Type>
 {
 private:
   struct BuiltInClassRecord
@@ -56,102 +55,105 @@ private:
     QString package_;
     QString name_;
     QString description_;
-    Type*(*factory_function_)();
+    Type* (*factory_function_)();
   };
 
 public:
-  PluginlibFactory( const QString& package, const QString& base_class_type )
-    {
-      class_loader_ = new pluginlib::ClassLoader<Type>( package.toStdString(), base_class_type.toStdString() );
-    }
-  virtual ~PluginlibFactory()
-    {
-      delete class_loader_;
-    }
-
-  virtual QStringList getDeclaredClassIds()
-    {
-      QStringList ids;
-      std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
-      for( size_t i = 0; i < std_ids.size(); i++ )
-      {
-        ids.push_back( QString::fromStdString( std_ids[ i ]));
-      }
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter;
-      for( iter = built_ins_.begin(); iter != built_ins_.end(); iter++ )
-      {
-        ids.push_back( iter.key() );
-      }
-      return ids;
-    }
-
-  virtual QString getClassDescription( const QString& class_id ) const
-    {
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
-      if( iter != built_ins_.end() )
-      {
-        return iter->description_;
-      }
-      return QString::fromStdString( class_loader_->getClassDescription( class_id.toStdString() ));
-    }
-
-  virtual QString getClassName( const QString& class_id ) const
-    {
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
-      if( iter != built_ins_.end() )
-      {
-        return iter->name_;
-      }
-      return QString::fromStdString( class_loader_->getName( class_id.toStdString() ));
-    }
-
-  virtual QString getClassPackage( const QString& class_id ) const
-    {
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
-      if( iter != built_ins_.end() )
-      {
-        return iter->package_;
-      }
-      return QString::fromStdString( class_loader_->getClassPackage( class_id.toStdString() ));
-    }
-
-  virtual QString getPluginManifestPath( const QString& class_id ) const
-    {
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
-      if( iter != built_ins_.end() )
-      {
-        return "";
-      }
-      return QString::fromStdString( class_loader_->getPluginManifestPath( class_id.toStdString() ));
-    }
-
-  virtual QIcon getIcon( const QString& class_id ) const
+  PluginlibFactory(const QString& package, const QString& base_class_type)
   {
-    QString package = getClassPackage( class_id );
-    QString class_name = getClassName( class_id );
-    QIcon icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".svg" );
-    if ( icon.isNull() )
+    class_loader_ =
+        new pluginlib::ClassLoader<Type>(package.toStdString(), base_class_type.toStdString());
+  }
+  ~PluginlibFactory() override
+  {
+    delete class_loader_;
+  }
+
+  QStringList getDeclaredClassIds() override
+  {
+    QStringList ids;
+    std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
+    for (size_t i = 0; i < std_ids.size(); i++)
     {
-      icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".png" );
-      if ( icon.isNull() )
+      ids.push_back(QString::fromStdString(std_ids[i]));
+    }
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter;
+    for (iter = built_ins_.begin(); iter != built_ins_.end(); iter++)
+    {
+      ids.push_back(iter.key());
+    }
+    return ids;
+  }
+
+  QString getClassDescription(const QString& class_id) const override
+  {
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find(class_id);
+    if (iter != built_ins_.end())
+    {
+      return iter->description_;
+    }
+    return QString::fromStdString(class_loader_->getClassDescription(class_id.toStdString()));
+  }
+
+  QString getClassName(const QString& class_id) const override
+  {
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find(class_id);
+    if (iter != built_ins_.end())
+    {
+      return iter->name_;
+    }
+    return QString::fromStdString(class_loader_->getName(class_id.toStdString()));
+  }
+
+  QString getClassPackage(const QString& class_id) const override
+  {
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find(class_id);
+    if (iter != built_ins_.end())
+    {
+      return iter->package_;
+    }
+    return QString::fromStdString(class_loader_->getClassPackage(class_id.toStdString()));
+  }
+
+  virtual QString getPluginManifestPath(const QString& class_id) const
+  {
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find(class_id);
+    if (iter != built_ins_.end())
+    {
+      return "";
+    }
+    return QString::fromStdString(class_loader_->getPluginManifestPath(class_id.toStdString()));
+  }
+
+  QIcon getIcon(const QString& class_id) const override
+  {
+    QString package = getClassPackage(class_id);
+    QString class_name = getClassName(class_id);
+    QIcon icon = loadPixmap("package://" + package + "/icons/classes/" + class_name + ".svg");
+    if (icon.isNull())
+    {
+      icon = loadPixmap("package://" + package + "/icons/classes/" + class_name + ".png");
+      if (icon.isNull())
       {
-        icon = loadPixmap( "package://rviz/icons/default_class_icon.png");
+        icon = loadPixmap("package://rviz/icons/default_class_icon.png");
       }
     }
     return icon;
   }
 
-  virtual void addBuiltInClass( const QString& package, const QString& name, const QString& description,
-                                Type* (*factory_function)() )
-    {
-      BuiltInClassRecord record;
-      record.class_id_ = package + "/" + name;
-      record.package_ = package;
-      record.name_ = name;
-      record.description_ = description;
-      record.factory_function_ = factory_function;
-      built_ins_[ record.class_id_ ] = record;
-    }
+  virtual void addBuiltInClass(const QString& package,
+                               const QString& name,
+                               const QString& description,
+                               Type* (*factory_function)())
+  {
+    BuiltInClassRecord record;
+    record.class_id_ = package + "/" + name;
+    record.package_ = package;
+    record.name_ = name;
+    record.description_ = description;
+    record.factory_function_ = factory_function;
+    built_ins_[record.class_id_] = record;
+  }
 
 protected:
   /** @brief Instantiate and return a instance of a subclass of Type using our
@@ -159,39 +161,40 @@ protected:
    * @param class_id A string identifying the class uniquely among
    *        classes of its parent class.  rviz::GridDisplay might be
    *        rviz/Grid, for example.
-   * @param error_return If non-NULL and there is an error, *error_return is set to a description of the problem.
+   * @param error_return If non-NULL and there is an error, *error_return is set to a description of the
+   * problem.
    * @return A new instance of the class identified by class_id, or NULL if there was an error.
    *
    * If makeRaw() returns NULL and error_return is not NULL,
    * *error_return will be set.  On success, *error_return will not be
    * changed. */
-  virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL )
+  Type* makeRaw(const QString& class_id, QString* error_return = nullptr) override
+  {
+    typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find(class_id);
+    if (iter != built_ins_.end())
     {
-      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
-      if( iter != built_ins_.end() )
+      Type* instance = iter->factory_function_();
+      if (instance == nullptr && error_return != nullptr)
       {
-        Type* instance = iter->factory_function_();
-        if( instance == NULL && error_return != NULL )
-        {
-          *error_return = "Factory function for built-in class '" + class_id + "' returned NULL.";
-        }
-        return instance;
+        *error_return = "Factory function for built-in class '" + class_id + "' returned NULL.";
       }
-      try
-      {
-        return class_loader_->createUnmanagedInstance( class_id.toStdString() );
-      }
-      catch( pluginlib::PluginlibException& ex )
-      {
-        ROS_ERROR( "PluginlibFactory: The plugin for class '%s' failed to load.  Error: %s",
-                   qPrintable( class_id ), ex.what() );
-        if( error_return )
-        {
-          *error_return = QString::fromStdString( ex.what() );
-        }
-        return NULL;
-      }
+      return instance;
     }
+    try
+    {
+      return class_loader_->createUnmanagedInstance(class_id.toStdString());
+    }
+    catch (pluginlib::PluginlibException& ex)
+    {
+      ROS_ERROR("PluginlibFactory: The plugin for class '%s' failed to load.  Error: %s",
+                qPrintable(class_id), ex.what());
+      if (error_return)
+      {
+        *error_return = QString::fromStdString(ex.what());
+      }
+      return nullptr;
+    }
+  }
 
 private:
   pluginlib::ClassLoader<Type>* class_loader_;

@@ -50,7 +50,7 @@ class Grid;
  */
 class GridDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Plane
   {
@@ -60,11 +60,11 @@ public:
   };
 
   GridDisplay();
-  virtual ~GridDisplay();
+  ~GridDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update(float dt, float ros_dt);
+  void onInitialize() override;
+  void update(float dt, float ros_dt) override;
 
 private Q_SLOTS:
   void updateCellCount();
@@ -77,7 +77,7 @@ private Q_SLOTS:
   void updateStyle();
 
 private:
-  Grid* grid_;            ///< Handles actually drawing the grid
+  Grid* grid_; ///< Handles actually drawing the grid
 
   TfFrameProperty* frame_property_;
   IntProperty* cell_count_property_;

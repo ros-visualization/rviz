@@ -43,80 +43,82 @@
 
 using namespace rviz;
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
   // initialize the entire render system
   RenderSystem* render_system = RenderSystem::get();
 
-  QApplication app( argc, argv );
+  QApplication app(argc, argv);
 
 
   // make the render window
-  RenderWidget* window = new RenderWidget( render_system );
-  window->setWindowTitle( "I hope this is not all black." );
+  RenderWidget* window = new RenderWidget(render_system);
+  window->setWindowTitle("I hope this is not all black.");
 
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->addWidget( window );
-  QPushButton* hide_button = new QPushButton( "hide" );
-  layout->addWidget( hide_button );
-  QPushButton* show_button = new QPushButton( "show" );
-  layout->addWidget( show_button );
+  layout->addWidget(window);
+  QPushButton* hide_button = new QPushButton("hide");
+  layout->addWidget(hide_button);
+  QPushButton* show_button = new QPushButton("show");
+  layout->addWidget(show_button);
 
   QWidget container;
-  container.setLayout( layout );
-  container.resize( 900, 600 );
+  container.setLayout(layout);
+  container.resize(900, 600);
   container.show();
 
   // Make a scene and show it in the window.
-  Ogre::SceneManager* scene_manager = render_system->root()->createSceneManager( Ogre::ST_GENERIC );
+  Ogre::SceneManager* scene_manager = render_system->root()->createSceneManager(Ogre::ST_GENERIC);
 
-  Ogre::Entity* thing = scene_manager->createEntity( "thing", "rviz_cone.mesh" );
+  Ogre::Entity* thing = scene_manager->createEntity("thing", "rviz_cone.mesh");
   Ogre::SceneNode* node = scene_manager->getRootSceneNode()->createChildSceneNode();
-  node->attachObject( thing );
+  node->attachObject(thing);
 
-  scene_manager->setAmbientLight( Ogre::ColourValue( .5, .5, .5 ));
-  Ogre::Light* light = scene_manager->createLight( "light" );
-  light->setPosition( 20, 80, 50 );
+  scene_manager->setAmbientLight(Ogre::ColourValue(.5, .5, .5));
+  Ogre::Light* light = scene_manager->createLight("light");
+  light->setPosition(20, 80, 50);
 
-  Ogre::Camera* camera = scene_manager->createCamera( "SampleCam" );
-  camera->setPosition( Ogre::Vector3( 0, 0, 10 ));
-  camera->lookAt( Ogre::Vector3( 0, 0, -300 ));
-  camera->setNearClipDistance( 5 );
+  Ogre::Camera* camera = scene_manager->createCamera("SampleCam");
+  camera->setPosition(Ogre::Vector3(0, 0, 10));
+  camera->lookAt(Ogre::Vector3(0, 0, -300));
+  camera->setNearClipDistance(5);
 
-  Ogre::Viewport* viewport = window->getRenderWindow()->addViewport( camera );
-  viewport->setBackgroundColour( Ogre::ColourValue( 0, 0, 1.0 ));
+  Ogre::Viewport* viewport = window->getRenderWindow()->addViewport(camera);
+  viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 1.0));
 
-  camera->setAspectRatio( Ogre::Real( viewport->getActualWidth() ) / Ogre::Real( viewport->getActualHeight() ));
+  camera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) /
+                         Ogre::Real(viewport->getActualHeight()));
 
   // redraw every 33ms.
   QTimer timer;
-  QObject::connect( &timer, SIGNAL(timeout()), window, SLOT(update()) );
-  timer.start( 33 );
+  QObject::connect(&timer, SIGNAL(timeout()), window, SLOT(update()));
+  timer.start(33);
 
 
-  RenderWidget window2( render_system );
-  window2.resize( 400, 400 );
-  window2.setWindowTitle( "I hope this is also not all black." );
+  RenderWidget window2(render_system);
+  window2.resize(400, 400);
+  window2.setWindowTitle("I hope this is also not all black.");
   window2.show();
 
-  hide_button->connect( hide_button, SIGNAL( clicked() ), &window2, SLOT( hide() ));
-  show_button->connect( show_button, SIGNAL( clicked() ), &window2, SLOT( show() ));
+  hide_button->connect(hide_button, SIGNAL(clicked()), &window2, SLOT(hide()));
+  show_button->connect(show_button, SIGNAL(clicked()), &window2, SLOT(show()));
 
-  Ogre::Camera* camera2 = scene_manager->createCamera( "SampleCam2" );
-  camera2->setPosition( Ogre::Vector3( 0, 10, 0 ));
-  camera2->setFixedYawAxis( false );
-  camera2->lookAt( Ogre::Vector3( 0, 0, 0 ));
-  camera2->setNearClipDistance( 5 );
+  Ogre::Camera* camera2 = scene_manager->createCamera("SampleCam2");
+  camera2->setPosition(Ogre::Vector3(0, 10, 0));
+  camera2->setFixedYawAxis(false);
+  camera2->lookAt(Ogre::Vector3(0, 0, 0));
+  camera2->setNearClipDistance(5);
 
-  Ogre::Viewport* viewport2 = window2.getRenderWindow()->addViewport( camera2 );
-  viewport2->setBackgroundColour( Ogre::ColourValue( 0, 1.0, 0 ));
+  Ogre::Viewport* viewport2 = window2.getRenderWindow()->addViewport(camera2);
+  viewport2->setBackgroundColour(Ogre::ColourValue(0, 1.0, 0));
 
-  camera2->setAspectRatio( Ogre::Real( viewport2->getActualWidth() ) / Ogre::Real( viewport2->getActualHeight() ));
+  camera2->setAspectRatio(Ogre::Real(viewport2->getActualWidth()) /
+                          Ogre::Real(viewport2->getActualHeight()));
 
   // redraw every 33ms.
   QTimer timer2;
-  QObject::connect( &timer2, SIGNAL(timeout()), &window2, SLOT(update()) );
-  timer2.start( 33 );
+  QObject::connect(&timer2, SIGNAL(timeout()), &window2, SLOT(update()));
+  timer2.start(33);
 
   // main loop
   return app.exec();

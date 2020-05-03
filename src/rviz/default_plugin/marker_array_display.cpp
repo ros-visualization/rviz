@@ -34,40 +34,42 @@
 
 namespace rviz
 {
-
-MarkerArrayDisplay::MarkerArrayDisplay()
-  : MarkerDisplay()
+MarkerArrayDisplay::MarkerArrayDisplay() : MarkerDisplay()
 {
-  marker_topic_property_->setMessageType( QString::fromStdString( ros::message_traits::datatype<visualization_msgs::MarkerArray>() ));
-  marker_topic_property_->setValue( "visualization_marker_array" );
-  marker_topic_property_->setDescription( "visualization_msgs::MarkerArray topic to subscribe to." );
+  marker_topic_property_->setMessageType(
+      QString::fromStdString(ros::message_traits::datatype<visualization_msgs::MarkerArray>()));
+  marker_topic_property_->setValue("visualization_marker_array");
+  marker_topic_property_->setDescription("visualization_msgs::MarkerArray topic to subscribe to.");
 
-  queue_size_property_->setDescription( "Advanced: set the size of the incoming Marker message queue. "
-                                        " This should generally be at least a few times larger than the number of Markers in each MarkerArray." );
+  queue_size_property_->setDescription("Advanced: set the size of the incoming Marker message queue. "
+                                       " This should generally be at least a few times larger than the "
+                                       "number of Markers in each MarkerArray.");
 }
 
 void MarkerArrayDisplay::subscribe()
 {
-  if ( !isEnabled() )
+  if (!isEnabled())
   {
     return;
   }
 
   std::string topic = marker_topic_property_->getTopicStd();
-  if( !topic.empty() )
+  if (!topic.empty())
   {
     array_sub_.shutdown();
 
     try
     {
-      array_sub_ = update_nh_.subscribe( topic, queue_size_property_->getInt(),
-                                         (void (MarkerArrayDisplay::*)(const visualization_msgs::MarkerArray::ConstPtr&))
-                                         &MarkerArrayDisplay::incomingMarkerArray, this );
-      setStatus( StatusProperty::Ok, "Topic", "OK" );
+      array_sub_ = update_nh_.subscribe(
+          topic, queue_size_property_->getInt(),
+          (void (MarkerArrayDisplay::*)(const visualization_msgs::MarkerArray::ConstPtr&)) &
+              MarkerArrayDisplay::incomingMarkerArray,
+          this);
+      setStatus(StatusProperty::Ok, "Topic", "OK");
     }
-    catch( ros::Exception& e )
+    catch (ros::Exception& e)
     {
-      setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
+      setStatus(StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
     }
   }
 }
@@ -80,4 +82,4 @@ void MarkerArrayDisplay::unsubscribe()
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::MarkerArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::MarkerArrayDisplay, rviz::Display)

@@ -36,69 +36,66 @@
 
 namespace rviz
 {
-
-PropertyTreeWithHelp::PropertyTreeWithHelp( QWidget* parent )
-  : QSplitter( parent )
+PropertyTreeWithHelp::PropertyTreeWithHelp(QWidget* parent) : QSplitter(parent)
 {
-  setOrientation( Qt::Vertical );
+  setOrientation(Qt::Vertical);
 
   property_tree_ = new PropertyTreeWidget;
 
   help_ = new QTextBrowser;
-  help_->setOpenExternalLinks( true );
+  help_->setOpenExternalLinks(true);
 
-  addWidget( property_tree_ );
-  addWidget( help_ );
+  addWidget(property_tree_);
+  addWidget(help_);
 
-  setStretchFactor( 0, 1000 );
-  setCollapsible( 0, false );
+  setStretchFactor(0, 1000);
+  setCollapsible(0, false);
 
   QList<int> _sizes;
-  _sizes.push_back( 1000 );
-  _sizes.push_back( 1 );
-  setSizes( _sizes );
+  _sizes.push_back(1000);
+  _sizes.push_back(1);
+  setSizes(_sizes);
 
-  connect( property_tree_, SIGNAL( currentPropertyChanged( const Property* )),
-           this, SLOT( showHelpForProperty( const Property* )));
+  connect(property_tree_, SIGNAL(currentPropertyChanged(const Property*)), this,
+          SLOT(showHelpForProperty(const Property*)));
 }
 
-void PropertyTreeWithHelp::showHelpForProperty( const Property* property )
+void PropertyTreeWithHelp::showHelpForProperty(const Property* property)
 {
-  if( property )
+  if (property)
   {
     QString body_text = property->getDescription();
     QString heading = property->getName();
     QString html = "<html><body><strong>" + heading + "</strong><br>" + body_text + "</body></html>";
-    help_->setHtml( html );
+    help_->setHtml(html);
   }
   else
   {
-    help_->setHtml( "" );
+    help_->setHtml("");
   }
 }
 
-void PropertyTreeWithHelp::save( Config config ) const
+void PropertyTreeWithHelp::save(Config config) const
 {
-  property_tree_->save( config.mapMakeChild( "Property Tree Widget" ));
+  property_tree_->save(config.mapMakeChild("Property Tree Widget"));
 
   QList<int> _sizes = sizes();
-  config.mapSetValue( "Tree Height", _sizes.at( 0 ));
-  config.mapSetValue( "Help Height", _sizes.at( 1 ));
+  config.mapSetValue("Tree Height", _sizes.at(0));
+  config.mapSetValue("Help Height", _sizes.at(1));
 }
 
-void PropertyTreeWithHelp::load( const Config& config )
+void PropertyTreeWithHelp::load(const Config& config)
 {
-  property_tree_->load( config.mapGetChild( "Property Tree Widget" ));
+  property_tree_->load(config.mapGetChild("Property Tree Widget"));
 
   int tree_height;
   int help_height;
-  if( config.mapGetInt( "Tree Height", &tree_height ) &&
-      config.mapGetInt( "Help Height", &help_height ))
+  if (config.mapGetInt("Tree Height", &tree_height) && config.mapGetInt("Help Height", &help_height))
   {
     QList<int> _sizes;
-    _sizes.push_back( tree_height );
-    _sizes.push_back( help_height );
-    setSizes( _sizes );
+    _sizes.push_back(tree_height);
+    _sizes.push_back(help_height);
+    setSizes(_sizes);
   }
 }
 

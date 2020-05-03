@@ -44,26 +44,24 @@ class MovableText;
 
 namespace rviz
 {
-
 class TextViewFacingMarker : public MarkerBase
 {
 public:
   TextViewFacingMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~TextViewFacingMarker();
+  ~TextViewFacingMarker() override;
 
-  virtual void setOrientation( const Ogre::Quaternion& /*orientation*/ ) {}
+  void setOrientation(const Ogre::Quaternion& /*orientation*/) override
+  {
+  }
 
-  virtual S_MaterialPtr getMaterials();
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   MovableText* text_;
-
 };
 
-}
+} // namespace rviz
 
 #endif // RVIZ_TEXT_VIEW_FACING_MARKER_H
-
-

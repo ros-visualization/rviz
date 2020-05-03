@@ -43,14 +43,11 @@
 
 namespace rviz
 {
-
-RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
-  : QWidget( parent )
-  , render_system_( render_system )
-  , render_window_( nullptr )
+RenderWidget::RenderWidget(RenderSystem* render_system, QWidget* parent)
+  : QWidget(parent), render_system_(render_system), render_window_(nullptr)
 {
-  setAttribute(Qt::WA_OpaquePaintEvent,true);
-  setAttribute(Qt::WA_PaintOnScreen,true);
+  setAttribute(Qt::WA_OpaquePaintEvent, true);
+  setAttribute(Qt::WA_PaintOnScreen, true);
 
   rviz::RenderSystem::WindowIDType win_id = this->winId();
   QApplication::flush();
@@ -63,45 +60,45 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
 
 RenderWidget::~RenderWidget()
 {
-  if( render_window_ )
+  if (render_window_)
   {
-    render_window_->removeViewport( 0 );
+    render_window_->removeViewport(0);
     render_window_->destroy();
   }
 
   render_window_ = nullptr;
 }
 
-void RenderWidget::moveEvent(QMoveEvent *e)
+void RenderWidget::moveEvent(QMoveEvent* e)
 {
   QWidget::moveEvent(e);
 
-  if(e->isAccepted() && render_window_)
+  if (e->isAccepted() && render_window_)
   {
     render_window_->windowMovedOrResized();
   }
 }
 
-void RenderWidget::paintEvent(QPaintEvent *e)
+void RenderWidget::paintEvent(QPaintEvent* e)
 {
-  if( render_window_ )
+  if (render_window_)
   {
     render_window_->update();
   }
   e->accept();
 }
 
-void RenderWidget::resizeEvent(QResizeEvent *e)
+void RenderWidget::resizeEvent(QResizeEvent* e)
 {
   QWidget::resizeEvent(e);
-  if(e->isAccepted() && render_window_)
+  if (e->isAccepted() && render_window_)
   {
     /* render_window_->writeContentsToFile() (used in VisualizationFrame::onSaveImage())
      * does not work right for window with an odd width.
      * So here we just always force it to be even. */
     const int w = width() * pixel_ratio_;
     render_window_->resize(w + (w % 2), height() * pixel_ratio_);
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
     render_window_->windowMovedOrResized();
 #endif
   }

@@ -31,41 +31,41 @@
 #include "nav_msgs/GridCells.h"
 #include "math.h"
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-  ros::init( argc, argv, "send_grid_cells" );
+  ros::init(argc, argv, "send_grid_cells");
 
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<nav_msgs::GridCells>("grid_cells", 100);
-  ros::Rate loop_rate( 100 );
+  ros::Rate loop_rate(100);
 
   nav_msgs::GridCells msg;
   int width = 500;
   int length = 500;
-  msg.cells.resize( width * length );
+  msg.cells.resize(width * length);
   msg.header.frame_id = "base_link";
   msg.cell_width = .01;
   msg.cell_height = .01;
 
   int count = 0;
-  while( ros::ok() )
+  while (ros::ok())
   {
-    for( int x = 0; x < width; x++ )
+    for (int x = 0; x < width; x++)
     {
-      for( int y = 0; y < length; y++ )
+      for (int y = 0; y < length; y++)
       {
-        geometry_msgs::Point & point = msg.cells[ x + y * width ];
+        geometry_msgs::Point& point = msg.cells[x + y * width];
         point.x = x / 100.0;
         point.y = y / 100.0;
-        point.z = sin( x / 100.0 + y / 100.0 + count / 100.0 );
-//        point.z = ((x + y + count) % 100) / 100.0;
+        point.z = sin(x / 100.0 + y / 100.0 + count / 100.0);
+        //        point.z = ((x + y + count) % 100) / 100.0;
       }
     }
     msg.header.seq = count;
     msg.header.stamp = ros::Time::now();
 
-    pub.publish( msg );
+    pub.publish(msg);
 
     ros::spinOnce();
     loop_rate.sleep();

@@ -31,8 +31,8 @@
 
 #include <string>
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <ros/ros.h>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <ros/ros.h>
 #endif
 
 #include <rviz/properties/status_property.h>
@@ -56,38 +56,43 @@ Q_DECLARE_METATYPE(ros::Time);
 
 namespace rviz
 {
-
 class StatusList;
 class DisplayContext;
 class PanelDockWidget;
 
-class RVIZ_EXPORT Display: public BoolProperty
+class RVIZ_EXPORT Display : public BoolProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   Display();
-  virtual ~Display();
+  ~Display() override;
 
   /** @brief Main initialization, called after constructor, before load() or setEnabled(). */
-  void initialize( DisplayContext* context );
+  void initialize(DisplayContext* context);
 
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this Display.
    */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData(int column, int role) const override;
 
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this Display. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags(int column) const override;
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
    * setClassId(). */
-  virtual QString getClassId() const { return class_id_; }
+  virtual QString getClassId() const
+  {
+    return class_id_;
+  }
 
   /** @brief Set the class identifier used to create this instance.
    * Typically this will be set by the factory object which created it. */
-  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+  virtual void setClassId(const QString& class_id)
+  {
+    class_id_ = class_id;
+  }
 
   /** @brief Load the settings for this display from the given Config
    * node, which must be a map.
@@ -96,12 +101,12 @@ public:
    * name and enabled state, then call Property::load().
    *
    * load() is called after initialize(). */
-  virtual void load( const Config& config );
+  void load(const Config& config) override;
 
   /** @brief Write this display to the given Config node.
    *
    * Overridden from Property::save(). */
-  virtual void save( Config config ) const;
+  void save(Config config) const override;
 
   /** @brief Set the ROS topic to listen to for this display.
    *
@@ -114,25 +119,25 @@ public:
    *  @param topic The published topic to be visualized.
    *  @param datatype The datatype of the topic.
    */
-  virtual void setTopic( const QString &topic, const QString &datatype )
+  virtual void setTopic(const QString& topic, const QString& datatype)
   {
-    (void) topic;
-    (void) datatype;
+    (void)topic;
+    (void)datatype;
   }
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;
 
   /** @brief Set the fixed frame in this display. */
-  void setFixedFrame( const QString& fixed_frame );
+  void setFixedFrame(const QString& fixed_frame);
 
   /** @brief Called periodically by the visualization manager.
    * @param wall_dt Wall-clock time, in seconds, since the last time the update list was run through.
    * @param ros_dt ROS time, in seconds, since the last time the update list was run through. */
-  virtual void update( float wall_dt, float ros_dt )
+  virtual void update(float wall_dt, float ros_dt)
   {
-    (void) wall_dt;
-    (void) ros_dt;
+    (void)wall_dt;
+    (void)ros_dt;
   }
 
   /** @brief Called to tell the display to clear its state */
@@ -150,29 +155,38 @@ public:
    * StatusList has a level which is set to the worst of all the
    * children's levels.
    */
-  virtual void setStatus( StatusProperty::Level level, const QString& name, const QString& text );
+  virtual void setStatus(StatusProperty::Level level, const QString& name, const QString& text);
 
   /** @brief Show status level and text, using a std::string.
    * Convenience function which converts std::string to QString
    * and calls setStatus().  This is thread-safe. */
-  void setStatusStd( StatusProperty::Level level, const std::string& name, const std::string& text )
-    {
-      setStatus( level, QString::fromStdString( name ), QString::fromStdString( text ));
-    }
+  void setStatusStd(StatusProperty::Level level, const std::string& name, const std::string& text)
+  {
+    setStatus(level, QString::fromStdString(name), QString::fromStdString(text));
+  }
 
   /** @brief Delete the status entry with the given name.  This is thread-safe. */
-  virtual void deleteStatus( const QString& name );
+  virtual void deleteStatus(const QString& name);
 
   /** @brief Delete the status entry with the given std::string name.  This is thread-safe. */
-  void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
+  void deleteStatusStd(const std::string& name)
+  {
+    deleteStatus(QString::fromStdString(name));
+  }
 
   /** Default is all bits ON. */
-  void setVisibilityBits( uint32_t bits );
-  void unsetVisibilityBits( uint32_t bits );
-  uint32_t getVisibilityBits() { return visibility_bits_; }
+  void setVisibilityBits(uint32_t bits);
+  void unsetVisibilityBits(uint32_t bits);
+  uint32_t getVisibilityBits()
+  {
+    return visibility_bits_;
+  }
 
   /** @brief Return the Ogre::SceneNode holding all 3D scene elements shown by this Display. */
-  Ogre::SceneNode* getSceneNode() const { return scene_node_; }
+  Ogre::SceneNode* getSceneNode() const
+  {
+    return scene_node_;
+  }
 
   /** @brief Associate the given @a widget with this Display.
    *
@@ -187,54 +201,65 @@ public:
    * dis-associates any previously associated widget.
    *
    * Call this with NULL to disassociate the current associated widget. */
-  void setAssociatedWidget( QWidget* widget );
+  void setAssociatedWidget(QWidget* widget);
 
   /** @brief Return the current associated widget, or NULL if there is none.
    * @sa setAssociatedWidget() */
-  QWidget* getAssociatedWidget() const { return associated_widget_; }
+  QWidget* getAssociatedWidget() const
+  {
+    return associated_widget_;
+  }
 
   /** @brief Return the panel containing the associated widget, or NULL if there is none.
    * @sa setAssociatedWidget() */
-  PanelDockWidget* getAssociatedWidgetPanel() { return associated_widget_panel_; }
+  PanelDockWidget* getAssociatedWidgetPanel()
+  {
+    return associated_widget_panel_;
+  }
 
   /** @brief Overridden from Property to set associated widget title to the new name. */
-  void setName( const QString& name );
+  void setName(const QString& name) override;
 
   /** @brief Emit a time signal that other Displays can synchronize to. */
-  void emitTimeSignal( ros::Time time );
+  void emitTimeSignal(ros::Time time);
 
 Q_SIGNALS:
 
-  void timeSignal( rviz::Display* display, ros::Time time );
+  void timeSignal(rviz::Display* display, ros::Time time);
 
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *
    * SetEnabled is called after initialize() and at the end of load(),
    * if the Display settings are being loaded from a file. */
-  void setEnabled( bool enabled );
+  void setEnabled(bool enabled);
 
   /** @brief Convenience function which calls context_->queueRender(). */
   void queueRender();
 
   /** @brief Set the Display's icon. */
-  virtual void setIcon( const QIcon& icon );
+  void setIcon(const QIcon& icon) override;
 
 protected:
-
   /** @brief Override this function to do subclass-specific initialization.
    *
    * This is called after vis_manager_ and scene_manager_ are set, and
    * before load() or setEnabled().
    *
    * setName() may or may not have been called before this. */
-  virtual void onInitialize() {}
+  virtual void onInitialize()
+  {
+  }
 
   /** @brief Derived classes override this to do the actual work of enabling themselves. */
-  virtual void onEnable() {}
+  virtual void onEnable()
+  {
+  }
 
   /** @brief Derived classes override this to do the actual work of disabling themselves. */
-  virtual void onDisable() {}
+  virtual void onDisable()
+  {
+  }
 
   /** @brief Delete all status children.  This is thread-safe.
    *
@@ -242,10 +267,15 @@ protected:
   virtual void clearStatuses();
 
   /** @brief Called by setFixedFrame().  Override to respond to changes to fixed_frame_. */
-  virtual void fixedFrameChanged() {}
+  virtual void fixedFrameChanged()
+  {
+  }
 
   /** @brief Returns true if the display has been initialized */
-  bool initialized() const { return initialized_; }
+  bool initialized() const
+  {
+    return initialized_;
+  }
 
   /** @brief This DisplayContext pointer is the main connection a
    * Display has into the rest of rviz.  This is how the FrameManager
@@ -285,10 +315,10 @@ public Q_SLOTS:
   virtual void onEnableChanged();
 
 private Q_SLOTS:
-  void setStatusInternal( int level, const QString& name, const QString& text );
-  void deleteStatusInternal( const QString& name );
+  void setStatusInternal(int level, const QString& name, const QString& text);
+  void deleteStatusInternal(const QString& name);
   void clearStatusesInternal();
-  void associatedPanelVisibilityChange( bool visible );
+  void associatedPanelVisibilityChange(bool visible);
   void disable();
 
 private:

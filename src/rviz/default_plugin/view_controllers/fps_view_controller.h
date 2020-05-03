@@ -44,15 +44,15 @@ class FPSViewController : public FramePositionTrackingViewController
 
 public:
   FPSViewController();
-  virtual ~FPSViewController() = default;
+  ~FPSViewController() override = default;
   void onInitialize() override;
 
   void reset() override;
-  void mimic(ViewController *source_view) override;
-  void lookAt( const Ogre::Vector3& point ) override;
-  void handleMouseEvent(ViewportMouseEvent &event) override;
+  void mimic(ViewController* source_view) override;
+  void lookAt(const Ogre::Vector3& point) override;
+  void handleMouseEvent(ViewportMouseEvent& event) override;
 
-  void move( float x, float y, float z );
+  void move(float x, float y, float z);
   void rotate(float yaw, float pitch, float roll);
 
 protected:
@@ -68,10 +68,10 @@ protected:
 
   static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION;
 
-  FloatProperty* yaw_property_;        ///< The camera's yaw (rotation around the z-axis), in radians
-  FloatProperty* pitch_property_;      ///< The camera's pitch (rotation around the y-axis), in radians
-  FloatProperty* roll_property_;       ///< The camera's roll (rotation around the x-axis), in radians
-  VectorProperty* position_property_;  ///< The camera's position
+  FloatProperty* yaw_property_;       ///< The camera's yaw (rotation around the z-axis), in radians
+  FloatProperty* pitch_property_;     ///< The camera's pitch (rotation around the y-axis), in radians
+  FloatProperty* roll_property_;      ///< The camera's roll (rotation around the x-axis), in radians
+  VectorProperty* position_property_; ///< The camera's position
 
 protected Q_SLOTS:
   virtual void changedPosition();

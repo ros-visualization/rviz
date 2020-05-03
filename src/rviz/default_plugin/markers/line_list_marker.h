@@ -39,21 +39,19 @@ class BillboardLine;
 
 namespace rviz
 {
-
 class LineListMarker : public MarkerBase
 {
 public:
   LineListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~LineListMarker();
-  virtual S_MaterialPtr getMaterials();
+  ~LineListMarker() override;
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   BillboardLine* lines_;
 };
 
-}
+} // namespace rviz
 
 #endif
-

@@ -31,43 +31,44 @@
 
 #include <QObject>
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <message_filters/subscriber.h>
-# include <tf2_ros/message_filter.h>
-# include <sensor_msgs/Image.h>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <message_filters/subscriber.h>
+#include <tf2_ros/message_filter.h>
+#include <sensor_msgs/Image.h>
 
-# include <image_transport/image_transport.h>
-# include <image_transport/subscriber_filter.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 
-# include "rviz/display_context.h"
-# include "rviz/frame_manager.h"
-# include "rviz/properties/ros_topic_property.h"
-# include "rviz/properties/enum_property.h"
-# include "rviz/properties/int_property.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/int_property.h"
 
-# include "rviz/display.h"
-# include "rviz/rviz_export.h"
+#include "rviz/display.h"
+#include "rviz/rviz_export.h"
 #endif
 
 namespace rviz
 {
 /** @brief Display subclass for subscribing and displaying to image messages.
  *
- * This class brings together some common things used for subscribing and displaying image messages in Display
- * types.  It has a tf2_ros::MessageFilter and image_tranport::SubscriberFilter to filter incoming image messages, and
+ * This class brings together some common things used for subscribing and displaying image messages in
+ * Display
+ * types.  It has a tf2_ros::MessageFilter and image_tranport::SubscriberFilter to filter incoming image
+ * messages, and
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  */
 
 class RVIZ_EXPORT ImageDisplayBase : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-
   /** @brief Constructor. */
   ImageDisplayBase();
-  virtual ~ImageDisplayBase();
+  ~ImageDisplayBase() override;
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic(const QString& topic, const QString& datatype) override;
 
 protected Q_SLOTS:
   /** @brief Update topic and resubscribe */
@@ -80,10 +81,10 @@ protected Q_SLOTS:
   void fillTransportOptionList(EnumProperty* property);
 
 protected:
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Reset display. */
-  virtual void reset();
+  void reset() override;
 
   /** @brief Enabling TF filtering by defining a target frame. */
   void enableTFFilter(std::string& targetFrame)
@@ -96,7 +97,7 @@ protected:
   virtual void subscribe();
   virtual void unsubscribe();
 
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
   /** @brief Incoming message callback.  Checks if the message pointer
    * is valid, increments messages_received_, then calls

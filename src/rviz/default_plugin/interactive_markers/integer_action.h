@@ -33,19 +33,18 @@
 
 namespace rviz
 {
-
 /** A simple subclass of QAction which keeps an ID number and emits a
  * signal with that number when it is triggered.
  */
-class IntegerAction: public QAction
+class IntegerAction : public QAction
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  IntegerAction(const QString& text, QObject* parent, int id );
+  IntegerAction(const QString& text, QObject* parent, int id);
   int id_; // The menu id number from the visualization_msgs/MenuEntry
 
 Q_SIGNALS:
-  void triggered( int id ); // emitted when action is triggered, sends id passed in.
+  void triggered(int id); // emitted when action is triggered, sends id passed in.
 
 private Q_SLOTS:
   void emitId();

@@ -32,7 +32,6 @@
 
 namespace rviz
 {
-
 std::string concat(const std::string& prefix, const std::string& frame)
 {
   if (prefix.empty())

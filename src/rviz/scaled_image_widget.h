@@ -34,7 +34,6 @@
 
 namespace rviz
 {
-
 /**
  * \brief A widget for showing a scaled version of an image (QPixmap).
  *
@@ -44,19 +43,21 @@ namespace rviz
  * widget size without changing the aspect ratio.  It is always
  * rendered in the center.
  */
-class ScaledImageWidget: public QWidget
+class ScaledImageWidget : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ScaledImageWidget( float scale, QWidget* parent = 0 );
-  virtual ~ScaledImageWidget() {}
+  ScaledImageWidget(float scale, QWidget* parent = nullptr);
+  ~ScaledImageWidget() override
+  {
+  }
 
-  void setImage( QPixmap image );
+  void setImage(QPixmap image);
 
-  virtual QSize sizeHint() const;
+  QSize sizeHint() const override;
 
 protected:
-  virtual void paintEvent( QPaintEvent* event );
+  void paintEvent(QPaintEvent* event) override;
 
 private:
   QPixmap image_;

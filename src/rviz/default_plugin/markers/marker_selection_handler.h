@@ -42,19 +42,19 @@ class VectorProperty;
 class ColorProperty;
 typedef std::pair<std::string, int32_t> MarkerID;
 
-class MarkerSelectionHandler: public SelectionHandler
+class MarkerSelectionHandler : public SelectionHandler
 {
 public:
-  MarkerSelectionHandler( const MarkerBase* marker, const MarkerID& id, DisplayContext* context );
-  virtual ~MarkerSelectionHandler();
+  MarkerSelectionHandler(const MarkerBase* marker, const MarkerID& id, DisplayContext* context);
+  ~MarkerSelectionHandler() override;
 
   Ogre::Vector3 getPosition() const;
   Ogre::Quaternion getOrientation() const;
   Ogre::Vector3 getScale() const;
   QColor getColor() const;
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void updateProperties();
+  void createProperties(const Picked& obj, Property* parent_property) override;
+  void updateProperties() override;
 
 private:
   const MarkerBase* marker_;
@@ -68,4 +68,3 @@ private:
 } // end namespace rviz
 
 #endif
-

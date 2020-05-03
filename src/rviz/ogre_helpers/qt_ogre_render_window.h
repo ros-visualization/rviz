@@ -46,38 +46,41 @@ class Camera;
 
 namespace rviz
 {
-
 /** Qt Ogre render window widget.  Similar in API to
  *  wxOgreRenderWindow from ogre_tools release 1.6, but with much of
  *  the guts replaced by new RenderSystem and RenderWidget classes
  *  inspired by the initialization sequence of Gazebo's renderer.
  */
-class QtOgreRenderWindow : public RenderWidget, public Ogre::RenderTargetListener {
+class QtOgreRenderWindow : public RenderWidget, public Ogre::RenderTargetListener
+{
 public:
   /** Constructor.
-  	@param parent The parent wxWindow component.
+    @param parent The parent wxWindow component.
    */
-  QtOgreRenderWindow( QWidget* parent = 0 );
+  QtOgreRenderWindow(QWidget* parent = nullptr);
 
   /** Destructor.  */
-  virtual ~QtOgreRenderWindow();
+  ~QtOgreRenderWindow() override;
 
   /**
    * Set a callback which is called before each render
    * @param func The callback functor
    */
-  virtual void setPreRenderCallback( boost::function<void ()> func );
+  virtual void setPreRenderCallback(boost::function<void()> func);
   /**
      * Set a callback which is called after each render
      * @param func The callback functor
      */
-  virtual void setPostRenderCallback( boost::function<void ()> func );
+  virtual void setPostRenderCallback(boost::function<void()> func);
 
   /** Overrides the default implementation.
-  	This override is here for convenience. Returns a symbolic 320x240px size.
-  	@return A size of 320x240 (just a symbolic 4:3 size).
+    This override is here for convenience. Returns a symbolic 320x240px size.
+    @return A size of 320x240 (just a symbolic 4:3 size).
    */
-  virtual QSize sizeHint () const { return QSize( 320, 240 ); }
+  QSize sizeHint() const override
+  {
+    return QSize(320, 240);
+  }
 
   /** Gets the associated Ogre viewport.  If this is called before
    * QWidget::show() on this widget, it will fail an assertion.
@@ -89,15 +92,18 @@ public:
 
   /** Set the camera associated with this render window's viewport.
    */
-  void setCamera( Ogre::Camera* camera );
+  void setCamera(Ogre::Camera* camera);
 
-  Ogre::Camera* getCamera() const { return camera_; }
+  Ogre::Camera* getCamera() const
+  {
+    return camera_;
+  }
 
   /**
    * \brief Set the scale of the orthographic window.  Only valid for an orthographic camera.
    * @param scale The scale
    */
-  void setOrthoScale( float scale );
+  void setOrthoScale(float scale);
 
   /** \brief Enable or disable stereo rendering
    * If stereo is not supported this is ignored.
@@ -108,21 +114,24 @@ public:
   /** \brief Prepare to render in stereo if enabled and supported. */
   void setupStereo();
 
-  void setAutoRender(bool auto_render) { auto_render_ = auto_render; }
+  void setAutoRender(bool auto_render)
+  {
+    auto_render_ = auto_render;
+  }
 
   ////// Functions mimicked from Ogre::Viewport to satisfy timing of
   ////// after-constructor creation of Ogre::RenderWindow.
-  void setOverlaysEnabled( bool overlays_enabled );
-  void setBackgroundColor( Ogre::ColourValue color );
+  void setOverlaysEnabled(bool overlays_enabled);
+  void setBackgroundColor(Ogre::ColourValue color);
 
 protected:
-  virtual void paintEvent( QPaintEvent* e );
-  virtual void resizeEvent( QResizeEvent* event );
+  void paintEvent(QPaintEvent* e) override;
+  void resizeEvent(QResizeEvent* event) override;
 
   // When stereo is enabled, these are called before/after rendering each
   // viewport.
-  virtual void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
-  virtual void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
+  void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt) override;
+  void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt) override;
 
   /**
    * Sets the aspect ratio on the camera
@@ -140,8 +149,8 @@ protected:
 
   Ogre::Root* ogre_root_;
 
-  boost::function<void ()> pre_render_callback_;      ///< Functor which is called before each render
-  boost::function<void ()> post_render_callback_;     ///< Functor which is called after each render
+  boost::function<void()> pre_render_callback_;  ///< Functor which is called before each render
+  boost::function<void()> post_render_callback_; ///< Functor which is called after each render
 
   float ortho_scale_;
   bool auto_render_;
@@ -151,8 +160,8 @@ protected:
   Ogre::ColourValue background_color_;
 
   // stereo rendering
-  bool stereo_enabled_;				// true if we were asked to render stereo
-  bool rendering_stereo_;			// true if we are actually rendering stereo
+  bool stereo_enabled_;   // true if we were asked to render stereo
+  bool rendering_stereo_; // true if we are actually rendering stereo
   Ogre::Camera* left_camera_;
   Ogre::Camera* right_camera_;
   Ogre::Viewport* right_viewport_;

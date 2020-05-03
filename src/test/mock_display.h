@@ -33,13 +33,12 @@
 
 namespace rviz
 {
-
 class VectorProperty;
 class ColorProperty;
 
-class MockDisplay: public Display
+class MockDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   MockDisplay();
 

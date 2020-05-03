@@ -42,13 +42,15 @@ class SceneNode;
 
 namespace rviz
 {
-
 class DisplayContext;
 class MarkerDisplay;
 class MarkerBase;
 
 /** Create a marker of given type as declared in visualization_messages::Marker */
-MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *context, Ogre::SceneNode *parent_node);
+MarkerBase* createMarker(int marker_type,
+                         MarkerDisplay* owner,
+                         DisplayContext* context,
+                         Ogre::SceneNode* parent_node);
 
 /** Map marker type ID onto human-readable name */
 QString getMarkerTypeName(unsigned int type);
@@ -58,6 +60,6 @@ QString getMarkerTypeName(unsigned int type);
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-}
+} // namespace rviz
 
 #endif

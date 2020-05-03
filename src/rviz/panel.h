@@ -36,50 +36,70 @@
 
 namespace rviz
 {
-
 class VisualizationManager;
 
-class RVIZ_EXPORT Panel: public QWidget
+class RVIZ_EXPORT Panel : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  Panel( QWidget* parent = 0 );
-  virtual ~Panel();
+  Panel(QWidget* parent = nullptr);
+  ~Panel() override;
 
   /** Initialize the panel with a VisualizationManager.  Called by
    * VisualizationFrame during setup. */
-  void initialize( VisualizationManager* manager );
+  void initialize(VisualizationManager* manager);
 
   /**
    * Override to do initialization which depends on the
    * VisualizationManager being available.  This base implementation
    * does nothing.
    */
-  virtual void onInitialize() {}
+  virtual void onInitialize()
+  {
+  }
 
-  virtual QString getName() const { return name_; }
-  virtual void setName( const QString& name ) { name_ = name; }
+  virtual QString getName() const
+  {
+    return name_;
+  }
+  virtual void setName(const QString& name)
+  {
+    name_ = name;
+  }
 
   /** @brief Return a description of this Panel. */
-  virtual QString getDescription() const { return description_; }
+  virtual QString getDescription() const
+  {
+    return description_;
+  }
 
   /** @brief Set a description of this Panel.  Called by the factory which creates it. */
-  virtual void setDescription( const QString& description ) { description_ = description; }
+  virtual void setDescription(const QString& description)
+  {
+    description_ = description;
+  }
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
    * setClassId(). */
-  virtual QString getClassId() const { return class_id_; }
+  virtual QString getClassId() const
+  {
+    return class_id_;
+  }
 
   /** @brief Set the class identifier used to create this instance.
    * Typically this will be set by the factory object which created it. */
-  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+  virtual void setClassId(const QString& class_id)
+  {
+    class_id_ = class_id;
+  }
 
   /** @brief Override to load configuration data.  This version loads the name of the panel. */
-  virtual void load( const Config& config );
+  virtual void load(const Config& config);
 
-  /** @brief Override to save configuration data.  This version saves the name and class ID of the panel. */
-  virtual void save( Config config ) const;
+  /** @brief Override to save configuration data.  This version saves the name and class ID of the panel.
+   */
+  virtual void save(Config config) const;
 
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change

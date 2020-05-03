@@ -35,34 +35,33 @@
 
 namespace rviz
 {
-
-FloatProperty::FloatProperty( const QString& name,
-                              float default_value,
-                              const QString& description,
-                              Property* parent,
-                              const char *changed_slot,
-                              QObject* receiver )
-  : Property( name, default_value, description, parent, changed_slot, receiver )
-  , min_( -FLT_MAX )
-  , max_( FLT_MAX )
+FloatProperty::FloatProperty(const QString& name,
+                             float default_value,
+                             const QString& description,
+                             Property* parent,
+                             const char* changed_slot,
+                             QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+  , min_(-FLT_MAX)
+  , max_(FLT_MAX)
 {
 }
 
-bool FloatProperty::setValue( const QVariant& new_value )
+bool FloatProperty::setValue(const QVariant& new_value)
 {
-  return Property::setValue( qBound( min_, new_value.toFloat(), max_ ));
+  return Property::setValue(qBound(min_, new_value.toFloat(), max_));
 }
 
-void FloatProperty::setMin( float min )
+void FloatProperty::setMin(float min)
 {
   min_ = min;
-  setValue( getValue() );
+  setValue(getValue());
 }
 
-void FloatProperty::setMax( float max )
+void FloatProperty::setMax(float max)
 {
   max_ = max;
-  setValue( getValue() );
+  setValue(getValue());
 }
 
 } // end namespace rviz

@@ -54,7 +54,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class EnumProperty;
 class FloatProperty;
 class IntProperty;
@@ -68,20 +67,26 @@ class AlphaSetter;
 
 class Swatch
 {
-friend class MapDisplay;
-  public:
-    Swatch(MapDisplay* parent, unsigned int x, unsigned int y, unsigned int width, unsigned int height, float resolution);
-    ~Swatch();
-    void updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter);
-    void updateData();
+  friend class MapDisplay;
 
-  protected:
-    MapDisplay* parent_;
-    Ogre::ManualObject* manual_object_;
-    Ogre::TexturePtr texture_;
-    Ogre::MaterialPtr material_;
-    Ogre::SceneNode* scene_node_;
-    unsigned int x_,y_,width_,height_;
+public:
+  Swatch(MapDisplay* parent,
+         unsigned int x,
+         unsigned int y,
+         unsigned int width,
+         unsigned int height,
+         float resolution);
+  ~Swatch();
+  void updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter);
+  void updateData();
+
+protected:
+  MapDisplay* parent_;
+  Ogre::ManualObject* manual_object_;
+  Ogre::TexturePtr texture_;
+  Ogre::MaterialPtr material_;
+  Ogre::SceneNode* scene_node_;
+  unsigned int x_, y_, width_, height_;
 };
 
 
@@ -89,24 +94,33 @@ friend class MapDisplay;
  * \class MapDisplay
  * \brief Displays a map along the XY plane.
  */
-class MapDisplay: public Display
+class MapDisplay : public Display
 {
-friend class Swatch;
-Q_OBJECT
+  friend class Swatch;
+  Q_OBJECT
 public:
   MapDisplay();
-  virtual ~MapDisplay();
+  ~MapDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void onInitialize() override;
+  void fixedFrameChanged() override;
+  void reset() override;
 
-  float getResolution() { return resolution_; }
-  int getWidth() { return width_; }
-  int getHeight() { return height_; }
+  float getResolution()
+  {
+    return resolution_;
+  }
+  int getWidth()
+  {
+    return width_;
+  }
+  int getHeight()
+  {
+    return height_;
+  }
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic(const QString& topic, const QString& datatype) override;
 
 Q_SIGNALS:
   /** @brief Emitted when a new map is received*/
@@ -123,12 +137,12 @@ protected Q_SLOTS:
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   virtual void subscribe();
   virtual void unsubscribe();
-  virtual void update( float wall_dt, float ros_dt );
+  void update(float wall_dt, float ros_dt) override;
 
   /** @brief Copy msg into current_map_ and call showMap(). */
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
@@ -171,4 +185,4 @@ protected:
 
 } // namespace rviz
 
- #endif
+#endif

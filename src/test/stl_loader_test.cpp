@@ -3,7 +3,7 @@
 #include <ros/package.h>
 #include <rviz/ogre_helpers/render_system.h>
 
-TEST( STLLoader, load )
+TEST(STLLoader, load)
 {
   // Get the path to the directory where the meshes are located.
   std::string meshDir = "package://rviz/src/test/meshes/";
@@ -38,8 +38,9 @@ TEST( STLLoader, load )
   EXPECT_FALSE(rviz::loadMeshFromResource(meshFilePath).get());
 }
 
-int main( int argc, char **argv ) {
-  testing::InitGoogleTest( &argc, argv );
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
 
   // initialize ogre resource system
   rviz::RenderSystem::get();

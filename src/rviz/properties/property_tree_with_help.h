@@ -37,27 +37,29 @@ class QTextBrowser;
 
 namespace rviz
 {
-
 class Property;
 class PropertyTreeWidget;
 
 /** A PropertyTreeWidget with built-in help info display. */
-class PropertyTreeWithHelp: public QSplitter
+class PropertyTreeWithHelp : public QSplitter
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  PropertyTreeWithHelp( QWidget* parent = 0 );
+  PropertyTreeWithHelp(QWidget* parent = nullptr);
 
-  PropertyTreeWidget* getTree() { return property_tree_; }
+  PropertyTreeWidget* getTree()
+  {
+    return property_tree_;
+  }
 
   /** @brief Write state to the given Config. */
-  void save( Config config ) const;
+  void save(Config config) const;
 
   /** @brief Read state from the given Config. */
-  void load( const Config& config );
+  void load(const Config& config);
 
 private Q_SLOTS:
-  void showHelpForProperty( const Property* property );
+  void showHelpForProperty(const Property* property);
 
 private:
   PropertyTreeWidget* property_tree_;

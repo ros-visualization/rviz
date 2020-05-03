@@ -38,79 +38,76 @@
 
 namespace rviz
 {
-
-ColorProperty::ColorProperty( const QString& name,
-                              const QColor& default_value,
-                              const QString& description,
-                              Property* parent,
-                              const char *changed_slot,
-                              QObject* receiver )
-  : Property( name, QVariant(), description, parent, changed_slot, receiver )
-  , color_( default_value )
+ColorProperty::ColorProperty(const QString& name,
+                             const QColor& default_value,
+                             const QString& description,
+                             Property* parent,
+                             const char* changed_slot,
+                             QObject* receiver)
+  : Property(name, QVariant(), description, parent, changed_slot, receiver), color_(default_value)
 {
   updateString();
 }
 
-bool ColorProperty::setColor( const QColor& new_color )
+bool ColorProperty::setColor(const QColor& new_color)
 {
-  if( new_color != color_ ) {
+  if (new_color != color_)
+  {
     Q_EMIT aboutToChange();
     color_ = new_color;
     updateString();
     Q_EMIT changed();
-    if( model_ )
-      model_->emitDataChanged( this );
+    if (model_)
+      model_->emitDataChanged(this);
     return true;
   }
   return false;
 }
 
-bool ColorProperty::setValue( const QVariant& new_value )
+bool ColorProperty::setValue(const QVariant& new_value)
 {
-  if( new_value.type() == QVariant::Color )
+  if (new_value.type() == QVariant::Color)
   {
-    return setColor( new_value.value<QColor>() );
+    return setColor(new_value.value<QColor>());
   }
 
-  QColor new_color = parseColor( new_value.toString() );
-  if( new_color.isValid() )
+  QColor new_color = parseColor(new_value.toString());
+  if (new_color.isValid())
   {
-    return setColor( new_color );
+    return setColor(new_color);
   }
   return false;
 }
 
 void ColorProperty::updateString()
 {
-  value_ = printColor( color_ );
+  value_ = printColor(color_);
 }
 
-bool ColorProperty::paint( QPainter * painter,
-                           const QStyleOptionViewItem & option ) const
+bool ColorProperty::paint(QPainter* painter, const QStyleOptionViewItem& option) const
 {
   painter->save();
   QColor color = color_;
-  if ( !(getViewFlags( 0 ) & Qt::ItemIsEnabled) )
+  if (!(getViewFlags(0) & Qt::ItemIsEnabled))
   {
-    color = QColor( 200, 200, 200 );
-    painter->setPen( QColor( Qt::lightGray ) );
+    color = QColor(200, 200, 200);
+    painter->setPen(QColor(Qt::lightGray));
   }
   QString text = value_.toString();
   QRect rect = option.rect;
-  ColorEditor::paintColorBox( painter, rect, color );
-  rect.adjust( rect.height() + 4, 1, 0, 0 );
-  painter->drawText( rect, text );
+  ColorEditor::paintColorBox(painter, rect, color);
+  rect.adjust(rect.height() + 4, 1, 0, 0);
+  painter->drawText(rect, text);
 
   painter->restore();
 
   return true; // return true, since this function has done the painting.
 }
 
-QWidget *ColorProperty::createEditor( QWidget* parent,
-                                      const QStyleOptionViewItem&  /*option*/ )
+QWidget* ColorProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
-  ColorEditor* editor = new ColorEditor( this, parent );
-  editor->setFrame( false );
+  ColorEditor* editor = new ColorEditor(this, parent);
+  editor->setFrame(false);
   return editor;
 }
 

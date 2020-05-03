@@ -33,26 +33,25 @@
 
 namespace rviz
 {
-
 /**
  * @brief Display for an array of markers.  The MarkerDisplay class handles
  * MarkerArray messages.  This is just a wrapper to let MarkerArray
  * topics get selected in the topic browser.
  */
-class MarkerArrayDisplay: public MarkerDisplay
+class MarkerArrayDisplay : public MarkerDisplay
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   MarkerArrayDisplay();
 
 protected:
   /** @brief Overridden from MarkerDisplay.  Subscribes to the marker
    * array topic. */
-  virtual void subscribe();
+  void subscribe() override;
 
   /** @brief Overridden from MarkerDisplay.  Unsubscribes to the
    * marker array topic. */
-  virtual void unsubscribe();
+  void unsubscribe() override;
 };
 
 } // end namespace rviz

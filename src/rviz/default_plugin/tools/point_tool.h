@@ -30,14 +30,14 @@
 #ifndef RVIZ_POINT_TOOL_H
 #define RVIZ_POINT_TOOL_H
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <ros/node_handle.h>
-# include <ros/publisher.h>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
 
-# include "rviz/tool.h"
+#include "rviz/tool.h"
 
-# include <QCursor>
-# include <QObject>
+#include <QCursor>
+#include <QObject>
 #endif
 
 namespace rviz
@@ -47,19 +47,19 @@ class BoolProperty;
 
 //! The Point Tool allows the user to click on a point which
 //! gets published as a PointStamped message.
-class PointTool: public Tool
+class PointTool : public Tool
 {
   Q_OBJECT
 public:
   PointTool();
-  virtual ~PointTool();
+  ~PointTool() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void activate();
-  virtual void deactivate();
+  void activate() override;
+  void deactivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  int processMouseEvent(ViewportMouseEvent& event) override;
 
 public Q_SLOTS:
 
@@ -77,8 +77,6 @@ protected:
   BoolProperty* auto_deactivate_property_;
 };
 
-}
+} // namespace rviz
 
 #endif
-
-

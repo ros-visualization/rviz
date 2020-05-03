@@ -32,8 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #!/usr/bin/env python
 
-import roslib
-roslib.load_manifest('rviz')
 import rospy
 import math
 
@@ -56,4 +54,3 @@ if __name__ == '__main__':
                              "map")
         t += .01
         rate.sleep()
-

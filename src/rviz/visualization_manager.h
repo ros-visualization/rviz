@@ -59,7 +59,6 @@ class CallbackQueueInterface;
 
 namespace rviz
 {
-
 class ColorProperty;
 class Display;
 class DisplayFactory;
@@ -94,9 +93,9 @@ class VisualizationManagerPrivate;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class RVIZ_EXPORT VisualizationManager: public DisplayContext
+class RVIZ_EXPORT VisualizationManager : public DisplayContext
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /**
    * \brief Constructor
@@ -110,16 +109,17 @@ public:
    *        Both tf_buffer and tf_listener are automatically created if not provided.
    */
   explicit VisualizationManager(
-    RenderPanel* render_panel,
-    WindowManagerInterface* wm = nullptr,
-    std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::shared_ptr<tf2_ros::TransformListener>());
+      RenderPanel* render_panel,
+      WindowManagerInterface* wm = nullptr,
+      std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+      std::shared_ptr<tf2_ros::TransformListener> tf_listener =
+          std::shared_ptr<tf2_ros::TransformListener>());
 
   /**
    * \brief Destructor
    * Stops update timers and destroys all displays, tools, and managers.
    */
-  virtual ~VisualizationManager();
+  ~VisualizationManager() override;
 
   /**
    * \brief Do initialization that wasn't done in constructor.
@@ -147,13 +147,13 @@ public:
    * @param enabled Whether to start enabled
    * @return A pointer to the new display.
    */
-  Display* createDisplay( const QString& class_lookup_name, const QString& name, bool enabled );
+  Display* createDisplay(const QString& class_lookup_name, const QString& name, bool enabled);
 
   /**
    * \brief Add a display to be managed by this panel
    * @param display The display to be added
    */
-  void addDisplay( Display* display, bool enabled );
+  void addDisplay(Display* display, bool enabled);
 
   /**
    * \brief Remove and delete all displays
@@ -161,33 +161,33 @@ public:
   void removeAllDisplays();
 
   /** @brief Load the properties of each Display and most editable rviz data.
-   * 
+   *
    * This is what is called when loading a "*.rviz" file.
    *
    * @param config The Config object to read from.  Expected to be a Config::Map type.
    * @sa save()
    */
-  void load( const Config& config );
+  void load(const Config& config);
 
   /**
    * \brief Save the properties of each Display and most editable rviz
    *        data.
-   * 
+   *
    * This is what is called when saving a "*.vcg" file.
    * \param config The object to write to.
    * \sa loadDisplayConfig()
    */
-  void save( Config config ) const;
+  void save(Config config) const;
 
   /** @brief Return the fixed frame name.
    * @sa setFixedFrame() */
-  QString getFixedFrame() const;
+  QString getFixedFrame() const override;
 
   /** @brief Set the coordinate frame we should be transforming all fixed data into.
    * @param frame The name of the frame -- must match the frame name broadcast to libTF
    * @sa getFixedFrame() */
-  void setFixedFrame( const QString& frame );
-  
+  void setFixedFrame(const QString& frame);
+
   /**
    * @brief Convenience function: returns getFrameManager()->getTF2BufferPtr().
    */
@@ -196,12 +196,18 @@ public:
   /**
    * @brief Returns the Ogre::SceneManager used for the main RenderPanel.
    */
-  Ogre::SceneManager* getSceneManager() const { return scene_manager_; }
+  Ogre::SceneManager* getSceneManager() const override
+  {
+    return scene_manager_;
+  }
 
   /**
    * @brief Return the main RenderPanel.
    */
-  RenderPanel* getRenderPanel() const { return render_panel_; }
+  RenderPanel* getRenderPanel() const
+  {
+    return render_panel_;
+  }
 
   /**
    * @brief Return the wall clock time, in seconds since 1970.
@@ -230,7 +236,7 @@ public:
    * getDefaultTool()).  All other key events are passed to the
    * current Tool (via getCurrentTool()).
    */
-  void handleChar( QKeyEvent* event, RenderPanel* panel );
+  void handleChar(QKeyEvent* event, RenderPanel* panel) override;
 
   /**
    * @brief Handle a mouse event.
@@ -239,7 +245,7 @@ public:
    * in the queue are processed by onUpdate() which is called from the
    * main thread by a timer every 33ms.
    */
-  void handleMouseEvent( const ViewportMouseEvent& event );
+  void handleMouseEvent(const ViewportMouseEvent& event) override;
 
   /**
    * @brief Resets the wall and ROS elapsed time to zero and calls resetDisplays().
@@ -249,13 +255,22 @@ public:
   /**
    * @brief Return a pointer to the SelectionManager.
    */
-  SelectionManager* getSelectionManager() const { return selection_manager_; }
+  SelectionManager* getSelectionManager() const override
+  {
+    return selection_manager_;
+  }
 
   /** @brief Return a pointer to the ToolManager. */
-  virtual ToolManager* getToolManager() const { return tool_manager_; }
+  ToolManager* getToolManager() const override
+  {
+    return tool_manager_;
+  }
 
   /** @brief Return a pointer to the ViewManager. */
-  virtual ViewManager* getViewManager() const { return view_manager_; }
+  ViewManager* getViewManager() const override
+  {
+    return view_manager_;
+  }
 
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
@@ -271,55 +286,85 @@ public:
    * \brief Queues a render.  Multiple calls before a render happens will only cause a single render.
    * \note This function can be called from any thread.
    */
-  void queueRender();
+  void queueRender() override;
 
   /**
    * @brief Return the window manager, if any.
    */
-  WindowManagerInterface* getWindowManager() const { return window_manager_; }
+  WindowManagerInterface* getWindowManager() const override
+  {
+    return window_manager_;
+  }
 
   /**
    * @brief Return the CallbackQueue using the main GUI thread.
    */
-  ros::CallbackQueueInterface* getUpdateQueue();
+  ros::CallbackQueueInterface* getUpdateQueue() override;
 
   /**
    * @brief Return a CallbackQueue using a different thread than the main GUI one.
    */
-  ros::CallbackQueueInterface* getThreadedQueue();
+  ros::CallbackQueueInterface* getThreadedQueue() override;
 
   /** @brief Return the FrameManager instance. */
-  FrameManager* getFrameManager() const { return frame_manager_; }
+  FrameManager* getFrameManager() const override
+  {
+    return frame_manager_;
+  }
 
   /** @brief Return the current value of the frame count.
    *
    * The frame count is just a number which increments each time a
    * frame is rendered.  This lets clients check if a new frame has
    * been rendered since the last time they did something. */
-  uint64_t getFrameCount() const { return frame_count_; }
+  uint64_t getFrameCount() const override
+  {
+    return frame_count_;
+  }
 
   /** @brief Notify this VisualizationManager that something about its
    * display configuration has changed. */
   void notifyConfigChanged();
 
   /** @brief Return a factory for creating Display subclasses based on a class id string. */
-  virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
+  DisplayFactory* getDisplayFactory() const override
+  {
+    return display_factory_;
+  }
 
-  PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
+  PropertyTreeModel* getDisplayTreeModel() const
+  {
+    return display_property_tree_model_;
+  }
 
   /** @brief Emits statusUpdate() signal with the given @a message. */
-  void emitStatusUpdate( const QString& message );
+  void emitStatusUpdate(const QString& message);
 
-  virtual DisplayGroup* getRootDisplayGroup() const { return root_display_group_; }
+  DisplayGroup* getRootDisplayGroup() const override
+  {
+    return root_display_group_;
+  }
 
-  virtual uint32_t getDefaultVisibilityBit() const { return default_visibility_bit_; }
+  uint32_t getDefaultVisibilityBit() const override
+  {
+    return default_visibility_bit_;
+  }
 
-  virtual BitAllocator* visibilityBits() { return &visibility_bit_allocator_; }
+  BitAllocator* visibilityBits() override
+  {
+    return &visibility_bit_allocator_;
+  }
 
-  virtual void setStatus( const QString & message );
+  void setStatus(const QString& message) override;
 
-  virtual void setHelpPath( const QString& help_path ) { help_path_ = help_path; }
-  virtual QString getHelpPath() const { return help_path_; }
+  virtual void setHelpPath(const QString& help_path)
+  {
+    help_path_ = help_path;
+  }
+  virtual QString getHelpPath() const
+  {
+    return help_path_;
+  }
 
 Q_SIGNALS:
 
@@ -330,7 +375,7 @@ Q_SIGNALS:
   void configChanged();
 
   /** @brief Emitted during file-loading and initialization to indicate progress. */
-  void statusUpdate( const QString& message );
+  void statusUpdate(const QString& message);
 
   /** @brief Emitted when ESC key is pressed */
   void escapePressed();
@@ -347,7 +392,7 @@ protected Q_SLOTS:
    * It is called at 30Hz from the update timer. */
   void onUpdate();
 
-  void onToolChanged( Tool* );
+  void onToolChanged(Tool* /*unused*/);
 
 protected:
   void updateTime();
@@ -357,11 +402,13 @@ protected:
 
   void threadedQueueThreadFunc();
 
-  Ogre::Root* ogre_root_;                                 ///< Ogre Root
-  Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
+  Ogre::Root* ogre_root_;             ///< Ogre Root
+  Ogre::SceneManager* scene_manager_; ///< Ogre scene manager associated with this panel
 
-  QTimer* update_timer_;                                 ///< Update timer.  Display::update is called on each display whenever this timer fires
-  ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
+  QTimer* update_timer_; ///< Update timer.  Display::update is called on each display whenever this
+                         /// timer fires
+  ros::Time
+      last_update_ros_time_; ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
 
   volatile bool shutting_down_;
@@ -373,7 +420,7 @@ protected:
   ViewManager* view_manager_;
 
   Property* global_options_;
-  TfFrameProperty* fixed_frame_property_;          ///< Frame to transform fixed data to
+  TfFrameProperty* fixed_frame_property_; ///< Frame to transform fixed data to
   StatusList* global_status_;
   IntProperty* fps_property_;
   BoolProperty* default_light_enabled_property_;
@@ -396,7 +443,7 @@ protected:
   uint64_t frame_count_;
 
   WindowManagerInterface* window_manager_;
-  
+
   FrameManager* frame_manager_;
 
   OgreRenderQueueClearer* ogre_render_queue_clearer_;
@@ -416,6 +463,6 @@ private:
   Ogre::Light* directional_light_;
 };
 
-}
+} // namespace rviz
 
 #endif /* RVIZ_VISUALIZATION_MANAGER_H_ */

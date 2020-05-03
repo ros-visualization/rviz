@@ -39,7 +39,6 @@
 
 namespace rviz
 {
-
 class Arrow;
 class Axes;
 class ColorProperty;
@@ -52,12 +51,14 @@ class CovarianceVisual;
 class CovarianceProperty;
 
 class PoseWithCovarianceDisplaySelectionHandler;
-typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler> PoseWithCovarianceDisplaySelectionHandlerPtr;
+typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler>
+    PoseWithCovarianceDisplaySelectionHandlerPtr;
 
 /** @brief Displays the pose from a geometry_msgs::PoseWithCovarianceStamped message. */
-class PoseWithCovarianceDisplay: public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
+class PoseWithCovarianceDisplay
+    : public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Shape
   {
@@ -66,14 +67,14 @@ public:
   };
 
   PoseWithCovarianceDisplay();
-  virtual ~PoseWithCovarianceDisplay();
+  ~PoseWithCovarianceDisplay() override;
 
-  virtual void onInitialize();
-  virtual void reset();
+  void onInitialize() override;
+  void reset() override;
 
 protected:
   /** @brief Overridden from MessageFilterDisplay to get Arrow/Axes visibility correct. */
-  virtual void onEnable();
+  void onEnable() override;
 
 private Q_SLOTS:
   void updateShapeVisibility();
@@ -85,7 +86,7 @@ private Q_SLOTS:
 private:
   void clear();
 
-  virtual void processMessage( const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message );
+  void processMessage(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message) override;
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;

@@ -23,43 +23,43 @@ class IntProperty;
 
 namespace rviz
 {
-
 class WrenchVisual;
 
-class WrenchStampedDisplay: public rviz::MessageFilterDisplay<geometry_msgs::WrenchStamped>
+class WrenchStampedDisplay : public rviz::MessageFilterDisplay<geometry_msgs::WrenchStamped>
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    // Constructor.  pluginlib::ClassLoader creates instances by calling
-    // the default constructor, so make sure you have one.
-    WrenchStampedDisplay();
-    virtual ~WrenchStampedDisplay();
+  // Constructor.  pluginlib::ClassLoader creates instances by calling
+  // the default constructor, so make sure you have one.
+  WrenchStampedDisplay();
+  ~WrenchStampedDisplay() override;
 
 protected:
-    // Overrides of public virtual functions from the Display class.
-    virtual void onInitialize();
-    virtual void reset();
+  // Overrides of public virtual functions from the Display class.
+  void onInitialize() override;
+  void reset() override;
 
 private Q_SLOTS:
-    // Helper function to properties for all visuals.
-    void updateProperties();
-    void updateHistoryLength();
+  // Helper function to properties for all visuals.
+  void updateProperties();
+  void updateHistoryLength();
 
 private:
-    // Function to handle an incoming ROS message.
-    void processMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+  // Function to handle an incoming ROS message.
+  void processMessage(const geometry_msgs::WrenchStamped::ConstPtr& msg) override;
 
-    // Storage for the list of visuals par each joint intem
-    // Storage for the list of visuals.  It is a circular buffer where
-    // data gets popped from the front (oldest) and pushed to the back (newest)
-    boost::circular_buffer<boost::shared_ptr<WrenchVisual> > visuals_;
+  // Storage for the list of visuals par each joint intem
+  // Storage for the list of visuals.  It is a circular buffer where
+  // data gets popped from the front (oldest) and pushed to the back (newest)
+  boost::circular_buffer<boost::shared_ptr<WrenchVisual> > visuals_;
 
-    // Property objects for user-editable properties.
-    rviz::ColorProperty *force_color_property_, *torque_color_property_;
-    rviz::FloatProperty *alpha_property_, *force_scale_property_, *torque_scale_property_, *width_property_;
-    rviz::IntProperty *history_length_property_;
-    rviz::BoolProperty *hide_small_values_property_;
+  // Property objects for user-editable properties.
+  rviz::ColorProperty *force_color_property_, *torque_color_property_;
+  rviz::FloatProperty *alpha_property_, *force_scale_property_, *torque_scale_property_,
+      *width_property_;
+  rviz::IntProperty* history_length_property_;
+  rviz::BoolProperty* hide_small_values_property_;
 };
-} // end namespace rviz_plugin_tutorials
+} // namespace rviz
 
 #endif // WRENCHSTAMPED_DISPLAY_H

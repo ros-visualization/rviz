@@ -31,40 +31,40 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "math.h"
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-  ros::init( argc, argv, "send_points2" );
+  ros::init(argc, argv, "send_points2");
 
   int rate = 1;
   bool moving = true;
   int size = 100;
 
-  if( argc > 1 )
+  if (argc > 1)
   {
-    rate = atoi( argv[1] );
+    rate = atoi(argv[1]);
   }
-  if( argc > 2 )
+  if (argc > 2)
   {
-    moving = bool( atoi( argv[2] ));
+    moving = bool(atoi(argv[2]));
   }
-  if( argc > 3 )
+  if (argc > 3)
   {
-    size = atoi( argv[3] );
+    size = atoi(argv[3]);
   }
 
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud2>("points2", 10);
-  ros::Rate loop_rate( rate );
+  ros::Rate loop_rate(rate);
 
   sensor_msgs::PointCloud2 msg;
   int width = size;
-  int height = 2*size;
+  int height = 2 * size;
   msg.header.frame_id = "base_link";
   msg.is_dense = false;
   msg.is_bigendian = false;
 
-  msg.fields.resize( 5 );
+  msg.fields.resize(5);
 
   msg.fields[0].name = "x";
   msg.fields[0].offset = 0;
@@ -94,47 +94,47 @@ int main( int argc, char **argv )
   msg.point_step = 20;
 
   int count = 0;
-  while( ros::ok() )
+  while (ros::ok())
   {
     width++;
     int num_points = width * height;
     msg.row_step = width * msg.point_step;
     msg.height = height;
     msg.width = width;
-    msg.data.resize( num_points * msg.point_step );
-    for( int x = 0; x < width; x++ )
+    msg.data.resize(num_points * msg.point_step);
+    for (int x = 0; x < width; x++)
     {
-      for( int y = 0; y < height; y++ )
+      for (int y = 0; y < height; y++)
       {
         uint8_t* ptr = &msg.data[0] + (x + y * width) * msg.point_step;
         *(float*)ptr = x / 100.0f;
         ptr += 4;
         *(float*)ptr = y / 100.0f;
         ptr += 4;
-        *(float*)ptr = 0.1 * sinf( x / 10.0f ) * sinf( y / 10.0f );
+        *(float*)ptr = 0.1 * sinf(x / 10.0f) * sinf(y / 10.0f);
         ptr += 4;
-        *ptr = (x+count) & 0xff;
+        *ptr = (x + count) & 0xff;
         ptr++;
         *ptr = y & 0xff;
         ptr++;
-        *ptr = (x+y) & 0xff;
+        *ptr = (x + y) & 0xff;
         ptr++;
         ptr++;
-        *(float*)ptr = 127.0f + 127.0f * sinf( (x - count)/ 10.0f ) * sinf( y / 10.0f );
+        *(float*)ptr = 127.0f + 127.0f * sinf((x - count) / 10.0f) * sinf(y / 10.0f);
         // ptr += 4;
       }
     }
     msg.header.seq = count;
     msg.header.stamp = ros::Time::now();
 
-    printf( "publishing at %d hz, %s, %d x %d points.\n",
-            rate, (moving?"moving":"static"), width, height );
+    printf("publishing at %d hz, %s, %d x %d points.\n", rate, (moving ? "moving" : "static"), width,
+           height);
 
-    pub.publish( msg );
+    pub.publish(msg);
 
     ros::spinOnce();
     loop_rate.sleep();
-    if( moving )
+    if (moving)
     {
       ++count;
     }

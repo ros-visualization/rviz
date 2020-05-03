@@ -36,24 +36,32 @@
 
 namespace rviz
 {
-
-class RVIZ_EXPORT RosTopicProperty: public EditableEnumProperty
+class RVIZ_EXPORT RosTopicProperty : public EditableEnumProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  RosTopicProperty( const QString& name = QString(),
-                    const QString& default_value = QString(),
-                    const QString& message_type = QString(),
-                    const QString& description = QString(),
-                    Property* parent = 0,
-                    const char *changed_slot = 0,
-                    QObject* receiver = 0 );
+  RosTopicProperty(const QString& name = QString(),
+                   const QString& default_value = QString(),
+                   const QString& message_type = QString(),
+                   const QString& description = QString(),
+                   Property* parent = nullptr,
+                   const char* changed_slot = nullptr,
+                   QObject* receiver = nullptr);
 
-  void setMessageType( const QString& message_type );
-  QString getMessageType() const { return message_type_; }
+  void setMessageType(const QString& message_type);
+  QString getMessageType() const
+  {
+    return message_type_;
+  }
 
-  QString getTopic() const { return getValue().toString(); }
-  std::string getTopicStd() const { return getValue().toString().toStdString(); }
+  QString getTopic() const
+  {
+    return getValue().toString();
+  }
+  std::string getTopicStd() const
+  {
+    return getValue().toString().toStdString();
+  }
 
 protected Q_SLOTS:
   virtual void fillTopicList();

@@ -45,13 +45,13 @@
 
 namespace rviz
 {
-
 class UnsupportedImageEncoding : public std::runtime_error
 {
 public:
   UnsupportedImageEncoding(const std::string& encoding)
-  : std::runtime_error("Unsupported image encoding [" + encoding + "]")
-  {}
+    : std::runtime_error("Unsupported image encoding [" + encoding + "]")
+  {
+  }
 };
 
 class ROSImageTexture
@@ -64,22 +64,30 @@ public:
   bool update();
   void clear();
 
-  const Ogre::TexturePtr& getTexture() { return texture_; }
+  const Ogre::TexturePtr& getTexture()
+  {
+    return texture_;
+  }
   const sensor_msgs::Image::ConstPtr& getImage();
 
-  uint32_t getWidth() { return width_; }
-  uint32_t getHeight() { return height_; }
+  uint32_t getWidth()
+  {
+    return width_;
+  }
+  uint32_t getHeight()
+  {
+    return height_;
+  }
 
   // automatic range normalization
-  void setNormalizeFloatImage( bool normalize, double min=0.0, double max=1.0 );
-  void setMedianFrames( unsigned median_frames );
+  void setNormalizeFloatImage(bool normalize, double min = 0.0, double max = 1.0);
+  void setMedianFrames(unsigned median_frames);
 
 private:
+  double updateMedian(std::deque<double>& buffer, double new_value);
 
-  double updateMedian( std::deque<double>& buffer, double new_value );
-
-  template<typename T>
-  void normalize( T* image_data, size_t image_data_size, std::vector<uint8_t> &buffer  );
+  template <typename T>
+  void normalize(T* image_data, size_t image_data_size, std::vector<uint8_t>& buffer);
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
@@ -100,6 +108,6 @@ private:
   std::deque<double> max_buffer_;
 };
 
-}
+} // namespace rviz
 
 #endif

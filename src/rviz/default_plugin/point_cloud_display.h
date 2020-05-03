@@ -40,7 +40,6 @@
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
@@ -48,27 +47,29 @@ class PointCloudCommon;
  * \class PointCloudDisplay
  * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
- * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
- * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
+ * By default it will assume channel 0 of the cloud is an intensity value, and will color them by
+ * intensity.
+ * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r,
+ * g and b
  * all being 8 bits.
  */
-class PointCloudDisplay: public MessageFilterDisplay<sensor_msgs::PointCloud>
+class PointCloudDisplay : public MessageFilterDisplay<sensor_msgs::PointCloud>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   PointCloudDisplay();
-  ~PointCloudDisplay();
+  ~PointCloudDisplay() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void update( float wall_dt, float ros_dt );
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::PointCloudConstPtr& cloud );
+  void processMessage(const sensor_msgs::PointCloudConstPtr& cloud) override;
 
   PointCloudCommon* point_cloud_common_;
 };

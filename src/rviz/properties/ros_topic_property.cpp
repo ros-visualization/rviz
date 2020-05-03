@@ -36,22 +36,20 @@
 
 namespace rviz
 {
-
-RosTopicProperty::RosTopicProperty( const QString& name,
-                                    const QString& default_value,
-                                    const QString& message_type,
-                                    const QString& description,
-                                    Property* parent,
-                                    const char *changed_slot,
-                                    QObject* receiver )
-  : EditableEnumProperty( name, default_value, description, parent, changed_slot, receiver )
-  , message_type_( message_type )
+RosTopicProperty::RosTopicProperty(const QString& name,
+                                   const QString& default_value,
+                                   const QString& message_type,
+                                   const QString& description,
+                                   Property* parent,
+                                   const char* changed_slot,
+                                   QObject* receiver)
+  : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver)
+  , message_type_(message_type)
 {
-  connect( this, SIGNAL( requestOptions( EditableEnumProperty* )),
-           this, SLOT( fillTopicList()));
+  connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillTopicList()));
 }
 
-void RosTopicProperty::setMessageType( const QString& message_type )
+void RosTopicProperty::setMessageType(const QString& message_type)
 {
   message_type_ = message_type;
 }
@@ -64,18 +62,18 @@ void RosTopicProperty::fillTopicList()
   std::string std_message_type = message_type_.toStdString();
 
   ros::master::V_TopicInfo topics;
-  ros::master::getTopics( topics );
+  ros::master::getTopics(topics);
 
   // Loop through all published topics
   ros::master::V_TopicInfo::iterator it;
-  for( it = topics.begin(); it != topics.end(); ++it )
+  for (it = topics.begin(); it != topics.end(); ++it)
   {
     const ros::master::TopicInfo& topic = *it;
 
     // Only add topics whose type matches.
-    if( topic.datatype == std_message_type )
+    if (topic.datatype == std_message_type)
     {
-      addOptionStd( topic.name );
+      addOptionStd(topic.name);
     }
   }
   sortOptions();

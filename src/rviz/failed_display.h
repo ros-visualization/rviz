@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief A FailedDisplay instance represents a Display class we
  * tried and failed to instantiate.
  *
@@ -44,21 +43,21 @@ namespace rviz
  * configuration data is saved out again without modification.  This
  * ensures that running rviz with a missing plugin library won't
  * damage config files which refer to it. */
-class FailedDisplay: public Display
+class FailedDisplay : public Display
 {
 public:
-  FailedDisplay( const QString& desired_class_id, const QString& error_message );
+  FailedDisplay(const QString& desired_class_id, const QString& error_message);
 
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData(int column, int role) const override;
 
-  virtual QString getDescription() const;
+  QString getDescription() const override;
 
   /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const Config& config );
+  void load(const Config& config) override;
 
   /** @brief Save Config equivalent to the last which was sent to load().*/
-  virtual void save( Config config ) const;
+  void save(Config config) const override;
 
 private:
   Config saved_config_;

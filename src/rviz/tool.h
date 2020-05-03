@@ -55,7 +55,7 @@ class ViewportMouseEvent;
 
 class RVIZ_EXPORT Tool : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** Default constructor.  Pluginlib only instantiates classes via
    * default constructors.  Subclasses of Tool should shortcut_key_
@@ -66,111 +66,141 @@ public:
    * getPropertyContainer(), which is set up in this Tool
    * constructor. */
   Tool();
-  virtual ~Tool();
+  ~Tool() override;
 
   /** Initialize the tool.  Sets the DisplayContext and calls
    * onInitialize(). */
-  void initialize( DisplayContext* context );
+  void initialize(DisplayContext* context);
 
   /** @brief Return the container for properties of this Tool. */
-  virtual Property* getPropertyContainer() const { return property_container_; }
+  virtual Property* getPropertyContainer() const
+  {
+    return property_container_;
+  }
 
-  char getShortcutKey() { return shortcut_key_; }
+  char getShortcutKey()
+  {
+    return shortcut_key_;
+  }
 
-  bool accessAllKeys() { return access_all_keys_; }
+  bool accessAllKeys()
+  {
+    return access_all_keys_;
+  }
 
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
   virtual void update(float wall_dt, float ros_dt)
   {
-    (void) wall_dt;
-    (void) ros_dt;
+    (void)wall_dt;
+    (void)ros_dt;
   }
 
-  enum {
+  enum
+  {
     Render = 1,
     Finished = 2
   };
 
   /** Process a mouse event.  This is the central function of all the
    * tools, as it defines how the mouse is used. */
-  virtual int processMouseEvent( ViewportMouseEvent& event )
+  virtual int processMouseEvent(ViewportMouseEvent& event)
   {
-    (void) event;
+    (void)event;
     return 0;
   }
 
   /** Process a key event.  Override if your tool should handle any
       other keypresses than the tool shortcuts, which are handled
       separately. */
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+  virtual int processKeyEvent(QKeyEvent* event, RenderPanel* panel)
   {
-    (void) event;
-    (void) panel;
+    (void)event;
+    (void)panel;
     return 0;
   }
 
-  QString getName() const { return name_; }
+  QString getName() const
+  {
+    return name_;
+  }
 
   /** @brief Set the name of the tool.
    *
    * This is called by ToolManager during tool initialization.  If you
    * want a different name than it gives you, call this from
    * onInitialize() (or thereafter). */
-  void setName( const QString& name );
+  void setName(const QString& name);
 
   /** @brief Set the description of the tool.  This is called by
    * ToolManager during tool initialization. */
-  QString getDescription() const { return description_; }
-  void setDescription( const QString& description );
+  QString getDescription() const
+  {
+    return description_;
+  }
+  void setDescription(const QString& description);
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
    * setClassId(). */
-  virtual QString getClassId() const { return class_id_; }
+  virtual QString getClassId() const
+  {
+    return class_id_;
+  }
 
   /** @brief Set the class identifier used to create this instance.
    * Typically this will be set by the factory object which created it. */
-  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+  virtual void setClassId(const QString& class_id)
+  {
+    class_id_ = class_id;
+  }
 
   /** @brief Load properties from the given Config.
    *
    * Most tools won't need to override this, because any child
    * Properties of property_container_ are automatically loaded by
    * this function. */
-  virtual void load( const Config& config );
+  virtual void load(const Config& config);
 
   /** @brief Save this entire tool into the given Config node.
    *
    * Most tools won't need to override this, because any child
    * Properties of property_container_ are automatically saved by
    * this function. */
-  virtual void save( Config config ) const;
+  virtual void save(Config config) const;
 
   /** @brief Set the toolbar icon for this tool (will also set its cursor). */
-  void setIcon( const QIcon& icon );
+  void setIcon(const QIcon& icon);
 
   /** @brief Get the icon of this tool. */
-  const QIcon& getIcon() { return icon_; }
+  const QIcon& getIcon()
+  {
+    return icon_;
+  }
 
   /** @brief Set the cursor for this tool. */
-  void setCursor( const QCursor& cursor );
+  void setCursor(const QCursor& cursor);
 
   /** @brief Get current cursor of this tool. */
-  const QCursor& getCursor() { return cursor_; }
+  const QCursor& getCursor()
+  {
+    return cursor_;
+  }
 
-  void setStatus( const QString & message );
-  
+  void setStatus(const QString& message);
+
 Q_SIGNALS:
-    void close();
+  void close();
 
 protected:
   /** Override onInitialize to do any setup needed after the
       DisplayContext has been set.  This is called by
       Tool::initialize().  The base implementation here does
       nothing. */
-  virtual void onInitialize() {}
+  virtual void onInitialize()
+  {
+  }
 
   Ogre::SceneManager* scene_manager_;
   DisplayContext* context_;
@@ -189,6 +219,6 @@ private:
   QString description_;
 };
 
-}
+} // namespace rviz
 
 #endif

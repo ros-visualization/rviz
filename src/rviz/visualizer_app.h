@@ -32,31 +32,30 @@
 #include <QApplication>
 #include <QObject>
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <ros/ros.h>
-# include <rviz/rviz_export.h>
-# include <rviz/SendFilePath.h>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <ros/ros.h>
+#include <rviz/rviz_export.h>
+#include <rviz/SendFilePath.h>
 #endif
 
 class QTimer;
 
 namespace rviz
 {
-
 class VisualizationFrame;
 
-class RVIZ_EXPORT VisualizerApp: public QObject
+class RVIZ_EXPORT VisualizerApp : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   VisualizerApp();
-  virtual ~VisualizerApp();
+  ~VisualizerApp() override;
 
-  void setApp( QApplication * app );
+  void setApp(QApplication* app);
 
   /** Start everything.  Pass in command line arguments.
    * @return false on failure, true on success. */
-  bool init( int argc, char** argv );
+  bool init(int argc, char** argv);
 
 private Q_SLOTS:
   /** If ros::ok() is false, close all windows. */

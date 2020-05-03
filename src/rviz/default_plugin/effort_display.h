@@ -20,7 +20,7 @@ class IntProperty;
 class StringProperty;
 class CategoryProperty;
 class BoolProperty;
-}  // namespace rviz
+} // namespace rviz
 
 namespace urdf
 {
@@ -40,12 +40,18 @@ class JointInfo : public QObject
   Q_OBJECT
 public:
   JointInfo(const std::string& name, rviz::Property* parent_category);
-  ~JointInfo();
+  ~JointInfo() override;
 
   void setEffort(double e);
-  inline double getEffort() { return effort_; }
+  inline double getEffort()
+  {
+    return effort_;
+  }
   void setMaxEffort(double m);
-  inline double getMaxEffort() { return max_effort_; }
+  inline double getMaxEffort()
+  {
+    return max_effort_;
+  }
   bool getEnabled() const;
 
   ros::Time last_update_;
@@ -72,11 +78,11 @@ class EffortDisplay : public rviz::MessageFilterDisplay<sensor_msgs::JointState>
   Q_OBJECT
 public:
   EffortDisplay();
-  virtual ~EffortDisplay();
+  ~EffortDisplay() override;
 
   // Overrides of public virtual functions from the Display class.
-  virtual void onInitialize();
-  virtual void reset();
+  void onInitialize() override;
+  void reset() override;
 
 private Q_SLOTS:
   // Helper function to apply color and alpha to all visuals.
@@ -90,8 +96,8 @@ private Q_SLOTS:
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   // load
   using MFDClass::load;
@@ -104,7 +110,7 @@ protected:
   std::string robot_description_;
 
 private:
-  void processMessage(const sensor_msgs::JointState::ConstPtr& msg);
+  void processMessage(const sensor_msgs::JointState::ConstPtr& msg) override;
 
   // Storage for the list of visuals.  It is a circular buffer where
   // data gets popped from the front (oldest) and pushed to the back (newest)
@@ -122,6 +128,6 @@ private:
   rviz::Property* joints_category_;
   rviz::BoolProperty* all_enabled_property_;
 };
-}  // namespace rviz
+} // namespace rviz
 
-#endif  // EFFORT_DISPLAY_H
+#endif // EFFORT_DISPLAY_H

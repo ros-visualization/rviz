@@ -42,36 +42,37 @@ class Shape;
 
 class FixedOrientationOrthoViewController : public FramePositionTrackingViewController
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   FixedOrientationOrthoViewController();
-  virtual ~FixedOrientationOrthoViewController();
+  ~FixedOrientationOrthoViewController() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+  void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  virtual void lookAt( const Ogre::Vector3& point_rel_world );
+  void lookAt(const Ogre::Vector3& point_rel_world) override;
 
-  virtual void reset();
+  void reset() override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void mimic( ViewController* source_view );
+  void mimic(ViewController* source_view) override;
 
-  virtual void update(float dt, float ros_dt);
+  void update(float dt, float ros_dt) override;
 
 protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
+                            const Ogre::Quaternion& old_reference_orientation) override;
 
   /** Set the camera orientation based on angle_. */
   void orientCamera();
 
-  void setPosition( const Ogre::Vector3& pos_rel_target );
-  void move( float x, float y );
+  void setPosition(const Ogre::Vector3& pos_rel_target);
+  void move(float x, float y);
   void updateCamera();
 
   FloatProperty* scale_property_;

@@ -38,7 +38,6 @@ class QPushButton;
 
 namespace rviz
 {
-
 class ViewManager;
 class PropertyTreeWidget;
 
@@ -46,15 +45,17 @@ class PropertyTreeWidget;
  * @brief Panel for choosing the view controller and saving and restoring
  * viewpoints.
  */
-class ViewsPanel: public Panel
+class ViewsPanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ViewsPanel( QWidget* parent = 0 );
-  virtual ~ViewsPanel() {}
+  ViewsPanel(QWidget* parent = nullptr);
+  ~ViewsPanel() override
+  {
+  }
 
   /** @brief Overridden from Panel.  Just calls setViewManager() with vis_manager_->getViewManager(). */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Set the ViewManager which this panel should display and edit.
    *
@@ -63,25 +64,28 @@ public:
    * Panel::initialize(), either Panel::initialize() must not be
    * called or setViewManager() must be called after
    * Panel::initialize(). */
-  void setViewManager( ViewManager* view_man );
+  void setViewManager(ViewManager* view_man);
 
   /** @brief Returns the current ViewManager. */
-  ViewManager* getViewManager() const { return view_man_; }
+  ViewManager* getViewManager() const
+  {
+    return view_man_;
+  }
 
   /** @brief Load configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void load( const Config& config );
+  void load(const Config& config) override;
 
   /** @brief Save configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void save( Config config ) const;
+  void save(Config config) const override;
 
 private Q_SLOTS:
-  void onTypeSelectorChanged( int selected_index );
+  void onTypeSelectorChanged(int selected_index);
   void onDeleteClicked();
   void renameSelected();
   void onZeroClicked();
   void onCurrentChanged();
 
-  void setCurrentViewFromIndex( const QModelIndex& index );
+  void setCurrentViewFromIndex(const QModelIndex& index);
 
 private:
   ViewManager* view_man_;

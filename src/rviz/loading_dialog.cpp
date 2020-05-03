@@ -35,21 +35,19 @@
 
 namespace rviz
 {
-
-LoadingDialog::LoadingDialog( QWidget* parent )
-  : QDialog( parent )
+LoadingDialog::LoadingDialog(QWidget* parent) : QDialog(parent)
 {
-  setModal( true );
+  setModal(true);
 
   label_ = new QLabel;
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->addWidget( label_ );
-  setLayout( layout );
+  layout->addWidget(label_);
+  setLayout(layout);
 }
 
-void LoadingDialog::showMessage( const QString& message )
+void LoadingDialog::showMessage(const QString& message)
 {
-  label_->setText( message );
+  label_->setText(message);
   QApplication::processEvents();
   QWidget::repaint();
   QApplication::flush();

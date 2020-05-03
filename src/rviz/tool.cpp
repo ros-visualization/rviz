@@ -38,9 +38,7 @@
 
 namespace rviz
 {
-
-Tool::Tool()
-  : property_container_( new Property() )
+Tool::Tool() : property_container_(new Property())
 {
   access_all_keys_ = false;
   shortcut_key_ = '\0';
@@ -51,54 +49,54 @@ Tool::~Tool()
   delete property_container_;
 }
 
-void Tool::initialize( DisplayContext* context )
+void Tool::initialize(DisplayContext* context)
 {
   context_ = context;
-  scene_manager_ = context_->getSceneManager();  
+  scene_manager_ = context_->getSceneManager();
 
   // Let subclasses do initialization if they want.
   onInitialize();
 }
 
-void Tool::setIcon( const QIcon& icon )
+void Tool::setIcon(const QIcon& icon)
 {
-  icon_=icon;
-  cursor_=makeIconCursor( icon.pixmap(16), "tool_cursor:"+name_ );
+  icon_ = icon;
+  cursor_ = makeIconCursor(icon.pixmap(16), "tool_cursor:" + name_);
 }
 
-void Tool::setCursor( const QCursor& cursor )
+void Tool::setCursor(const QCursor& cursor)
 {
-  cursor_=cursor;
+  cursor_ = cursor;
 }
 
-void Tool::setName( const QString& name )
+void Tool::setName(const QString& name)
 {
   name_ = name;
-  property_container_->setName( name_ );
+  property_container_->setName(name_);
 }
 
-void Tool::setDescription( const QString& description )
+void Tool::setDescription(const QString& description)
 {
   description_ = description;
-  property_container_->setDescription( description_ );
+  property_container_->setDescription(description_);
 }
 
-void Tool::load( const Config& config )
+void Tool::load(const Config& config)
 {
-  property_container_->load( config );
+  property_container_->load(config);
 }
 
-void Tool::save( Config config ) const
+void Tool::save(Config config) const
 {
-  property_container_->save( config );
-  config.mapSetValue( "Class", getClassId() );
+  property_container_->save(config);
+  config.mapSetValue("Class", getClassId());
 }
 
-void Tool::setStatus( const QString & message )
+void Tool::setStatus(const QString& message)
 {
-  if ( context_ )
+  if (context_)
   {
-    context_->setStatus( message );
+    context_->setStatus(message);
   }
 }
 

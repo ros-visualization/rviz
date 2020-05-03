@@ -27,41 +27,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include "rviz/ogre_helpers/qt_ogre_render_window.h"
-# include "rviz/ogre_helpers/initialization.h"
-# include "rviz/image/ros_image_texture.h"
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/ogre_helpers/initialization.h"
+#include "rviz/image/ros_image_texture.h"
 
-# include "ros/ros.h"
-# include <ros/package.h>
+#include "ros/ros.h"
+#include <ros/package.h>
 
-# include <OgreRoot.h>
-# include <OgreSceneManager.h>
-# include <OgreViewport.h>
-# include <OgreRectangle2D.h>
-# include <OgreMaterial.h>
-# include <OgreMaterialManager.h>
-# include <OgreTextureUnitState.h>
+#include <OgreRoot.h>
+#include <OgreSceneManager.h>
+#include <OgreViewport.h>
+#include <OgreRectangle2D.h>
+#include <OgreMaterial.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureUnitState.h>
 
-# include <image_transport/image_transport.h>
-# include <image_transport/subscriber_filter.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 #endif
 
 #ifdef Q_OS_MAC
-# include <ApplicationServices/ApplicationServices.h>
+#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 using namespace rviz;
 
-class ImageView: public QtOgreRenderWindow
+class ImageView : public QtOgreRenderWindow
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ImageView( QWidget* parent = 0 );
-  ~ImageView();
+  ImageView(QWidget* parent = nullptr);
+  ~ImageView() override;
 
 protected:
-  void showEvent( QShowEvent* event );
+  void showEvent(QShowEvent* event) override;
 
 private Q_SLOTS:
   void onTimer();

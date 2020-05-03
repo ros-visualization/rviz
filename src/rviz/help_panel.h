@@ -37,18 +37,17 @@ class QTextBrowser;
 
 namespace rviz
 {
-
-class HelpPanel: public Panel
+class HelpPanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  HelpPanel( QWidget* parent = 0 );
-  virtual ~HelpPanel();
+  HelpPanel(QWidget* parent = nullptr);
+  ~HelpPanel() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Load the given html file. */
-  void setHelpFile( const QString& file_path );
+  void setHelpFile(const QString& file_path);
 
 private:
   QTextBrowser* browser_;

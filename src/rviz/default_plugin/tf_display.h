@@ -61,21 +61,21 @@ class FrameSelectionHandler;
 typedef boost::shared_ptr<FrameSelectionHandler> FrameSelectionHandlerPtr;
 
 /** @brief Displays a visual representation of the TF hierarchy. */
-class TFDisplay: public Display
+class TFDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   TFDisplay();
-  virtual ~TFDisplay();
+  ~TFDisplay() override;
 
-  virtual void update(float wall_dt, float ros_dt);
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void load(const Config& config);
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void onInitialize() override;
+  void load(const Config& config) override;
+  void fixedFrameChanged() override;
+  void reset() override;
 
 private Q_SLOTS:
   void updateShowAxes();
@@ -96,8 +96,8 @@ private:
   void clear();
 
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   Ogre::SceneNode* root_node_;
   Ogre::SceneNode* names_node_;
@@ -129,20 +129,22 @@ private:
 };
 
 /** @brief Internal class needed only by TFDisplay. */
-class FrameInfo: public QObject
+class FrameInfo : public QObject
 {
   Q_OBJECT
-  public:
-  FrameInfo( TFDisplay* display );
+public:
+  FrameInfo(TFDisplay* display);
 
   /** @brief Set this frame to be visible or invisible. */
-  void setEnabled( bool enabled );
+  void setEnabled(bool enabled);
 
 public Q_SLOTS:
-  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in this FrameInfo. */
+  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in this
+   * FrameInfo. */
   void updateVisibilityFromFrame();
 
-  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in the selection handler. */
+  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in the selection
+   * handler. */
   void updateVisibilityFromSelection();
 
 public:

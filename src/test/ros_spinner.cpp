@@ -33,14 +33,14 @@
 
 RosSpinner::RosSpinner()
 {
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( onTimer() ));
-  timer->start( 10 );
+  QTimer* timer = new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  timer->start(10);
 }
 
 void RosSpinner::onTimer()
 {
-  if( ros::ok() )
+  if (ros::ok())
   {
     ros::spinOnce();
   }

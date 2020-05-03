@@ -30,39 +30,47 @@
 #define SPLITTER_HANDLE_H
 
 #include <QWidget>
+#include <utility>
+
 
 class QTreeView;
 
 namespace rviz
 {
-
 /** @brief A tall skinny invisible widget providing left-right sliding
  * column separator adjustment for a two-column QTreeView via mouse
  * drags.  Shows splitter cursor when mouse hovers over it.  Uses
  * event filtering to catch resize events for the parent. */
-class SplitterHandle: public QWidget
+class SplitterHandle : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  SplitterHandle( QTreeView* parent = 0 );
+  SplitterHandle(QTreeView* parent = nullptr);
 
   /** @brief Set the ratio of the parent's left column to the parent widget width. */
-  void setRatio( float ratio );
+  void setRatio(float ratio);
 
   /** @brief Get the ratio of the parent's left column to the parent widget width. */
   float getRatio();
 
   /** @brief Catch resize events sent to parent to update splitter's
    * geometry.  Always returns false. */
-  bool eventFilter( QObject* event_target, QEvent* event );
+  bool eventFilter(QObject* event_target, QEvent* event) override;
 
-  void setColor( QColor color ) { color_ = color; update(); }
-  QColor getColor() const { return color_; }
+  void setColor(QColor color)
+  {
+    color_ = std::move(color);
+    update();
+  }
+  QColor getColor() const
+  {
+    return color_;
+  }
 
 protected:
-  virtual void mousePressEvent( QMouseEvent* event );
-  virtual void mouseMoveEvent( QMouseEvent* event );
-  virtual void paintEvent( QPaintEvent* event );
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void paintEvent(QPaintEvent* event) override;
 
 private:
   /** @brief Update the parent's column widths and this splitter's

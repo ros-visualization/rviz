@@ -35,22 +35,24 @@ class QPushButton;
 
 namespace rviz
 {
-
 /**
  * A QLineEdit with a square button on the right side that says "...".
  */
-class LineEditWithButton: public QLineEdit
+class LineEditWithButton : public QLineEdit
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  LineEditWithButton( QWidget* parent = 0 );
+  LineEditWithButton(QWidget* parent = nullptr);
 
   /** Returns the child button.  Use this to connect() something to a
    * button click. */
-  QPushButton* button() { return button_; }
+  QPushButton* button()
+  {
+    return button_;
+  }
 
 protected:
-  virtual void resizeEvent( QResizeEvent* event );
+  void resizeEvent(QResizeEvent* event) override;
 
   /** @brief Send key events to mimic the "return" key being pressed and
    * released.  Useful ending an edit session and sending the data on
@@ -59,7 +61,9 @@ protected:
 
 protected Q_SLOTS:
   /** @brief Override this to do something when the button is clicked. */
-  virtual void onButtonClick() {}
+  virtual void onButtonClick()
+  {
+  }
 
 private:
   QPushButton* button_;

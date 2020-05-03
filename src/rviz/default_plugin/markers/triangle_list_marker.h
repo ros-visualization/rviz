@@ -43,25 +43,22 @@ class ManualObject;
 
 namespace rviz
 {
-
 class TriangleListMarker : public MarkerBase
 {
 public:
   TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~TriangleListMarker();
+  ~TriangleListMarker() override;
 
-  virtual S_MaterialPtr getMaterials();
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   Ogre::ManualObject* manual_object_;
   Ogre::MaterialPtr material_;
   std::string material_name_;
 };
 
-}
+} // namespace rviz
 
 #endif // RVIZ_TRIANGLE_LIST_MARKER_H
-
-

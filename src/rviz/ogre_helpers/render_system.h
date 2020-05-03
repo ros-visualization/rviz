@@ -36,17 +36,15 @@
 
 namespace Ogre
 {
-  class OverlaySystem;
-  class SceneManager;
+class OverlaySystem;
+class SceneManager;
 }
 
 namespace rviz
 {
-
 class RVIZ_EXPORT RenderSystem
 {
 public:
-
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
   typedef size_t WindowIDType;
 #else
@@ -55,35 +53,46 @@ public:
 
   static RenderSystem* get();
 
-  Ogre::RenderWindow* makeRenderWindow(
-    WindowIDType window_id,
-    unsigned int width,
-    unsigned int height,
-    double pixel_ratio = 1.0);
+  Ogre::RenderWindow* makeRenderWindow(WindowIDType window_id,
+                                       unsigned int width,
+                                       unsigned int height,
+                                       double pixel_ratio = 1.0);
 
-  Ogre::Root* root() { return ogre_root_; }
+  Ogre::Root* root()
+  {
+    return ogre_root_;
+  }
 
   // Prepare a scene_manager to render overlays.
   // Needed for Ogre >= 1.9 to use fonts; does nothing for prior versions.
   void prepareOverlays(Ogre::SceneManager* scene_manager);
 
   // @brief return OpenGl Version as integer, e.g. 320 for OpenGl 3.20
-  int getGlVersion() { return gl_version_; }
+  int getGlVersion()
+  {
+    return gl_version_;
+  }
 
   // @brief return GLSL Version as integer, e.g. 150 for GLSL 1.50
-  int getGlslVersion() { return glsl_version_; }
+  int getGlslVersion()
+  {
+    return glsl_version_;
+  }
 
   // @brief Disables the use of Anti Aliasing
   static void disableAntiAliasing();
 
   // @brief Force to use the provided OpenGL version on startup
-  static void forceGlVersion( int version );
+  static void forceGlVersion(int version);
 
   // @brief Disable stereo rendering even if supported in HW.
   static void forceNoStereo();
 
   // @brief True if we can render stereo on this device.
-  bool isStereoSupported() { return stereo_supported_; }
+  bool isStereoSupported()
+  {
+    return stereo_supported_;
+  }
 
 private:
   RenderSystem();

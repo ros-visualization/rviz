@@ -34,8 +34,7 @@
 
 namespace rviz
 {
-
-class PanelFactory: public PluginlibFactory<Panel>
+class PanelFactory : public PluginlibFactory<Panel>
 {
 public:
   PanelFactory();

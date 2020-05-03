@@ -46,19 +46,14 @@
 
 namespace rviz
 {
-
-GridCellsDisplay::GridCellsDisplay()
-  : MFDClass()
-  , last_frame_count_( uint64_t( -1 ))
+GridCellsDisplay::GridCellsDisplay() : MFDClass(), last_frame_count_(uint64_t(-1))
 {
-  color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
-                                       "Color of the grid cells.", this );
+  color_property_ = new ColorProperty("Color", QColor(25, 255, 0), "Color of the grid cells.", this);
 
-  alpha_property_ = new FloatProperty( "Alpha", 1.0,
-                                       "Amount of transparency to apply to the cells.",
-                                       this, SLOT( updateAlpha() ));
-  alpha_property_->setMin( 0 );
-  alpha_property_->setMax( 1 );
+  alpha_property_ = new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the cells.",
+                                      this, SLOT(updateAlpha()));
+  alpha_property_->setMin(0);
+  alpha_property_->setMax(1);
 }
 
 void GridCellsDisplay::onInitialize()
@@ -68,10 +63,10 @@ void GridCellsDisplay::onInitialize()
   ss << "PolyLine" << count++;
 
   cloud_ = new PointCloud();
-  cloud_->setRenderMode( PointCloud::RM_TILES );
-  cloud_->setCommonDirection( Ogre::Vector3::UNIT_Z );
-  cloud_->setCommonUpVector( Ogre::Vector3::UNIT_Y );
-  scene_node_->attachObject( cloud_ );
+  cloud_->setRenderMode(PointCloud::RM_TILES);
+  cloud_->setCommonDirection(Ogre::Vector3::UNIT_Z);
+  cloud_->setCommonUpVector(Ogre::Vector3::UNIT_Y);
+  scene_node_->attachObject(cloud_);
   updateAlpha();
 
   MFDClass::onInitialize();
@@ -79,11 +74,11 @@ void GridCellsDisplay::onInitialize()
 
 GridCellsDisplay::~GridCellsDisplay()
 {
-  if ( initialized() )
+  if (initialized())
   {
     unsubscribe();
     GridCellsDisplay::reset();
-    scene_node_->detachObject( cloud_ );
+    scene_node_->detachObject(cloud_);
     delete cloud_;
   }
 }
@@ -96,64 +91,65 @@ void GridCellsDisplay::reset()
 
 void GridCellsDisplay::updateAlpha()
 {
-  cloud_->setAlpha( alpha_property_->getFloat() );
+  cloud_->setAlpha(alpha_property_->getFloat());
   context_->queueRender();
 }
 
 bool validateFloats(const nav_msgs::GridCells& msg)
 {
   bool valid = true;
-  valid = valid && validateFloats( msg.cell_width );
-  valid = valid && validateFloats( msg.cell_height );
-  valid = valid && validateFloats( msg.cells );
+  valid = valid && validateFloats(msg.cell_width);
+  valid = valid && validateFloats(msg.cell_height);
+  valid = valid && validateFloats(msg.cells);
   return valid;
 }
 
-void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg )
+void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 {
-  if( context_->getFrameCount() == last_frame_count_ )
+  if (context_->getFrameCount() == last_frame_count_)
     return;
   last_frame_count_ = context_->getFrameCount();
 
   cloud_->clear();
 
-  if( !validateFloats( *msg ))
+  if (!validateFloats(*msg))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    setStatus(StatusProperty::Error, "Topic",
+              "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
+  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-               msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+    ROS_DEBUG("Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(),
+              qPrintable(fixed_frame_));
   }
 
-  scene_node_->setPosition( position );
-  scene_node_->setOrientation( orientation );
+  scene_node_->setPosition(position);
+  scene_node_->setOrientation(orientation);
 
-  if( msg->cell_width == 0 )
+  if (msg->cell_width == 0)
   {
     setStatus(StatusProperty::Error, "Topic", "Cell width is zero, cells will be invisible.");
   }
-  else if( msg->cell_height == 0 )
+  else if (msg->cell_height == 0)
   {
     setStatus(StatusProperty::Error, "Topic", "Cell height is zero, cells will be invisible.");
   }
 
   cloud_->setDimensions(msg->cell_width, msg->cell_height, 0.0);
 
-  Ogre::ColourValue color_int = qtToOgre( color_property_->getColor() );
+  Ogre::ColourValue color_int = qtToOgre(color_property_->getColor());
   uint32_t num_points = msg->cells.size();
 
-  typedef std::vector< PointCloud::Point > V_Point;
+  typedef std::vector<PointCloud::Point> V_Point;
   V_Point points;
-  points.resize( num_points );
-  for(uint32_t i = 0; i < num_points; i++)
+  points.resize(num_points);
+  for (uint32_t i = 0; i < num_points; i++)
   {
-    PointCloud::Point& current_point = points[ i ];
+    PointCloud::Point& current_point = points[i];
     current_point.position.x = msg->cells[i].x;
     current_point.position.y = msg->cells[i].y;
     current_point.position.z = msg->cells[i].z;
@@ -162,13 +158,13 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg )
 
   cloud_->clear();
 
-  if ( !points.empty() )
+  if (!points.empty())
   {
-    cloud_->addPoints( &points.front(), points.size() );
+    cloud_->addPoints(&points.front(), points.size());
   }
 }
 
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::GridCellsDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::GridCellsDisplay, rviz::Display)

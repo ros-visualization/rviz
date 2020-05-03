@@ -40,7 +40,6 @@ class QCheckBox;
 
 namespace rviz
 {
-
 class ScaledImageWidget;
 
 /**
@@ -50,27 +49,31 @@ class ScaledImageWidget;
  * half-size view of the screenshot in the dialog with buttons for
  * save/try-again/cancel.
  */
-class ScreenshotDialog: public QWidget
+class ScreenshotDialog : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ScreenshotDialog( QWidget* main_window, QWidget* render_window, const QString& default_save_dir = QString() );
-  virtual ~ScreenshotDialog() {}
+  ScreenshotDialog(QWidget* main_window,
+                   QWidget* render_window,
+                   const QString& default_save_dir = QString());
+  ~ScreenshotDialog() override
+  {
+  }
 
 Q_SIGNALS:
   /** @brief Emitted when the user saves a file. */
-  void savedInDirectory( const QString& directory );
+  void savedInDirectory(const QString& directory);
 
 protected Q_SLOTS:
   void takeScreenshot();
   void onTimeout();
   void takeScreenshotNow();
   void save();
-  void onButtonClicked( QAbstractButton* clicked );
-  void setSaveFullWindow( bool save_full_window );
+  void onButtonClicked(QAbstractButton* clicked);
+  void setSaveFullWindow(bool save_full_window);
 
 protected:
-  virtual void showEvent( QShowEvent* event );
+  void showEvent(QShowEvent* event) override;
 
 private:
   ScaledImageWidget* image_widget_;

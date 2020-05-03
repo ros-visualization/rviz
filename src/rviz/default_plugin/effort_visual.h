@@ -7,7 +7,7 @@ namespace rviz
 {
 class Arrow;
 class BillboardLine;
-}  // namespace rviz
+} // namespace rviz
 
 namespace rviz
 {
@@ -54,6 +54,6 @@ private:
   float width_, scale_;
 };
 
-}  // end namespace rviz
+} // end namespace rviz
 
-#endif  // EFFORT_VISUAL_H
+#endif // EFFORT_VISUAL_H

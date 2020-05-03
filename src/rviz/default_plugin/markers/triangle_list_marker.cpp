@@ -46,10 +46,10 @@
 
 namespace rviz
 {
-
-TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, context, parent_node)
-, manual_object_(nullptr)
+TriangleListMarker::TriangleListMarker(MarkerDisplay* owner,
+                                       DisplayContext* context,
+                                       Ogre::SceneNode* parent_node)
+  : MarkerBase(owner, context, parent_node), manual_object_(nullptr)
 {
 }
 
@@ -62,7 +62,8 @@ TriangleListMarker::~TriangleListMarker()
   }
 }
 
-void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message,
+                                      const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TRIANGLE_LIST);
 
@@ -70,19 +71,19 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::Quaternion orient;
   if (!transform(new_message, pos, orient, scale))
   {
-    scene_node_->setVisible( false );
+    scene_node_->setVisible(false);
     return;
   }
 
   size_t num_points = new_message->points.size();
-  if( (num_points % 3) != 0 || num_points == 0 )
+  if ((num_points % 3) != 0 || num_points == 0)
   {
-    scene_node_->setVisible( false );
+    scene_node_->setVisible(false);
     return;
   }
   else
   {
-    scene_node_->setVisible( true );
+    scene_node_->setVisible(true);
   }
 
   if (!manual_object_)
@@ -95,12 +96,14 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     ss << "Material";
     material_name_ = ss.str();
-    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+    material_ = Ogre::MaterialManager::getSingleton().create(
+        material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     material_->setReceiveShadows(false);
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
 
-    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_.reset(
+        new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
   }
 
   setPosition(pos);
@@ -123,36 +126,34 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   bool has_face_colors = new_message->colors.size() == num_points / 3;
   bool any_vertex_has_alpha = false;
 
-  const std::vector<geometry_msgs::Point>& points = new_message->points; 
-  for(size_t i = 0; i < num_points; i += 3)
+  const std::vector<geometry_msgs::Point>& points = new_message->points;
+  for (size_t i = 0; i < num_points; i += 3)
   {
     std::vector<Ogre::Vector3> corners(3);
-    for(size_t c = 0; c < 3; c++)
+    for (size_t c = 0; c < 3; c++)
     {
-      corners[c] = Ogre::Vector3(points[i+c].x, points[i+c].y, points[i+c].z);
+      corners[c] = Ogre::Vector3(points[i + c].x, points[i + c].y, points[i + c].z);
     }
     Ogre::Vector3 normal = (corners[1] - corners[0]).crossProduct(corners[2] - corners[0]);
     normal.normalise();
-    
-    for(size_t c = 0; c < 3; c++)
+
+    for (size_t c = 0; c < 3; c++)
     {
       manual_object_->position(corners[c]);
       manual_object_->normal(normal);
-      if(has_vertex_colors)
+      if (has_vertex_colors)
       {
-        any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i+c].a < 0.9998);
-        manual_object_->colour(new_message->colors[i+c].r,
-                               new_message->colors[i+c].g,
-                               new_message->colors[i+c].b,
-                               new_message->color.a * new_message->colors[i+c].a);
+        any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i + c].a < 0.9998);
+        manual_object_->colour(new_message->colors[i + c].r, new_message->colors[i + c].g,
+                               new_message->colors[i + c].b,
+                               new_message->color.a * new_message->colors[i + c].a);
       }
       else if (has_face_colors)
       {
-        any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i/3].a < 0.9998);
-        manual_object_->colour(new_message->colors[i/3].r,
-                               new_message->colors[i/3].g,
-                               new_message->colors[i/3].b,
-                               new_message->color.a * new_message->colors[i/3].a);
+        any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i / 3].a < 0.9998);
+        manual_object_->colour(new_message->colors[i / 3].r, new_message->colors[i / 3].g,
+                               new_message->colors[i / 3].b,
+                               new_message->color.a * new_message->colors[i / 3].a);
       }
     }
   }
@@ -166,36 +167,36 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   else
   {
     material_->getTechnique(0)->setLightingEnabled(true);
-    float r,g,b,a;
+    float r, g, b, a;
     r = new_message->color.r;
     g = new_message->color.g;
     b = new_message->color.b;
     a = new_message->color.a;
-    material_->getTechnique(0)->setAmbient( r/2,g/2,b/2 );
-    material_->getTechnique(0)->setDiffuse( r,g,b,a );
+    material_->getTechnique(0)->setAmbient(r / 2, g / 2, b / 2);
+    material_->getTechnique(0)->setDiffuse(r, g, b, a);
   }
 
-  if( (!has_vertex_colors && new_message->color.a < 0.9998) || (has_vertex_colors && any_vertex_has_alpha))
+  if ((!has_vertex_colors && new_message->color.a < 0.9998) ||
+      (has_vertex_colors && any_vertex_has_alpha))
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->setDepthWriteEnabled( false );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material_->getTechnique(0)->setDepthWriteEnabled(false);
   }
   else
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->getTechnique(0)->setDepthWriteEnabled( true );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
+    material_->getTechnique(0)->setDepthWriteEnabled(true);
   }
 
-  handler_->addTrackedObject( manual_object_ );
+  handler_->addTrackedObject(manual_object_);
 }
 
 S_MaterialPtr TriangleListMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  materials.insert( material_ );
+  materials.insert(material_);
   return materials;
 }
 
 
-}  // namespace rviz
-
+} // namespace rviz

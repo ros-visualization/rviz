@@ -32,22 +32,19 @@
 
 namespace rviz
 {
-
 struct Color
 {
-  Color()
-  : r_( 0.0f )
-  , g_( 0.0f )
-  , b_( 0.0f )
-  {}
+  Color() : r_(0.0f), g_(0.0f), b_(0.0f)
+  {
+  }
 
-  Color( float r, float g, float b )
-  : r_( r )
-  , g_( g )
-  , b_( b )
-  {}
+  Color(float r, float g, float b) : r_(r), g_(g), b_(b)
+  {
+  }
 
-  ~Color() {}
+  ~Color()
+  {
+  }
 
   float r_;
   float g_;

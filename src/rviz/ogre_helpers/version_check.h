@@ -30,6 +30,6 @@
 #define OGRE_HELPERS_VERSION_CHECK_H
 
 // For use like #if (OGRE_VERSION >= OGRE_VERSION_CHECK(1, 9, 0))
-#define OGRE_VERSION_CHECK(major, minor, patch) ((major<<16) | (minor<<8) | (patch))
+#define OGRE_VERSION_CHECK(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
 
 #endif // OGRE_HELPERS_VERSION_CHECK_H

@@ -42,7 +42,6 @@ class Transformer;
 
 namespace rviz
 {
-
 class FrameManager;
 
 class TFLinkUpdater : public LinkUpdater
@@ -50,11 +49,17 @@ class TFLinkUpdater : public LinkUpdater
 public:
   typedef boost::function<void(StatusLevel, const std::string&, const std::string&)> StatusCallback;
 
-  TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb = StatusCallback(), const std::string& tf_prefix = std::string());
-  virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation) const;
+  TFLinkUpdater(FrameManager* frame_manager,
+                const StatusCallback& status_cb = StatusCallback(),
+                const std::string& tf_prefix = std::string());
+  bool getLinkTransforms(const std::string& link_name,
+                         Ogre::Vector3& visual_position,
+                         Ogre::Quaternion& visual_orientation,
+                         Ogre::Vector3& collision_position,
+                         Ogre::Quaternion& collision_orientation) const override;
 
-  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const;
+  void
+  setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const override;
 
 private:
   FrameManager* frame_manager_;
@@ -65,4 +70,3 @@ private:
 } // namespace rviz
 
 #endif // RVIZ_ROBOT_TF_LINK_UPDATER_H
-

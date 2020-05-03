@@ -34,26 +34,27 @@
 
 namespace rviz
 {
-
 class DisplayContext;
 class PropertyTreeWidget;
 
 /** A place to edit properties of all of the Tools.
  */
-class ToolPropertiesPanel: public Panel
+class ToolPropertiesPanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ToolPropertiesPanel( QWidget* parent = 0 );
-  virtual ~ToolPropertiesPanel() {}
+  ToolPropertiesPanel(QWidget* parent = nullptr);
+  ~ToolPropertiesPanel() override
+  {
+  }
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Load configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void load( const Config& config );
+  void load(const Config& config) override;
 
   /** @brief Save configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void save( Config config ) const;
+  void save(Config config) const override;
 
 private:
   PropertyTreeWidget* tree_widget_;
@@ -62,4 +63,3 @@ private:
 } // namespace rviz
 
 #endif
-

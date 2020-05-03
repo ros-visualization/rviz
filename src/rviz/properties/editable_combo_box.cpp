@@ -37,43 +37,40 @@
 
 namespace rviz
 {
-
-EditableComboBox::EditableComboBox( QWidget* parent )
-  : ComboBox( parent )
+EditableComboBox::EditableComboBox(QWidget* parent) : ComboBox(parent)
 {
-  setEditable( true );
-  completer()->setCompletionMode( QCompleter::PopupCompletion );
-  completer()->setCaseSensitivity( Qt::CaseInsensitive );
+  setEditable(true);
+  completer()->setCompletionMode(QCompleter::PopupCompletion);
+  completer()->setCaseSensitivity(Qt::CaseInsensitive);
 }
 
-QString findMaxCommonPrefix( const QStringList& strings )
+QString findMaxCommonPrefix(const QStringList& strings)
 {
-  if( strings.empty() )
+  if (strings.empty())
   {
     return "";
   }
-  if( strings.size() == 1 )
+  if (strings.size() == 1)
   {
-    return strings[ 0 ];
+    return strings[0];
   }
   QString common_prefix;
   int char_index = 0;
 
   // loop over character index
-  while( true )
+  while (true)
   {
-    if( char_index >= strings[ 0 ].size() )
+    if (char_index >= strings[0].size())
     {
       return common_prefix;
     }
-    const QChar c = strings[ 0 ][ char_index ];
+    const QChar c = strings[0][char_index];
 
     // loop over strings
-    for( int string_index = 1; string_index < strings.size(); string_index++ )
+    for (int string_index = 1; string_index < strings.size(); string_index++)
     {
-      const QString& str = strings[ string_index ];
-      if( char_index >= str.size() ||
-          str[ char_index ] != c )
+      const QString& str = strings[string_index];
+      if (char_index >= str.size() || str[char_index] != c)
       {
         return common_prefix;
       }
@@ -84,32 +81,32 @@ QString findMaxCommonPrefix( const QStringList& strings )
   return ""; // just to satisfy compiler... I know it will never reach this.
 }
 
-bool EditableComboBox::event( QEvent* event )
+bool EditableComboBox::event(QEvent* event)
 {
-  if( event->type() == QEvent::KeyPress )
-  {                                                                                                          
-    QKeyEvent* k = (QKeyEvent*) event;
-    if( k->key() == Qt::Key_Tab && k->modifiers() == Qt::NoModifier )
+  if (event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent* k = (QKeyEvent*)event;
+    if (k->key() == Qt::Key_Tab && k->modifiers() == Qt::NoModifier)
     {
       QCompleter* comp = completer();
 
       QStringList completions;
-      for( int i = 0; comp->setCurrentRow( i ); i++ )
+      for (int i = 0; comp->setCurrentRow(i); i++)
       {
-        completions.push_back( comp->currentCompletion() );
+        completions.push_back(comp->currentCompletion());
       }
-      QString max_common_prefix = findMaxCommonPrefix( completions );
-      if( max_common_prefix.size() > currentText().size() )
+      QString max_common_prefix = findMaxCommonPrefix(completions);
+      if (max_common_prefix.size() > currentText().size())
       {
-        setEditText( max_common_prefix );
-        lineEdit()->setCursorPosition( max_common_prefix.size() );
+        setEditText(max_common_prefix);
+        lineEdit()->setCursorPosition(max_common_prefix.size());
       }
 
       event->accept();
       return true;
     }
   }
-  return ComboBox::event( event );
+  return ComboBox::event(event);
 }
 
 } // end namespace rviz

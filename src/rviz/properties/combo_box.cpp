@@ -31,9 +31,7 @@
 
 namespace rviz
 {
-
-ComboBox::ComboBox( QWidget* parent )
-  : QComboBox( parent )
+ComboBox::ComboBox(QWidget* parent) : QComboBox(parent)
 {
 }
 

@@ -44,13 +44,11 @@
 
 namespace rviz
 {
-
-FluidPressureDisplay::FluidPressureDisplay()
-  : point_cloud_common_( new PointCloudCommon( this ))
+FluidPressureDisplay::FluidPressureDisplay() : point_cloud_common_(new PointCloudCommon(this))
 {
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
+  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 FluidPressureDisplay::~FluidPressureDisplay()
@@ -61,16 +59,16 @@ FluidPressureDisplay::~FluidPressureDisplay()
 void FluidPressureDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 
   // Set correct initial values
   subProp("Channel Name")->setValue("fluid_pressure");
   subProp("Autocompute Intensity Bounds")->setValue(false);
-  subProp("Min Intensity")->setValue(98000); // Typical 'low' atmosphereic pressure in Pascal
+  subProp("Min Intensity")->setValue(98000);  // Typical 'low' atmosphereic pressure in Pascal
   subProp("Max Intensity")->setValue(105000); // Typica 'high' atmosphereic pressure in Pascal
 }
 
-void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConstPtr& msg )
+void FluidPressureDisplay::processMessage(const sensor_msgs::FluidPressureConstPtr& msg)
 {
   // Filter any nan values out of the cloud.  Any nan values that make it through to PointCloudBase
   // will get their points put off in lala land, but it means they still do get processed/rendered
@@ -118,13 +116,13 @@ void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConst
   filtered->row_step = 1;
 
   // Give to point_cloud_common to draw
-  point_cloud_common_->addMessage( filtered );
+  point_cloud_common_->addMessage(filtered);
 }
 
 
-void FluidPressureDisplay::update( float wall_dt, float ros_dt )
+void FluidPressureDisplay::update(float wall_dt, float ros_dt)
 {
-  point_cloud_common_->update( wall_dt, ros_dt );
+  point_cloud_common_->update(wall_dt, ros_dt);
 
   // Hide unneeded properties
   subProp("Position Transformer")->hide();
@@ -142,4 +140,4 @@ void FluidPressureDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::FluidPressureDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::FluidPressureDisplay, rviz::Display)

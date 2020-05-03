@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief std::stringstream subclass which defaults to the "C" locale,
  * so serialization of numbers is uniform across locales.
  *
@@ -42,18 +41,18 @@ namespace rviz
  * handles "C" style floats.  parseFloat() handles "C" and also
  * European-style floats which use the ",", like "1,2" parses to
  * 1.2f */
-class UniformStringStream: public std::stringstream
+class UniformStringStream : public std::stringstream
 {
 public:
   UniformStringStream();
-  UniformStringStream( const std::string& str );
+  UniformStringStream(const std::string& str);
 
   /** @brief Parse a float, supporting both period- and comma- style
    * floats (1,2 and 1.2).
-   * 
+   *
    * Uses operator>>(std::string&) internally, so consumes up to next
    * whitespace from the stream. */
-  void parseFloat( float& f );
+  void parseFloat(float& f);
 };
 
 } // end namespace rviz

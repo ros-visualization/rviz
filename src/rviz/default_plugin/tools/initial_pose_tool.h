@@ -30,12 +30,12 @@
 #ifndef RVIZ_INITIAL_POSE_TOOL_H
 #define RVIZ_INITIAL_POSE_TOOL_H
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <QObject>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <QObject>
 
-# include <ros/ros.h>
+#include <ros/ros.h>
 
-# include "rviz/default_plugin/tools/pose_tool.h"
+#include "rviz/default_plugin/tools/pose_tool.h"
 #endif
 
 namespace rviz
@@ -45,16 +45,18 @@ class DisplayContext;
 class StringProperty;
 class FloatProperty;
 
-class InitialPoseTool: public PoseTool
+class InitialPoseTool : public PoseTool
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   InitialPoseTool();
-  virtual ~InitialPoseTool() {}
-  virtual void onInitialize();
+  ~InitialPoseTool() override
+  {
+  }
+  void onInitialize() override;
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
 private Q_SLOTS:
   void updateTopic();
@@ -69,8 +71,6 @@ private:
   FloatProperty* std_dev_theta_;
 };
 
-}
+} // namespace rviz
 
 #endif
-
-

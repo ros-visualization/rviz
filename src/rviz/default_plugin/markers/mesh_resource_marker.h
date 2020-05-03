@@ -44,17 +44,16 @@ class Entity;
 
 namespace rviz
 {
-
 class MeshResourceMarker : public MarkerBase
 {
 public:
   MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~MeshResourceMarker();
+  ~MeshResourceMarker() override;
 
-  virtual S_MaterialPtr getMaterials();
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   void reset();
 
@@ -63,12 +62,8 @@ protected:
 
   //! Scaling factor to convert units. Currently relevant for Collada only.
   float unit_rescale_;
-
-
 };
 
-}
+} // namespace rviz
 
 #endif // RVIZ_MESH_RESOURCE_MARKER_H
-
-

@@ -36,29 +36,34 @@
 
 namespace rviz
 {
-
-class RVIZ_EXPORT VectorProperty: public Property
+class RVIZ_EXPORT VectorProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  VectorProperty( const QString& name = QString(),
-                  const Ogre::Vector3& default_value = Ogre::Vector3::ZERO,
-                  const QString& description = QString(),
-                  Property* parent = 0,
-                  const char *changed_slot = 0,
-                  QObject* receiver = 0 );
+  VectorProperty(const QString& name = QString(),
+                 const Ogre::Vector3& default_value = Ogre::Vector3::ZERO,
+                 const QString& description = QString(),
+                 Property* parent = nullptr,
+                 const char* changed_slot = nullptr,
+                 QObject* receiver = nullptr);
 
-  virtual bool setVector( const Ogre::Vector3& vector );
-  virtual Ogre::Vector3 getVector() const { return vector_; }
-  bool add( const Ogre::Vector3& offset ) { return setVector( getVector() + offset ); }
+  virtual bool setVector(const Ogre::Vector3& vector);
+  virtual Ogre::Vector3 getVector() const
+  {
+    return vector_;
+  }
+  bool add(const Ogre::Vector3& offset)
+  {
+    return setVector(getVector() + offset);
+  }
 
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue(const QVariant& new_value) override;
 
-  virtual void load( const Config& config );
-  virtual void save( Config config ) const;
+  void load(const Config& config) override;
+  void save(Config config) const override;
 
   /** @brief Overridden from Property to propagate read-only-ness to children. */
-  virtual void setReadOnly( bool read_only );
+  void setReadOnly(bool read_only) override;
 
 private Q_SLOTS:
   void updateFromChildren();

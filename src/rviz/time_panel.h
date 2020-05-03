@@ -42,7 +42,6 @@ class QWidget;
 
 namespace rviz
 {
-
 class VisualizationManager;
 class Display;
 
@@ -50,39 +49,38 @@ class Display;
  * \class TimePanel
  *
  */
-class TimePanel: public Panel
+class TimePanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  TimePanel( QWidget* parent = 0 );
+  TimePanel(QWidget* parent = nullptr);
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
 protected Q_SLOTS:
 
-  void pauseToggled( bool checked );
-  void syncModeSelected( int index );
-  void syncSourceSelected( int index );
-  void experimentalToggled( bool checked );
+  void pauseToggled(bool checked);
+  void syncModeSelected(int index);
+  void syncSourceSelected(int index);
+  void experimentalToggled(bool checked);
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
 
-  void onDisplayAdded( rviz::Display* display );
-  void onDisplayRemoved( rviz::Display* display );
+  void onDisplayAdded(rviz::Display* display);
+  void onDisplayRemoved(rviz::Display* display);
 
-  void onTimeSignal( rviz::Display* display, ros::Time time );
+  void onTimeSignal(rviz::Display* display, ros::Time time);
 
-  virtual void load( const Config& config );
-  virtual void save( Config config ) const;
+  void load(const Config& config) override;
+  void save(Config config) const override;
 
 protected:
-
   /** Create, configure, and return a single label for showing a time value. */
   QLineEdit* makeTimeLabel();
 
   /** Fill a single time label with the given time value (in seconds). */
-  void fillTimeLabel( QLineEdit* label, double time );
+  void fillTimeLabel(QLineEdit* label, double time);
 
   QWidget* old_widget_;
   QWidget* experimental_widget_;
@@ -104,5 +102,3 @@ protected:
 } // namespace rviz
 
 #endif
-
-

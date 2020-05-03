@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief A FailedTool instance represents a Tool class we
  * tried and failed to instantiate.
  *
@@ -44,24 +43,29 @@ namespace rviz
  * configuration data is saved out again without modification.  This
  * ensures that running rviz with a missing plugin library won't
  * damage config files which refer to it. */
-class FailedTool: public Tool
+class FailedTool : public Tool
 {
 public:
-  FailedTool( const QString& desired_class_id, const QString& error_message );
+  FailedTool(const QString& desired_class_id, const QString& error_message);
 
   virtual QString getDescription() const;
 
-  virtual void activate();
-  virtual void deactivate() {}
+  void activate() override;
+  void deactivate() override
+  {
+  }
 
-  virtual int processMouseEvent( ViewportMouseEvent& /*event*/ ) { return 0; }
+  int processMouseEvent(ViewportMouseEvent& /*event*/) override
+  {
+    return 0;
+  }
 
   /** @brief Store the given config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const Config& config );
+  void load(const Config& config) override;
 
   /** @brief Copy saved config data from last call to load() into config. */
-  virtual void save( Config config ) const;
+  void save(Config config) const override;
 
 private:
   Config saved_config_;

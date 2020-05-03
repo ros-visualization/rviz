@@ -41,22 +41,20 @@
 
 #include "image_view.h"
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
-  QApplication qapp( argc, argv );
+  QApplication qapp(argc, argv);
 
 #ifdef Q_OS_MAC
   ProcessSerialNumber PSN;
   GetCurrentProcess(&PSN);
-  TransformProcessType(&PSN,kProcessTransformToForegroundApplication);
+  TransformProcessType(&PSN, kProcessTransformToForegroundApplication);
   SetFrontProcess(&PSN);
 #endif
 
-  ros::init( argc, argv, "rviz_image_view", ros::init_options::AnonymousName );
+  ros::init(argc, argv, "rviz_image_view", ros::init_options::AnonymousName);
 
   ImageView window;
   window.show();
   return qapp.exec();
 }
-
-

@@ -39,26 +39,23 @@ class QDialogButtonBox;
 
 namespace rviz
 {
-
-class Preferences;
+struct Preferences;
 
 class PreferencesDialog : public QDialog
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** Dialog for setting preferences.
    *
    * @param preferences_output Pointer to Preferences struct where
    *        preferences chosen by the user will be put.
    */
-  PreferencesDialog( Factory* factory,
-                   Preferences* preferences_output,
-                   QWidget* parent = 0 );
+  PreferencesDialog(Factory* factory, Preferences* preferences_output, QWidget* parent = nullptr);
 
-  virtual QSize sizeHint () const;
+  QSize sizeHint() const override;
 
 public Q_SLOTS:
-  virtual void accept();
+  void accept() override;
 
 private:
   /** Returns true if entered display name is non-empty and unique and
@@ -67,7 +64,7 @@ private:
 
   /** Display an error message to the user, or clear the previous
    * error message if error_text is empty. */
-  void setError( const QString& error_text );
+  void setError(const QString& error_text);
 
   Factory* factory_;
 
@@ -78,6 +75,6 @@ private:
   QDialogButtonBox* button_box_;
 };
 
-} //namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_NEW_OBJECT_DIALOG_H

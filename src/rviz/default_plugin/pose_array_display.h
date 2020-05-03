@@ -43,7 +43,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class EnumProperty;
 class ColorProperty;
 class FloatProperty;
@@ -51,28 +50,29 @@ class Arrow;
 class Axes;
 
 /** @brief Displays a geometry_msgs/PoseArray message as a bunch of line-drawn arrows. */
-class PoseArrayDisplay: public MessageFilterDisplay<geometry_msgs::PoseArray>
+class PoseArrayDisplay : public MessageFilterDisplay<geometry_msgs::PoseArray>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   PoseArrayDisplay();
-  virtual ~PoseArrayDisplay();
+  ~PoseArrayDisplay() override;
 
 protected:
-  virtual void onInitialize();
-  virtual void reset();
-  virtual void processMessage( const geometry_msgs::PoseArray::ConstPtr& msg );
+  void onInitialize() override;
+  void reset() override;
+  void processMessage(const geometry_msgs::PoseArray::ConstPtr& msg) override;
 
 private:
-  bool setTransform(std_msgs::Header const & header);
+  bool setTransform(std_msgs::Header const& header);
   void updateArrows2d();
   void updateArrows3d();
   void updateAxes();
   void updateDisplay();
-  Axes * makeAxes();
-  Arrow * makeArrow3d();
+  Axes* makeAxes();
+  Arrow* makeArrow3d();
 
-  struct OgrePose {
+  struct OgrePose
+  {
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
   };
@@ -81,8 +81,8 @@ private:
   boost::ptr_vector<Arrow> arrows3d_;
   boost::ptr_vector<Axes> axes_;
 
-  Ogre::SceneNode * arrow_node_;
-  Ogre::SceneNode * axes_node_;
+  Ogre::SceneNode* arrow_node_;
+  Ogre::SceneNode* axes_node_;
   Ogre::ManualObject* manual_object_;
 
   EnumProperty* shape_property_;

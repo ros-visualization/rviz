@@ -36,30 +36,32 @@
 
 namespace rviz
 {
-
 class FrameManager;
 
-class RVIZ_EXPORT TfFrameProperty: public EditableEnumProperty
+class RVIZ_EXPORT TfFrameProperty : public EditableEnumProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  TfFrameProperty( const QString& name = QString(),
-                   const QString& default_value = QString(),
-                   const QString& description = QString(),
-                   Property* parent = 0,
-                   FrameManager* frame_manager = 0,
-                   bool include_fixed_frame_string = false,
-                   const char *changed_slot = 0,
-                   QObject* receiver = 0 );
+  TfFrameProperty(const QString& name = QString(),
+                  const QString& default_value = QString(),
+                  const QString& description = QString(),
+                  Property* parent = nullptr,
+                  FrameManager* frame_manager = nullptr,
+                  bool include_fixed_frame_string = false,
+                  const char* changed_slot = nullptr,
+                  QObject* receiver = nullptr);
 
   /** @brief Override from Property to resolve the frame name on the way in. */
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue(const QVariant& new_value) override;
 
   QString getFrame() const;
   std::string getFrameStd() const;
 
-  void setFrameManager( FrameManager* frame_manager );
-  FrameManager* getFrameManager() const { return frame_manager_; }
+  void setFrameManager(FrameManager* frame_manager);
+  FrameManager* getFrameManager() const
+  {
+    return frame_manager_;
+  }
 
   static const QString FIXED_FRAME_STRING;
 

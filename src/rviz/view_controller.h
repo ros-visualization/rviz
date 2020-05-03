@@ -33,6 +33,8 @@
 #include <string>
 
 #include <QCursor>
+#include <utility>
+
 
 #include <OgrePrerequisites.h>
 
@@ -50,28 +52,28 @@ class ViewportMouseEvent;
 class FloatProperty;
 class BoolProperty;
 
-class RVIZ_EXPORT ViewController: public Property
+class RVIZ_EXPORT ViewController : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   ViewController();
-  virtual ~ViewController();
+  ~ViewController() override;
 
   /** @brief Do all setup that can't be done in the constructor.
    *
    * Creates camera_ and attaches it to the root scene node.
    *
    * Calls onInitialize() just before returning. */
-  void initialize( DisplayContext* context );
+  void initialize(DisplayContext* context);
 
-  static QString formatClassId( const QString& class_id );
+  static QString formatClassId(const QString& class_id);
 
   /** @brief Overridden from Property to give a different background
    * color and bold font if this view is active. */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData(int column, int role) const override;
 
   /** @brief Overridden from Property to make this draggable if it is not active. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags(int column) const override;
 
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
@@ -83,30 +85,30 @@ public:
    * is active. Override with code that needs to run repeatedly. */
   virtual void update(float dt, float ros_dt)
   {
-    (void) dt;
-    (void) ros_dt;
+    (void)dt;
+    (void)ros_dt;
   }
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt)
   {
-    (void) evt;
+    (void)evt;
   }
 
   /** @brief Called by MoveTool and InteractionTool when keyboard events are passed to them.
    *
    * The default implementation here handles the "F" (focus on object)
    * and "Z" (zero - reset) keys. */
-  virtual void handleKeyEvent( QKeyEvent* event, RenderPanel* panel );
+  virtual void handleKeyEvent(QKeyEvent* event, RenderPanel* panel);
 
   /** @brief Convenience function which calls lookAt(Ogre::Vector3). */
-  void lookAt( float x, float y, float z );
+  void lookAt(float x, float y, float z);
 
   /** @brief This should be implemented in each subclass to aim the
    * camera at the given point in space (relative to the fixed
    * frame). */
-  virtual void lookAt( const Ogre::Vector3& point )
+  virtual void lookAt(const Ogre::Vector3& point)
   {
-    (void) point;
+    (void)point;
   }
 
   /** Reset the view controller to some sane initial state, like
@@ -120,9 +122,9 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera().
    *
    * This base class implementation does nothing. */
-  virtual void mimic( ViewController* source_view )
+  virtual void mimic(ViewController* source_view)
   {
-    (void) source_view;
+    (void)source_view;
   }
 
   /** @brief Called by ViewManager when this ViewController is being made current.
@@ -133,32 +135,48 @@ public:
    * viewpoint.
    *
    * This base class implementation does nothing. */
-  virtual void transitionFrom( ViewController* previous_view )
+  virtual void transitionFrom(ViewController* previous_view)
   {
-    (void) previous_view;
+    (void)previous_view;
   }
 
-  /** @brief Subclasses should call this whenever a change is made which would change the results of toString(). */
+  /** @brief Subclasses should call this whenever a change is made which would change the results of
+   * toString(). */
   void emitConfigChanged();
 
-  Ogre::Camera* getCamera() const { return camera_; }
+  Ogre::Camera* getCamera() const
+  {
+    return camera_;
+  }
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
    * setClassId(). */
-  virtual QString getClassId() const { return class_id_; }
+  virtual QString getClassId() const
+  {
+    return class_id_;
+  }
 
   /** @brief Set the class identifier used to create this instance.
    * Typically this will be set by the factory object which created it. */
-  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+  virtual void setClassId(const QString& class_id)
+  {
+    class_id_ = class_id;
+  }
 
-  virtual void load( const Config& config );
-  virtual void save( Config config ) const;
+  void load(const Config& config) override;
+  void save(Config config) const override;
 
-  bool isActive() const { return is_active_; }
+  bool isActive() const
+  {
+    return is_active_;
+  }
 
   /** @return A mouse cursor representing the current state */
-  virtual QCursor getCursor() { return cursor_; }
+  virtual QCursor getCursor()
+  {
+    return cursor_;
+  }
 
 Q_SIGNALS:
   void configChanged();
@@ -173,20 +191,36 @@ protected:
   /** @brief Do subclass-specific initialization.  Called by
    * ViewController::initialize after context_ and camera_ are set.
    * Default implementation does nothing. */
-  virtual void onInitialize() {}
+  virtual void onInitialize()
+  {
+  }
 
   /** @brief called by activate().
    *
    * Override to implement view-specific activation.  This base
    * implementation does nothing. */
-  virtual void onActivate() {}
+  virtual void onActivate()
+  {
+  }
 
   // choose a cursor from the standard set
-  enum CursorType{ Default, Rotate2D, Rotate3D, MoveXY, MoveZ, Zoom, Crosshair };
-  void setCursor( CursorType cursor_type );
+  enum CursorType
+  {
+    Default,
+    Rotate2D,
+    Rotate3D,
+    MoveXY,
+    MoveZ,
+    Zoom,
+    Crosshair
+  };
+  void setCursor(CursorType cursor_type);
 
   // set a custom cursor
-  void setCursor( QCursor cursor ) { cursor_=cursor; }
+  void setCursor(QCursor cursor)
+  {
+    cursor_ = std::move(cursor);
+  }
 
   DisplayContext* context_;
   Ogre::Camera* camera_;
@@ -205,15 +239,14 @@ protected:
   FloatProperty* stereo_focal_distance_;
   BoolProperty* invert_z_;
 
-  void setStatus( const QString & message );
+  void setStatus(const QString& message);
 
 private:
-
   EnumProperty* type_property_;
   QString class_id_;
 
   // Default cursors for the most common actions
-  QMap<CursorType,QCursor> standard_cursors_;
+  QMap<CursorType, QCursor> standard_cursors_;
 };
 
 } // end namespace rviz

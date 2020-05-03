@@ -42,7 +42,6 @@
 
 namespace rviz
 {
-
 class DisplayContext;
 class Property;
 class BoolProperty;
@@ -55,37 +54,34 @@ class DisplayVisibilityProperty;
  * Manages the visibility of all displays in a display group
  * by switching one bit in Ogre's visibility mask.
  */
-class DisplayGroupVisibilityProperty: public DisplayVisibilityProperty
+class DisplayGroupVisibilityProperty : public DisplayVisibilityProperty
 {
   Q_OBJECT
 public:
-
   /* @param parent Parent display (will not get a visibility property)
    * @param context The display context
    * @param root_property Where to attach new properties to
    */
-  DisplayGroupVisibilityProperty(
-      uint32_t vis_bit,
-      DisplayGroup* display_group,
-      Display* parent_display,
-      const QString& name = QString(),
-      bool default_value = false,
-      const QString& description = QString(),
-      Property* parent = 0,
-      const char *changed_slot = 0,
-      QObject* receiver = 0 );
-  virtual ~DisplayGroupVisibilityProperty();
+  DisplayGroupVisibilityProperty(uint32_t vis_bit,
+                                 DisplayGroup* display_group,
+                                 Display* parent_display,
+                                 const QString& name = QString(),
+                                 bool default_value = false,
+                                 const QString& description = QString(),
+                                 Property* parent = nullptr,
+                                 const char* changed_slot = nullptr,
+                                 QObject* receiver = nullptr);
+  ~DisplayGroupVisibilityProperty() override;
 
   // @brief Update visibility masks of all objects in the Ogre scene
-  virtual void update();
+  void update() override;
 
 public Q_SLOTS:
 
-  void onDisplayAdded( rviz::Display* display );
-  void onDisplayRemoved( rviz::Display* display );
+  void onDisplayAdded(rviz::Display* display);
+  void onDisplayRemoved(rviz::Display* display);
 
 private:
-
   // sort the properties in the same way as in the
   // root display group
   void sortDisplayList();
@@ -96,6 +92,6 @@ private:
 };
 
 
-}
+} // namespace rviz
 
 #endif /* DISPLAY_VISIBILITY_MANAGER_H_ */

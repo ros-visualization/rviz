@@ -41,7 +41,6 @@ class SceneNode;
 
 namespace rviz
 {
-
 class TfFrameProperty;
 
 /**
@@ -49,29 +48,29 @@ class TfFrameProperty;
  */
 class ThirdPersonFollowerViewController : public OrbitViewController
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+  void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  virtual void lookAt( const Ogre::Vector3& point );
+  void lookAt(const Ogre::Vector3& point) override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void mimic( ViewController* source_view );
+  void mimic(ViewController* source_view) override;
 
 protected:
-  virtual void updateCamera();
+  void updateCamera() override;
 
-  virtual void updateTargetSceneNode();
+  void updateTargetSceneNode() override;
 
-  bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );
+  bool intersectGroundPlane(Ogre::Ray mouse_ray, Ogre::Vector3& intersection_3d);
 };
 
-}
+} // namespace rviz
 
 #endif // RVIZ_VIEW_CONTROLLER_H

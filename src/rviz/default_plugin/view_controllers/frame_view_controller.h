@@ -34,7 +34,6 @@
 
 namespace rviz
 {
-
 class FloatProperty;
 class VectorProperty;
 class EnumProperty;
@@ -46,11 +45,11 @@ class FrameViewController : public FPSViewController
 
 public:
   FrameViewController();
-  virtual ~FrameViewController() = default;
+  ~FrameViewController() override = default;
   void onInitialize() override;
 
   void reset() override;
-  void handleMouseEvent(ViewportMouseEvent &event) override;
+  void handleMouseEvent(ViewportMouseEvent& event) override;
 
 protected:
   void onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
@@ -62,8 +61,8 @@ protected:
   /// find enum ID from camera's current pose
   int actualCameraAxisOption(double precision = 0.001) const;
 
-  EnumProperty* axis_property_;  ///< The axis that the camera aligns to
-  BoolProperty* locked_property_;  ///< Lock camera, i.e. disable mouse interaction?
+  EnumProperty* axis_property_;   ///< The axis that the camera aligns to
+  BoolProperty* locked_property_; ///< Lock camera, i.e. disable mouse interaction?
 
 protected Q_SLOTS:
   void changedOrientation() override;

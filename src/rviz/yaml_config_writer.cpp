@@ -35,22 +35,21 @@
 
 namespace rviz
 {
-
 /** @brief Constructor.  Writer starts in a non-error state with no status message. */
-YamlConfigWriter::YamlConfigWriter()
-  : error_( false )
-{}
+YamlConfigWriter::YamlConfigWriter() : error_(false)
+{
+}
 
 /** @brief Write config data to a file.  This potentially changes
  * the return values of error() and statusMessage(). */
-void YamlConfigWriter::writeFile( const Config& config, const QString& filename )
+void YamlConfigWriter::writeFile(const Config& config, const QString& filename)
 {
   try
   {
-    std::ofstream out( qPrintable( filename ));
-    if( out )
+    std::ofstream out(qPrintable(filename));
+    if (out)
     {
-      writeStream( config, out, filename );
+      writeStream(config, out, filename);
     }
     else
     {
@@ -58,7 +57,7 @@ void YamlConfigWriter::writeFile( const Config& config, const QString& filename 
       message_ = "Failed to open " + filename + " for writing.";
     }
   }
-  catch( std::exception ex )
+  catch (std::exception ex)
   {
     error_ = true;
     message_ = ex.what();
@@ -68,13 +67,13 @@ void YamlConfigWriter::writeFile( const Config& config, const QString& filename 
 /** @brief Write config data to a string, and return it.  This
  * potentially changes the return values of error() and
  * statusMessage(). */
-QString YamlConfigWriter::writeString( const Config& config, const QString& filename )
+QString YamlConfigWriter::writeString(const Config& config, const QString& filename)
 {
   std::stringstream out;
-  writeStream( config, out, filename );
-  if( !error_ )
+  writeStream(config, out, filename);
+  if (!error_)
   {
-    return QString::fromStdString( out.str() );
+    return QString::fromStdString(out.str());
   }
   else
   {
@@ -84,13 +83,13 @@ QString YamlConfigWriter::writeString( const Config& config, const QString& file
 
 /** @brief Write config data to a std::ostream.  This potentially
  * changes the return values of error() and statusMessage(). */
-void YamlConfigWriter::writeStream( const Config& config, std::ostream& out, const QString&  /*filename*/ )
+void YamlConfigWriter::writeStream(const Config& config, std::ostream& out, const QString& /*filename*/)
 {
   error_ = false;
   message_ = "";
   YAML::Emitter emitter;
-  writeConfigNode( config, emitter );
-  if( !error_ )
+  writeConfigNode(config, emitter);
+  if (!error_)
   {
     out << emitter.c_str() << std::endl;
   }
@@ -107,16 +106,16 @@ QString YamlConfigWriter::errorMessage()
   return message_;
 }
 
-void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emitter )
+void YamlConfigWriter::writeConfigNode(const Config& config, YAML::Emitter& emitter)
 {
-  switch( config.getType() )
+  switch (config.getType())
   {
   case Config::List:
   {
     emitter << YAML::BeginSeq;
-    for( int i = 0; i < config.listLength(); i++ )
+    for (int i = 0; i < config.listLength(); i++)
     {
-      writeConfigNode( config.listChildAt( i ), emitter );
+      writeConfigNode(config.listChildAt(i), emitter);
     }
     emitter << YAML::EndSeq;
     break;
@@ -125,14 +124,14 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
   {
     emitter << YAML::BeginMap;
     Config::MapIterator map_iter = config.mapIterator();
-    while( map_iter.isValid() )
+    while (map_iter.isValid())
     {
       Config child = map_iter.currentChild();
 
       emitter << YAML::Key;
       emitter << map_iter.currentKey().toStdString();
       emitter << YAML::Value;
-      writeConfigNode( child, emitter );
+      writeConfigNode(child, emitter);
 
       map_iter.advance();
     }
@@ -142,7 +141,7 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
   case Config::Value:
   {
     QString value = config.getValue().toString();
-    if( value.size() == 0 )
+    if (value.size() == 0)
     {
       emitter << YAML::DoubleQuoted << "";
     }

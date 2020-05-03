@@ -30,20 +30,20 @@
 #ifndef RVIZ_IMAGE_DISPLAY_H
 #define RVIZ_IMAGE_DISPLAY_H
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <QObject>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <QObject>
 
-# include <OgreMaterial.h>
-# include <OgreRenderTargetListener.h>
-# include <OgreSharedPtr.h>
+#include <OgreMaterial.h>
+#include <OgreRenderTargetListener.h>
+#include <OgreSharedPtr.h>
 
-# include "rviz/image/image_display_base.h"
-# include "rviz/image/ros_image_texture.h"
-# include "rviz/render_panel.h"
+#include "rviz/image/image_display_base.h"
+#include "rviz/image/ros_image_texture.h"
+#include "rviz/render_panel.h"
 
-# include "rviz/properties/bool_property.h"
-# include "rviz/properties/float_property.h"
-# include "rviz/properties/int_property.h"
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
 #endif
 
 
@@ -55,33 +55,32 @@ class Rectangle2D;
 
 namespace rviz
 {
-
 /**
  * \class ImageDisplay
  *
  */
-class ImageDisplay: public ImageDisplayBase
+class ImageDisplay : public ImageDisplayBase
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   ImageDisplay();
-  virtual ~ImageDisplay();
+  ~ImageDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update( float wall_dt, float ros_dt );
-  virtual void reset();
+  void onInitialize() override;
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   /* This is called by incomingMessage(). */
-  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
+  void processMessage(const sensor_msgs::Image::ConstPtr& msg) override;
 
   Ogre::SceneManager* img_scene_manager_;
 

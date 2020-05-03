@@ -42,13 +42,11 @@
 
 namespace rviz
 {
-
-PointCloudDisplay::PointCloudDisplay()
-  : point_cloud_common_( new PointCloudCommon( this ))
+PointCloudDisplay::PointCloudDisplay() : point_cloud_common_(new PointCloudCommon(this))
 {
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
+  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 PointCloudDisplay::~PointCloudDisplay()
@@ -59,17 +57,17 @@ PointCloudDisplay::~PointCloudDisplay()
 void PointCloudDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 }
 
-void PointCloudDisplay::processMessage( const sensor_msgs::PointCloudConstPtr& cloud )
+void PointCloudDisplay::processMessage(const sensor_msgs::PointCloudConstPtr& cloud)
 {
-  point_cloud_common_->addMessage( cloud );
+  point_cloud_common_->addMessage(cloud);
 }
 
-void PointCloudDisplay::update( float wall_dt, float ros_dt )
+void PointCloudDisplay::update(float wall_dt, float ros_dt)
 {
-  point_cloud_common_->update( wall_dt, ros_dt );
+  point_cloud_common_->update(wall_dt, ros_dt);
 }
 
 void PointCloudDisplay::reset()
@@ -81,4 +79,4 @@ void PointCloudDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::PointCloudDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::PointCloudDisplay, rviz::Display)

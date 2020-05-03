@@ -34,19 +34,19 @@
 
 namespace rviz
 {
-
 /*
  * Helper class for fixing the bug described under http://www.ogre3d.org/mantis/view.php?id=130
  * This bug happens in Ogre 1.7.x when multiple scene managers are being used,
  * but might be fixed in Ogre 1.8.0 and above.
  */
-class OgreRenderQueueClearer: public Ogre::FrameListener {
+class OgreRenderQueueClearer : public Ogre::FrameListener
+{
 public:
-	OgreRenderQueueClearer();
-	virtual ~OgreRenderQueueClearer();
-	virtual bool frameStarted (const Ogre::FrameEvent &evt);
+  OgreRenderQueueClearer();
+  ~OgreRenderQueueClearer() override;
+  bool frameStarted(const Ogre::FrameEvent& evt) override;
 };
 
-}
+} // namespace rviz
 
 #endif /* OGRERENDERQUEUECLEARER_H_ */

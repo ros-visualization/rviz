@@ -37,7 +37,6 @@
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
@@ -46,23 +45,23 @@ class PointCloudCommon;
  * \brief Displays an Illuminance message of type sensor_msgs::Illuminance
  *
  */
-class IlluminanceDisplay: public MessageFilterDisplay<sensor_msgs::Illuminance>
+class IlluminanceDisplay : public MessageFilterDisplay<sensor_msgs::Illuminance>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   IlluminanceDisplay();
-  ~IlluminanceDisplay();
+  ~IlluminanceDisplay() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void update( float wall_dt, float ros_dt );
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::IlluminanceConstPtr& msg );
+  void processMessage(const sensor_msgs::IlluminanceConstPtr& msg) override;
 
   PointCloudCommon* point_cloud_common_;
 };

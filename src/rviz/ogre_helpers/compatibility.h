@@ -34,7 +34,7 @@
 #include <rviz/ogre_helpers/version_check.h>
 #include <OgreSimpleRenderable.h>
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
 #include <OgreSceneManager.h>
 #else
 #include <OgreMaterialManager.h>
@@ -43,8 +43,8 @@
 
 #include <string>
 
-namespace rviz {
-
+namespace rviz
+{
 /* This header provides helper functions to maintain compatibility with Ogre versions 1.9 ... 1.12+.
  *
  * setMaterial() allows setting the material of a renderable by either name or MaterialPtr.
@@ -55,36 +55,37 @@ namespace rviz {
  * OGRE 1.10 added: SceneNode::removeAndDestroyChild(SceneNode* child)
  */
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
-inline void setMaterial(Ogre::SimpleRenderable & renderable, const std::string & material_name)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
+inline void setMaterial(Ogre::SimpleRenderable& renderable, const std::string& material_name)
 {
   renderable.setMaterial(material_name);
 }
 
-inline void setMaterial(Ogre::SimpleRenderable & renderable, const Ogre::MaterialPtr & material)
+inline void setMaterial(Ogre::SimpleRenderable& renderable, const Ogre::MaterialPtr& material)
 {
   renderable.setMaterial(material->getName());
 }
 #else
-inline void setMaterial(Ogre::SimpleRenderable & renderable, const std::string & material_name)
+inline void setMaterial(Ogre::SimpleRenderable& renderable, const std::string& material_name)
 {
   Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name);
   // OGRE 1.11 also deprecated their own SharedPtr class and switched to std::shared_ptr.
   // Checking for nullptr with .get() works in both versions.
   if (!material.get())
   {
-    OGRE_EXCEPT(Ogre::Exception::ERR_ITEM_NOT_FOUND, "Could not find material " + material_name, "SimpleRenderable::setMaterial");
+    OGRE_EXCEPT(Ogre::Exception::ERR_ITEM_NOT_FOUND, "Could not find material " + material_name,
+                "SimpleRenderable::setMaterial");
   }
   renderable.setMaterial(material);
 }
 
-inline void setMaterial(Ogre::SimpleRenderable & renderable, const Ogre::MaterialPtr & material)
+inline void setMaterial(Ogre::SimpleRenderable& renderable, const Ogre::MaterialPtr& material)
 {
   renderable.setMaterial(material);
 }
 #endif
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
 inline void removeAndDestroyChildNode(Ogre::SceneNode* parent, Ogre::SceneNode* child)
 {
   child->removeAndDestroyAllChildren();
@@ -97,6 +98,6 @@ inline void removeAndDestroyChildNode(Ogre::SceneNode* parent, Ogre::SceneNode* 
   parent->removeAndDestroyChild(child);
 }
 #endif
-}
+} // namespace rviz
 
 #endif

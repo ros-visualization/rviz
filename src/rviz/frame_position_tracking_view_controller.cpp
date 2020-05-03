@@ -42,26 +42,25 @@
 
 namespace rviz
 {
-
-FramePositionTrackingViewController::FramePositionTrackingViewController()
-  : target_scene_node_( nullptr )
+FramePositionTrackingViewController::FramePositionTrackingViewController() : target_scene_node_(nullptr)
 {
-  target_frame_property_ = new TfFrameProperty( "Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
-                                                "TF frame whose motion this view will follow.", this, nullptr, true );
+  target_frame_property_ =
+      new TfFrameProperty("Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
+                          "TF frame whose motion this view will follow.", this, nullptr, true);
 }
 
 void FramePositionTrackingViewController::onInitialize()
 {
-  target_frame_property_->setFrameManager( context_->getFrameManager() );
+  target_frame_property_->setFrameManager(context_->getFrameManager());
 
   target_scene_node_ = context_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
   camera_->detachFromParent();
-  target_scene_node_->attachObject( camera_ );
+  target_scene_node_->attachObject(camera_);
 }
 
 FramePositionTrackingViewController::~FramePositionTrackingViewController()
 {
-  context_->getSceneManager()->destroySceneNode( target_scene_node_ );
+  context_->getSceneManager()->destroySceneNode(target_scene_node_);
 }
 
 void FramePositionTrackingViewController::onActivate()
@@ -74,10 +73,10 @@ void FramePositionTrackingViewController::onActivate()
   // property so that the view does not jump.  Therefore we make the
   // signal/slot connection from the property here in onActivate()
   // instead of in the constructor.
-  connect( target_frame_property_, SIGNAL( changed() ), this, SLOT( updateTargetFrame() ));
+  connect(target_frame_property_, SIGNAL(changed()), this, SLOT(updateTargetFrame()));
 }
 
-void FramePositionTrackingViewController::update(float  /*dt*/, float  /*ros_dt*/)
+void FramePositionTrackingViewController::update(float /*dt*/, float /*ros_dt*/)
 {
   updateTargetSceneNode();
 }
@@ -88,8 +87,8 @@ void FramePositionTrackingViewController::updateTargetFrame()
   Ogre::Quaternion old_orientation = target_scene_node_->getOrientation();
 
   updateTargetSceneNode();
-  
-  onTargetFrameChanged( old_position, old_orientation );
+
+  onTargetFrameChanged(old_position, old_orientation);
 }
 
 bool FramePositionTrackingViewController::getNewTransform()
@@ -97,9 +96,10 @@ bool FramePositionTrackingViewController::getNewTransform()
   Ogre::Vector3 new_reference_position;
   Ogre::Quaternion new_reference_orientation;
 
-  bool got_transform = context_->getFrameManager()->getTransform( target_frame_property_->getFrameStd(), ros::Time(),
-        new_reference_position, new_reference_orientation );
-  if( got_transform )
+  bool got_transform =
+      context_->getFrameManager()->getTransform(target_frame_property_->getFrameStd(), ros::Time(),
+                                                new_reference_position, new_reference_orientation);
+  if (got_transform)
   {
     reference_position_ = new_reference_position;
     reference_orientation_ = new_reference_orientation;
@@ -109,33 +109,33 @@ bool FramePositionTrackingViewController::getNewTransform()
 
 void FramePositionTrackingViewController::updateTargetSceneNode()
 {
-  if ( getNewTransform() )
+  if (getNewTransform())
   {
-    target_scene_node_->setPosition( reference_position_ );
+    target_scene_node_->setPosition(reference_position_);
 
     context_->queueRender();
   }
 
-// Need to incorporate this functionality somehow....  Maybe right into TfFrameProperty itself.
-/////  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
-/////  {
-/////    // target_prop->setToError();
-/////    global_status_->setStatus( StatusProperty::Error, "Target Frame", QString::fromStdString( error ));
-/////  }
-/////  else
-/////  {
-/////    // target_prop->setToOK();
-/////    global_status_->setStatus( StatusProperty::Ok, "Target Frame", "OK" );
-/////  }
-
+  // Need to incorporate this functionality somehow....  Maybe right into TfFrameProperty itself.
+  /////  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
+  /////  {
+  /////    // target_prop->setToError();
+  /////    global_status_->setStatus( StatusProperty::Error, "Target Frame", QString::fromStdString(
+  /// error ));
+  /////  }
+  /////  else
+  /////  {
+  /////    // target_prop->setToOK();
+  /////    global_status_->setStatus( StatusProperty::Ok, "Target Frame", "OK" );
+  /////  }
 }
 
-void FramePositionTrackingViewController::mimic( ViewController* source_view )
+void FramePositionTrackingViewController::mimic(ViewController* source_view)
 {
-  QVariant target_frame = source_view->subProp( "Target Frame" )->getValue();
-  if( target_frame.isValid() )
+  QVariant target_frame = source_view->subProp("Target Frame")->getValue();
+  if (target_frame.isValid())
   {
-    target_frame_property_->setValue( target_frame );
+    target_frame_property_->setValue(target_frame);
   }
 }
 

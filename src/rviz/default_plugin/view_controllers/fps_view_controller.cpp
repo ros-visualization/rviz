@@ -43,27 +43,26 @@
 
 namespace rviz
 {
-
 const Ogre::Quaternion FPSViewController::ROBOT_TO_CAMERA_ROTATION =
-  Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Y ) *
-  Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Z );
+    Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y) *
+    Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Z);
 
 FPSViewController::FPSViewController()
 {
   invert_z_->hide();
 
-  yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.",
-                                    this, SLOT(changedOrientation()), this);
+  yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.", this,
+                                    SLOT(changedOrientation()), this);
   yaw_property_->setMax(Ogre::Math::PI);
   yaw_property_->setMin(-Ogre::Math::PI);
 
-  pitch_property_ = new FloatProperty("Pitch", 0, "How much the camera is tipped downward.",
-                                      this, SLOT(changedOrientation()), this);
+  pitch_property_ = new FloatProperty("Pitch", 0, "How much the camera is tipped downward.", this,
+                                      SLOT(changedOrientation()), this);
   pitch_property_->setMax(Ogre::Math::PI);
   pitch_property_->setMin(-Ogre::Math::PI);
 
-  roll_property_ = new FloatProperty("Roll", 0, "Rotation about the camera's view direction.",
-                                     this, SLOT(changedOrientation()), this);
+  roll_property_ = new FloatProperty("Roll", 0, "Rotation about the camera's view direction.", this,
+                                     SLOT(changedOrientation()), this);
   roll_property_->setMax(Ogre::Math::PI);
   roll_property_->setMin(-Ogre::Math::PI);
 
@@ -74,14 +73,14 @@ FPSViewController::FPSViewController()
 void FPSViewController::onInitialize()
 {
   FramePositionTrackingViewController::onInitialize();
-  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
   changedPosition();
 }
 
 void FPSViewController::reset()
 {
-  camera_->setPosition( Ogre::Vector3( 5, 5, 10 ));
-  camera_->lookAt( 0, 0, 0 );
+  camera_->setPosition(Ogre::Vector3(5, 5, 10));
+  camera_->lookAt(0, 0, 0);
   resetRoll();
   setPropertiesFromCamera();
   context_->queueRender();
@@ -96,7 +95,7 @@ void FPSViewController::mimic(ViewController* source_view)
   setPropertiesFromCamera();
 }
 
-void FPSViewController::lookAt( const Ogre::Vector3& point )
+void FPSViewController::lookAt(const Ogre::Vector3& point)
 {
   camera_->lookAt(target_scene_node_->convertWorldToLocalPosition(point));
   resetRoll();
@@ -105,63 +104,64 @@ void FPSViewController::lookAt( const Ogre::Vector3& point )
 
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
-  if ( event.shift() )
-    setStatus( "<b>Left-Click:</b> Rotate Roll.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z." );
+  if (event.shift())
+    setStatus(
+        "<b>Left-Click:</b> Rotate Roll.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z.");
   else
-    setStatus( "<b>Left-Click:</b> Rotate Yaw/Pitch.  <b>Shift Left-Click</b>: Rotate Roll.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z." );
+    setStatus("<b>Left-Click:</b> Rotate Yaw/Pitch.  <b>Shift Left-Click</b>: Rotate Roll.  "
+              "<b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z.");
 
   int32_t diff_x = 0;
   int32_t diff_y = 0;
 
-  if( event.type == QEvent::MouseMove )
+  if (event.type == QEvent::MouseMove)
   {
     diff_x = event.x - event.last_x;
     diff_y = event.y - event.last_y;
   }
 
-  if( event.left() && !event.shift() )
+  if (event.left() && !event.shift())
   {
-    setCursor( Rotate3D );
-    rotate(-diff_x*0.005, diff_y*0.005, 0.0f);
+    setCursor(Rotate3D);
+    rotate(-diff_x * 0.005, diff_y * 0.005, 0.0f);
   }
-  else if( event.left() && event.shift() )
+  else if (event.left() && event.shift())
   {
-    setCursor( Rotate2D );
+    setCursor(Rotate2D);
     int cx = event.viewport->getActualWidth() / 2;
     int cy = event.viewport->getActualHeight() / 2;
 
-    float roll = atan2(event.last_y-cy, event.last_x-cx) - atan2(event.y-cy, event.x-cx);
+    float roll = atan2(event.last_y - cy, event.last_x - cx) - atan2(event.y - cy, event.x - cx);
     if (std::isfinite(roll))
       rotate(0.0f, 0.0f, roll);
   }
-  else if( event.middle() )
+  else if (event.middle())
   {
-    setCursor( MoveXY );
-    move( diff_x*0.01, -diff_y*0.01, 0.0f );
+    setCursor(MoveXY);
+    move(diff_x * 0.01, -diff_y * 0.01, 0.0f);
   }
-  else if( event.right() )
+  else if (event.right())
   {
-    setCursor( MoveZ );
-    move( 0.0f, 0.0f, diff_y*0.1 );
+    setCursor(MoveZ);
+    move(0.0f, 0.0f, diff_y * 0.1);
   }
   else
   {
-    setCursor( event.shift() ? Rotate2D : Rotate3D );
+    setCursor(event.shift() ? Rotate2D : Rotate3D);
   }
 
-  if ( event.wheel_delta != 0 )
+  if (event.wheel_delta != 0)
   {
     int diff = event.wheel_delta;
-    move( 0.0f, 0.0f, -diff * 0.01 );
+    move(0.0f, 0.0f, -diff * 0.01);
   }
 }
 
 Ogre::Quaternion FPSViewController::getOrientation(float yaw, float pitch, float roll)
 {
-  Eigen::Quaterniond q =
-      Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
-      Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
-      Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+  Eigen::Quaterniond q = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+                         Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+                         Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
 
   return Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()) * ROBOT_TO_CAMERA_ROTATION;
 }
@@ -191,15 +191,16 @@ void FPSViewController::resetRoll()
   camera_->setOrientation(getOrientation(ypr[0], ypr[1], Ogre::Math::PI));
 }
 
-void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion&  /*old_reference_orientation*/)
+void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
+                                             const Ogre::Quaternion& /*old_reference_orientation*/)
 {
-  position_property_->add( old_reference_position - reference_position_ );
+  position_property_->add(old_reference_position - reference_position_);
 }
 
-void FPSViewController::move( float x, float y, float z )
+void FPSViewController::move(float x, float y, float z)
 {
-  Ogre::Vector3 translate( x, y, z );
-  position_property_->add( camera_->getOrientation() * translate );
+  Ogre::Vector3 translate(x, y, z);
+  position_property_->add(camera_->getOrientation() * translate);
 }
 
 void FPSViewController::changedPosition()
@@ -225,7 +226,7 @@ inline void _rotate(FloatProperty* prop, float angle)
   prop->setFloat(angle);
 }
 
-void FPSViewController::rotate( float yaw, float pitch, float roll )
+void FPSViewController::rotate(float yaw, float pitch, float roll)
 {
   _rotate(yaw_property_, yaw);
   _rotate(pitch_property_, pitch);
@@ -235,8 +236,7 @@ void FPSViewController::rotate( float yaw, float pitch, float roll )
 
 void FPSViewController::changedOrientation()
 {
-  camera_->setOrientation(getOrientation(yaw_property_->getFloat(),
-                                         pitch_property_->getFloat(),
+  camera_->setOrientation(getOrientation(yaw_property_->getFloat(), pitch_property_->getFloat(),
                                          roll_property_->getFloat()));
   context_->queueRender();
 }
@@ -245,4 +245,4 @@ void FPSViewController::changedOrientation()
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::FPSViewController, rviz::ViewController )
+PLUGINLIB_EXPORT_CLASS(rviz::FPSViewController, rviz::ViewController)

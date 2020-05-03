@@ -63,23 +63,23 @@ typedef std::pair<std::string, int32_t> MarkerID;
  */
 class InteractiveMarkerDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   InteractiveMarkerDisplay();
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void update(float wall_dt, float ros_dt);
+  void update(float wall_dt, float ros_dt) override;
 
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic(const QString& topic, const QString& datatype) override;
 
 protected:
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
 protected Q_SLOTS:
   void updateTopic();
@@ -87,49 +87,44 @@ protected Q_SLOTS:
   void updateShowAxes();
   void updateShowVisualAids();
   void updateEnableTransparency();
-  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
-  void onStatusUpdate( StatusProperty::Level level, const std::string& name, const std::string& text );
+  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback& feedback);
+  void onStatusUpdate(StatusProperty::Level level, const std::string& name, const std::string& text);
 
 private:
-
   // Subscribe to all message topics
   void subscribe();
 
   // Unsubscribe from all message topics
   void unsubscribe();
 
-  void initCb( const visualization_msgs::InteractiveMarkerInitConstPtr& msg );
-  void updateCb( const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg );
+  void initCb(const visualization_msgs::InteractiveMarkerInitConstPtr& msg);
+  void updateCb(const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg);
 
-  void resetCb( const std::string& server_id );
+  void resetCb(const std::string& server_id);
 
-  void statusCb( interactive_markers::InteractiveMarkerClient::StatusT,
-      const std::string& server_id,
-      const std::string& msg );
+  void statusCb(interactive_markers::InteractiveMarkerClient::StatusT /*status*/,
+                const std::string& server_id,
+                const std::string& msg);
 
-  void updateMarkers(
-      const std::string& server_id,
-      const std::vector<visualization_msgs::InteractiveMarker>& markers );
+  void updateMarkers(const std::string& server_id,
+                     const std::vector<visualization_msgs::InteractiveMarker>& markers);
 
-  void updatePoses(
-      const std::string& server_id,
-      const std::vector<visualization_msgs::InteractiveMarkerPose>& marker_poses );
+  void updatePoses(const std::string& server_id,
+                   const std::vector<visualization_msgs::InteractiveMarkerPose>& marker_poses);
 
-  void eraseMarkers(
-      const std::string& server_id,
-      const std::vector<std::string>& names );
+  void eraseMarkers(const std::string& server_id, const std::vector<std::string>& names);
 
   // Update the display's versions of the markers.
-  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
-                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
-                             const std::vector<std::string>* erases = NULL );
+  void processMarkerChanges(const std::vector<visualization_msgs::InteractiveMarker>* markers = nullptr,
+                            const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = nullptr,
+                            const std::vector<std::string>* erases = nullptr);
 
   typedef boost::shared_ptr<InteractiveMarker> IMPtr;
-  typedef std::map< std::string, IMPtr > M_StringToIMPtr;
-  typedef std::map< std::string, M_StringToIMPtr > M_StringToStringToIMPtr;
+  typedef std::map<std::string, IMPtr> M_StringToIMPtr;
+  typedef std::map<std::string, M_StringToIMPtr> M_StringToStringToIMPtr;
   M_StringToStringToIMPtr interactive_markers_;
 
-  M_StringToIMPtr& getImMap( const std::string& server_id );
+  M_StringToIMPtr& getImMap(const std::string& server_id);
 
   std::string client_id_;
 

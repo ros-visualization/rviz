@@ -33,31 +33,30 @@
 
 namespace rviz
 {
-
 class ColorProperty;
 
-class ColorEditor: public LineEditWithButton
+class ColorEditor : public LineEditWithButton
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ColorEditor( ColorProperty* property = 0, QWidget* parent = 0 );
+  ColorEditor(ColorProperty* property = nullptr, QWidget* parent = nullptr);
 
   /** Static function to paint just the color box.  Paints it in the
    * left end of rect, size rect.height() by rect.height(). */
-  static void paintColorBox( QPainter* painter, const QRect& rect, const QColor& color );
+  static void paintColorBox(QPainter* painter, const QRect& rect, const QColor& color);
 
 public Q_SLOTS:
-  void setColor( const QColor& color );
+  void setColor(const QColor& color);
   void parseText();
 
 protected:
   /** Call parent version then paint color swatch. */
-  virtual void paintEvent( QPaintEvent* event );
+  void paintEvent(QPaintEvent* event) override;
 
-  virtual void resizeEvent( QResizeEvent* event );
+  void resizeEvent(QResizeEvent* event) override;
 
 protected Q_SLOTS:
-  virtual void onButtonClick();
+  void onButtonClick() override;
 
 private:
   QColor color_;

@@ -47,13 +47,13 @@
 
 namespace rviz
 {
-
 InteractionTool::InteractionTool()
 {
   shortcut_key_ = 'i';
-  hide_inactive_property_ = new BoolProperty("Hide Inactive Objects", true,
-                                             "While holding down a mouse button, hide all other Interactive Objects.",
-                                             getPropertyContainer(), SLOT( hideInactivePropertyChanged() ), this );
+  hide_inactive_property_ =
+      new BoolProperty("Hide Inactive Objects", true,
+                       "While holding down a mouse button, hide all other Interactive Objects.",
+                       getPropertyContainer(), SLOT(hideInactivePropertyChanged()), this);
 }
 
 InteractionTool::~InteractionTool()
@@ -62,7 +62,7 @@ InteractionTool::~InteractionTool()
 
 void InteractionTool::onInitialize()
 {
-  move_tool_.initialize( context_ );
+  move_tool_.initialize(context_);
   last_selection_frame_count_ = context_->getFrameCount();
   deactivate();
 }
@@ -78,14 +78,12 @@ void InteractionTool::deactivate()
   context_->getSelectionManager()->enableInteraction(false);
 }
 
-void InteractionTool::updateFocus( const ViewportMouseEvent& event )
+void InteractionTool::updateFocus(const ViewportMouseEvent& event)
 {
   M_Picked results;
   // Pick exactly 1 pixel
-  context_->getSelectionManager()->pick( event.viewport,
-                                         event.x, event.y,
-                                         event.x + 1, event.y + 1,
-                                         results, true );
+  context_->getSelectionManager()->pick(event.viewport, event.x, event.y, event.x + 1, event.y + 1,
+                                        results, true);
 
   last_selection_frame_count_ = context_->getFrameCount();
 
@@ -93,14 +91,14 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
 
   // look for a valid handle in the result.
   M_Picked::iterator result_it = results.begin();
-  if( result_it != results.end() )
+  if (result_it != results.end())
   {
     Picked pick = result_it->second;
-    SelectionHandler* handler = context_->getSelectionManager()->getHandler( pick.handle );
-    if ( pick.pixel_count > 0 && handler )
+    SelectionHandler* handler = context_->getSelectionManager()->getHandler(pick.handle);
+    if (pick.pixel_count > 0 && handler)
     {
       InteractiveObjectPtr object = handler->getInteractiveObject().lock();
-      if( object && object->isInteractive() )
+      if (object && object->isInteractive())
       {
         new_focused_object = object;
       }
@@ -111,32 +109,32 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
   // and focus the new.
   InteractiveObjectPtr new_obj = new_focused_object;
   InteractiveObjectPtr old_obj = focused_object_.lock();
-  if( new_obj != old_obj )
+  if (new_obj != old_obj)
   {
     // Only copy the event contents here, once we know we need to use
     // a modified version of it.
     ViewportMouseEvent event_copy = event;
-    if( old_obj )
+    if (old_obj)
     {
       event_copy.type = QEvent::FocusOut;
-      old_obj->handleMouseEvent( event_copy );
+      old_obj->handleMouseEvent(event_copy);
     }
 
-    if( new_obj )
+    if (new_obj)
     {
       event_copy.type = QEvent::FocusIn;
-      new_obj->handleMouseEvent( event_copy );
+      new_obj->handleMouseEvent(event_copy);
     }
   }
 
   focused_object_ = new_focused_object;
 }
 
-int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
+int InteractionTool::processMouseEvent(ViewportMouseEvent& event)
 {
   int flags = 0;
 
-  if ( event.panel->contextMenuVisible() )
+  if (event.panel->contextMenuVisible())
   {
     return flags;
   }
@@ -145,57 +143,55 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
 
   // We are dragging if a button was down and is still down
-  Qt::MouseButtons buttons = event.buttons_down & ( Qt::LeftButton | Qt::RightButton | Qt::MidButton );
-  if ( event.type == QEvent::MouseButtonPress )
+  Qt::MouseButtons buttons = event.buttons_down & (Qt::LeftButton | Qt::RightButton | Qt::MidButton);
+  if (event.type == QEvent::MouseButtonPress)
     buttons &= ~event.acting_button;
   bool dragging = buttons != 0;
 
   // unless we're dragging, check if there's a new object under the mouse
-  if( need_selection_update &&
-      !dragging &&
-      event.type != QEvent::MouseButtonRelease )
+  if (need_selection_update && !dragging && event.type != QEvent::MouseButtonRelease)
   {
-    updateFocus( event );
+    updateFocus(event);
     flags = Render;
   }
 
   {
     InteractiveObjectPtr focused_object = focused_object_.lock();
-    if( focused_object )
+    if (focused_object)
     {
-      focused_object->handleMouseEvent( event );
-      setCursor( focused_object->getCursor() );
+      focused_object->handleMouseEvent(event);
+      setCursor(focused_object->getCursor());
       // this will disable everything but the current interactive object
-      if ( hide_inactive_property_->getBool() )
+      if (hide_inactive_property_->getBool())
       {
         context_->getSelectionManager()->enableInteraction(!dragging);
       }
     }
-    else if( event.panel->getViewController() )
+    else if (event.panel->getViewController())
     {
-      move_tool_.processMouseEvent( event );
-      setCursor( move_tool_.getCursor() );
-      if ( hide_inactive_property_->getBool() )
+      move_tool_.processMouseEvent(event);
+      setCursor(move_tool_.getCursor());
+      if (hide_inactive_property_->getBool())
       {
         context_->getSelectionManager()->enableInteraction(true);
       }
     }
   }
 
-  if( event.type == QEvent::MouseButtonRelease )
+  if (event.type == QEvent::MouseButtonRelease)
   {
-    updateFocus( event );
+    updateFocus(event);
   }
 
   return flags;
 }
 
-int InteractionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+int InteractionTool::processKeyEvent(QKeyEvent* event, RenderPanel* panel)
 {
-  return move_tool_.processKeyEvent( event, panel );
+  return move_tool_.processKeyEvent(event, panel);
 }
 
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::InteractionTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS(rviz::InteractionTool, rviz::Tool)

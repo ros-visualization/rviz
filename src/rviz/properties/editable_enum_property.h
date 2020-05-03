@@ -35,35 +35,39 @@
 
 namespace rviz
 {
-
 /** @brief Editable Enum property.
  *
  * An editable enum property works like a string property, but with
  * the addition of a drop-down list of predefined choices.
  */
-class EditableEnumProperty: public StringProperty
+class EditableEnumProperty : public StringProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  EditableEnumProperty( const QString& name = QString(),
-                        const QString& default_value = QString(),
-                        const QString& description = QString(),
-                        Property* parent = 0,
-                        const char *changed_slot = 0,
-                        QObject* receiver = 0 );
+  EditableEnumProperty(const QString& name = QString(),
+                       const QString& default_value = QString(),
+                       const QString& description = QString(),
+                       Property* parent = nullptr,
+                       const char* changed_slot = nullptr,
+                       QObject* receiver = nullptr);
 
   virtual void clearOptions();
-  virtual void addOption( const QString& option );
-  void addOptionStd( const std::string& option ) { addOption( QString::fromStdString( option )); }
+  virtual void addOption(const QString& option);
+  void addOptionStd(const std::string& option)
+  {
+    addOption(QString::fromStdString(option));
+  }
 
-  virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option );
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option) override;
 
   /** @brief Sort the option strings. */
-  void sortOptions() { strings_.sort(); }
+  void sortOptions()
+  {
+    strings_.sort();
+  }
 
 public Q_SLOTS:
-  virtual void setString( const QString& str );
+  virtual void setString(const QString& str);
 
 Q_SIGNALS:
   /** @brief requestOptions() is emitted each time createEditor() is
@@ -76,7 +80,7 @@ Q_SIGNALS:
    * A connected slot should make calls to clearOptions() and/or
    * addOption() as needed.  The option list in the EditableEnumProperty will
    * not be cleared before the signal is emitted. */
-  void requestOptions( EditableEnumProperty* property_in_need_of_options );
+  void requestOptions(EditableEnumProperty* property_in_need_of_options);
 
 protected:
   QStringList strings_;

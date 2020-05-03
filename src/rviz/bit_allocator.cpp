@@ -31,17 +31,16 @@
 
 namespace rviz
 {
-
-BitAllocator::BitAllocator()
-  : allocated_bits_( 0 )
-{}
+BitAllocator::BitAllocator() : allocated_bits_(0)
+{
+}
 
 uint32_t BitAllocator::allocBit()
 {
   uint32_t mask = 1;
-  for( int i = 0; i < 32; i++ )
+  for (int i = 0; i < 32; i++)
   {
-    if( (mask & allocated_bits_) == 0 )
+    if ((mask & allocated_bits_) == 0)
     {
       allocated_bits_ |= mask;
       return mask;
@@ -52,7 +51,7 @@ uint32_t BitAllocator::allocBit()
   return 0;
 }
 
-void BitAllocator::freeBits( uint32_t bits )
+void BitAllocator::freeBits(uint32_t bits)
 {
   allocated_bits_ &= ~bits;
 }

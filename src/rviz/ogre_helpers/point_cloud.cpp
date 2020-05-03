@@ -55,89 +55,48 @@
 
 namespace rviz
 {
+static float g_point_vertices[3] = {0.0f, 0.0f, 0.0f};
 
-static float g_point_vertices[3] =
-{
-  0.0f, 0.0f, 0.0f
+static float g_billboard_vertices[6 * 3] = {
+    -0.5f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, 0.5f,  0.0f,
+    0.5f,  0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f,
 };
 
-static float g_billboard_vertices[6*3] =
-{
-  -0.5f, 0.5f, 0.0f,
-  -0.5f, -0.5f, 0.0f,
-  0.5f, 0.5f, 0.0f,
-  0.5f, 0.5f, 0.0f,
-  -0.5f, -0.5f, 0.0f,
-  0.5f, -0.5f, 0.0f,
+static float g_billboard_sphere_vertices[3 * 3] = {
+    0.0f, 1.0f, 0.0f, -0.866025404f, -0.5f, 0.0f, 0.866025404f, -0.5f, 0.0f,
 };
 
-static float g_billboard_sphere_vertices[3*3] =
-{
-  0.0f, 1.0f, 0.0f,
-  -0.866025404f, -0.5f, 0.0f,
-  0.866025404f, -0.5f, 0.0f,
-};
+static float g_box_vertices[6 * 6 * 3] = {
+    // front
+    -0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+    0.5f, -0.5f, -0.5f,
 
-static float g_box_vertices[6*6*3] =
-{
-  // front
-  -0.5f, 0.5f, -0.5f,
-  -0.5f, -0.5f, -0.5f,
-  0.5f, 0.5f, -0.5f,
-  0.5f, 0.5f, -0.5f,
-  -0.5f, -0.5f, -0.5f,
-  0.5f, -0.5f, -0.5f,
+    // back
+    -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f,
+    -0.5f, 0.5f,
 
-  // back
-  -0.5f, 0.5f, 0.5f,
-  0.5f, 0.5f, 0.5f,
-  -0.5f, -0.5f, 0.5f,
-  0.5f, 0.5f, 0.5f,
-  0.5f, -0.5f, 0.5f,
-  -0.5f, -0.5f, 0.5f,
+    // right
+    0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5,
 
-  // right
-  0.5, 0.5, 0.5,
-  0.5, 0.5, -0.5,
-  0.5, -0.5, 0.5,
-  0.5, 0.5, -0.5,
-  0.5, -0.5, -0.5,
-  0.5, -0.5, 0.5,
+    // left
+    -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5,
 
-  // left
-  -0.5, 0.5, 0.5,
-  -0.5, -0.5, 0.5,
-  -0.5, 0.5, -0.5,
-  -0.5, 0.5, -0.5,
-  -0.5, -0.5, 0.5,
-  -0.5, -0.5, -0.5,
+    // top
+    -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5,
 
-  // top
-  -0.5, 0.5, -0.5,
-  0.5, 0.5, -0.5,
-  -0.5, 0.5, 0.5,
-  0.5, 0.5, -0.5,
-  0.5, 0.5, 0.5,
-  -0.5, 0.5, 0.5,
-
-  // bottom
-  -0.5, -0.5, -0.5,
-  -0.5, -0.5, 0.5,
-  0.5, -0.5, -0.5,
-  0.5, -0.5, -0.5,
-  -0.5, -0.5, 0.5,
-  0.5, -0.5, 0.5,
+    // bottom
+    -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
 };
 
 Ogre::String PointCloud::sm_Type = "PointCloud";
 
 PointCloud::PointCloud()
-: bounding_radius_( 0.0f )
-, point_count_( 0 )
-, common_direction_( Ogre::Vector3::NEGATIVE_UNIT_Z )
-, common_up_vector_( Ogre::Vector3::UNIT_Y )
-, color_by_index_(false)
-, current_mode_supports_geometry_shader_(false)
+  : bounding_radius_(0.0f)
+  , point_count_(0)
+  , common_direction_(Ogre::Vector3::NEGATIVE_UNIT_Z)
+  , common_up_vector_(Ogre::Vector3::UNIT_Y)
+  , color_by_index_(false)
+  , current_mode_supports_geometry_shader_(false)
 {
   std::stringstream ss;
   static int count = 0;
@@ -163,7 +122,7 @@ PointCloud::PointCloud()
   tile_material_->load();
   box_material_->load();
 
-  setAlpha( 1.0f );
+  setAlpha(1.0f);
   setRenderMode(RM_SPHERES);
   setDimensions(0.01f, 0.01f, 0.01f);
 
@@ -245,9 +204,9 @@ void PointCloud::setColorByIndex(bool set)
   regenerateAll();
 }
 
-void PointCloud::setHighlightColor( float r, float g, float b )
+void PointCloud::setHighlightColor(float r, float g, float b)
 {
-  Ogre::Vector4 highlight( r, g, b, 0.0f );
+  Ogre::Vector4 highlight(r, g, b, 0.0f);
 
   V_PointCloudRenderable::iterator it = renderables_.begin();
   V_PointCloudRenderable::iterator end = renderables_.end();
@@ -288,7 +247,8 @@ void PointCloud::setRenderMode(RenderMode mode)
 
   current_material_->load();
 
-  //ROS_INFO("Best technique [%s] [gp=%s]", current_material_->getBestTechnique()->getName().c_str(), current_material_->getBestTechnique()->getPass(0)->getGeometryProgramName().c_str());
+  // ROS_INFO("Best technique [%s] [gp=%s]", current_material_->getBestTechnique()->getName().c_str(),
+  // current_material_->getBestTechnique()->getPass(0)->getGeometryProgramName().c_str());
 
   bool geom_support_changed = false;
   Ogre::Technique* best = current_material_->getBestTechnique();
@@ -303,7 +263,7 @@ void PointCloud::setRenderMode(RenderMode mode)
 
       current_mode_supports_geometry_shader_ = true;
 
-      //ROS_INFO("Using geometry shader");
+      // ROS_INFO("Using geometry shader");
     }
     else
     {
@@ -392,8 +352,8 @@ void setAlphaBlending(const Ogre::MaterialPtr& mat)
 {
   if (mat->getBestTechnique())
   {
-    mat->getBestTechnique()->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    mat->getBestTechnique()->setDepthWriteEnabled( false );
+    mat->getBestTechnique()->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    mat->getBestTechnique()->setDepthWriteEnabled(false);
   }
 }
 
@@ -401,8 +361,8 @@ void setReplace(const Ogre::MaterialPtr& mat)
 {
   if (mat->getBestTechnique())
   {
-    mat->getBestTechnique()->setSceneBlending( Ogre::SBT_REPLACE );
-    mat->getBestTechnique()->setDepthWriteEnabled( true );
+    mat->getBestTechnique()->setSceneBlending(Ogre::SBT_REPLACE);
+    mat->getBestTechnique()->setDepthWriteEnabled(true);
   }
 }
 
@@ -410,7 +370,7 @@ void PointCloud::setAlpha(float alpha, bool per_point_alpha)
 {
   alpha_ = alpha;
 
-  if ( alpha < 0.9998 || per_point_alpha )
+  if (alpha < 0.9998 || per_point_alpha)
   {
     setAlphaBlending(point_material_);
     setAlphaBlending(square_material_);
@@ -446,13 +406,13 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   }
   Ogre::Root* root = Ogre::Root::getSingletonPtr();
 
-  if ( points_.size() < point_count_ + num_points )
+  if (points_.size() < point_count_ + num_points)
   {
-    points_.resize( point_count_ + num_points );
+    points_.resize(point_count_ + num_points);
   }
 
   Point* begin = &points_.front() + point_count_;
-  memcpy( begin, points, sizeof( Point ) * num_points );
+  memcpy(begin, points, sizeof(Point) * num_points);
 
   uint32_t vpp = getVerticesPerPoint();
   Ogre::RenderOperation::OperationType op_type;
@@ -529,15 +489,16 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
         ROS_ASSERT(current_vertex_count == buffer_size);
 
         op->vertexData->vertexCount = rend->getBuffer()->getNumVertices() - op->vertexData->vertexStart;
-        ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
+        ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <=
+                   rend->getBuffer()->getNumVertices());
         vbuf->unlock();
         rend->setBoundingBox(aabb);
         bounding_box_.merge(aabb);
       }
 
-      buffer_size = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
+      buffer_size = std::min<int>(VERTEX_BUFFER_CAPACITY, (num_points - current_point) * vpp);
 
-      rend = createRenderable( buffer_size );
+      rend = createRenderable(buffer_size);
       vbuf = rend->getBuffer();
       vdata = vbuf->lock(Ogre::HardwareBuffer::HBL_NO_OVERWRITE);
 
@@ -568,11 +529,11 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
     else
     {
-      root->convertColourValue( p.color, &color );
+      root->convertColourValue(p.color, &color);
     }
 
     aabb.merge(p.position);
-    bounding_radius_ = std::max( bounding_radius_, p.position.squaredLength() );
+    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
 
     float x = p.position.x;
     float y = p.position.y;
@@ -586,9 +547,9 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
       if (!current_mode_supports_geometry_shader_)
       {
-        *fptr++ = vertices[(j*3)];
-        *fptr++ = vertices[(j*3) + 1];
-        *fptr++ = vertices[(j*3) + 2];
+        *fptr++ = vertices[(j * 3)];
+        *fptr++ = vertices[(j * 3) + 1];
+        *fptr++ = vertices[(j * 3) + 2];
       }
 
       uint32_t* iptr = (uint32_t*)fptr;
@@ -603,7 +564,8 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
   bounding_box_.merge(aabb);
-  ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
+  ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <=
+             rend->getBuffer()->getNumVertices());
 
   vbuf->unlock();
 
@@ -694,7 +656,7 @@ void PointCloud::_updateRenderQueue(Ogre::RenderQueue* queue)
   }
 }
 
-void PointCloud::_notifyAttached(Ogre::Node *parent, bool isTagPoint)
+void PointCloud::_notifyAttached(Ogre::Node* parent, bool isTagPoint)
 {
   MovableObject::_notifyAttached(parent, isTagPoint);
 }
@@ -722,9 +684,9 @@ uint32_t PointCloud::getVerticesPerPoint()
   }
 
   if (render_mode_ == RM_TILES)
-    {
-      return 6;
-    }
+  {
+    return 6;
+  }
 
   if (render_mode_ == RM_SPHERES)
   {
@@ -750,12 +712,13 @@ void PointCloud::setPickColor(const Ogre::ColourValue& color)
   {
     (*it)->setCustomParameter(PICK_COLOR_PARAMETER, pick_col);
   }
-  getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( colorToHandle( color )));
+  getUserObjectBindings().setUserAny("pick_handle", Ogre::Any(colorToHandle(color)));
 }
 
-PointCloudRenderablePtr PointCloud::createRenderable( int num_points )
+PointCloudRenderablePtr PointCloud::createRenderable(int num_points)
 {
-  PointCloudRenderablePtr rend(new PointCloudRenderable(this, num_points, !current_mode_supports_geometry_shader_));
+  PointCloudRenderablePtr rend(
+      new PointCloudRenderable(this, num_points, !current_mode_supports_geometry_shader_));
   setMaterial(*rend, current_material_);
   Ogre::Vector4 size(width_, height_, depth_, 0.0f);
   Ogre::Vector4 alpha(alpha_, 0.0f, 0.0f, 0.0f);
@@ -776,7 +739,7 @@ PointCloudRenderablePtr PointCloud::createRenderable( int num_points )
   return rend;
 }
 
-void PointCloud::visitRenderables(Ogre::Renderable::Visitor*  /*visitor*/, bool  /*debugRenderables*/)
+void PointCloud::visitRenderables(Ogre::Renderable::Visitor* /*visitor*/, bool /*debugRenderables*/)
 {
 }
 
@@ -786,7 +749,7 @@ void PointCloud::visitRenderables(Ogre::Renderable::Visitor*  /*visitor*/, bool 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 PointCloudRenderable::PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords)
-: parent_(parent)
+  : parent_(parent)
 {
   // Initialize render operation
   mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -795,7 +758,7 @@ PointCloudRenderable::PointCloudRenderable(PointCloud* parent, int num_points, b
   mRenderOp.vertexData->vertexStart = 0;
   mRenderOp.vertexData->vertexCount = 0;
 
-  Ogre::VertexDeclaration *decl = mRenderOp.vertexData->vertexDeclaration;
+  Ogre::VertexDeclaration* decl = mRenderOp.vertexData->vertexDeclaration;
   size_t offset = 0;
 
   decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
@@ -810,10 +773,9 @@ PointCloudRenderable::PointCloudRenderable(PointCloud* parent, int num_points, b
   decl->addElement(0, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
 
   Ogre::HardwareVertexBufferSharedPtr vbuf =
-    Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
-      mRenderOp.vertexData->vertexDeclaration->getVertexSize(0),
-      num_points,
-      Ogre::HardwareBuffer::HBU_DYNAMIC);
+      Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+          mRenderOp.vertexData->vertexDeclaration->getVertexSize(0), num_points,
+          Ogre::HardwareBuffer::HBU_DYNAMIC);
 
   // Bind buffer
   mRenderOp.vertexData->vertexBufferBinding->setBinding(0, vbuf);
@@ -838,17 +800,17 @@ Ogre::Real PointCloudRenderable::getBoundingRadius() const
 Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) const
 {
   Ogre::Vector3 vMin, vMax, vMid, vDist;
-   vMin = mBox.getMinimum();
-   vMax = mBox.getMaximum();
-   vMid = ((vMax - vMin) * 0.5) + vMin;
-   vDist = cam->getDerivedPosition() - vMid;
+  vMin = mBox.getMinimum();
+  vMax = mBox.getMaximum();
+  vMid = ((vMax - vMin) * 0.5) + vMin;
+  vDist = cam->getDerivedPosition() - vMid;
 
-   return vDist.squaredLength();
+  return vDist.squaredLength();
 }
 
 void PointCloudRenderable::getWorldTransforms(Ogre::Matrix4* xform) const
 {
-   parent_->getWorldTransforms(xform);
+  parent_->getWorldTransforms(xform);
 }
 
 const Ogre::LightList& PointCloudRenderable::getLights() const

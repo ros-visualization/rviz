@@ -37,35 +37,35 @@
 
 namespace rviz
 {
-
 /** Given a viewport and an x,y position in window-pixel coordinates,
  *  find the point on a plane directly behind it, if any.
  * @return true if the intersection exists, false if it does not. */
-bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
-                                  Ogre::Plane& plane,
-                                  int window_x, int window_y,
-                                  Ogre::Vector3& intersection_out )
+bool getPointOnPlaneFromWindowXY(Ogre::Viewport* viewport,
+                                 Ogre::Plane& plane,
+                                 int window_x,
+                                 int window_y,
+                                 Ogre::Vector3& intersection_out)
 {
   int width = viewport->getActualWidth();
   int height = viewport->getActualHeight();
 
-  Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay( (float)window_x / (float)width,
-                                                                       (float)window_y / (float)height );
-  std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( plane );
-  if ( !intersection.first )
+  Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay((float)window_x / (float)width,
+                                                                      (float)window_y / (float)height);
+  std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(plane);
+  if (!intersection.first)
   {
     return false;
   }
-  intersection_out = mouse_ray.getPoint( intersection.second );
+  intersection_out = mouse_ray.getPoint(intersection.second);
 
   return true;
 }
 
-float mapAngleTo0_2Pi( float angle )
+float mapAngleTo0_2Pi(float angle)
 {
-  angle = fmod( angle, Ogre::Math::TWO_PI );
+  angle = fmod(angle, Ogre::Math::TWO_PI);
 
-  if( angle < 0.0f )
+  if (angle < 0.0f)
   {
     angle = Ogre::Math::TWO_PI + angle;
   }
@@ -80,7 +80,7 @@ Ogre::Vector2 project3DPointToViewportXY(const Ogre::Viewport* view, const Ogre:
   Ogre::Real x = ((pos2D.x * 0.5) + 0.5);
   Ogre::Real y = 1 - ((pos2D.y * 0.5) + 0.5);
 
-  return  Ogre::Vector2(x * view->getActualWidth(), y * view->getActualHeight());
+  return Ogre::Vector2(x * view->getActualWidth(), y * view->getActualHeight());
 }
 
 } // end namespace rviz

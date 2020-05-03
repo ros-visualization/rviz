@@ -44,31 +44,31 @@
 
 namespace rviz
 {
-
-class MultiLayerDepthException: public std::exception
+class MultiLayerDepthException : public std::exception
 {
 public:
-	MultiLayerDepthException(const std::string& error_msg) :
-		std::exception(), error_msg_(error_msg) {
-	}
-	virtual ~MultiLayerDepthException() throw () {}
+  MultiLayerDepthException(const std::string& error_msg) : std::exception(), error_msg_(error_msg)
+  {
+  }
+  ~MultiLayerDepthException() throw() override
+  {
+  }
 
-	virtual const char * what() const throw () {
-		return error_msg_.c_str();
-	}
+  const char* what() const throw() override
+  {
+    return error_msg_.c_str();
+  }
 
 protected:
-	std::string error_msg_;
+  std::string error_msg_;
 };
 
 class MultiLayerDepth
 {
 public:
-  MultiLayerDepth() :
-    shadow_time_out_(30.0),
-    shadow_distance_(0.01)
-  {};
-  virtual ~MultiLayerDepth() {
+  MultiLayerDepth() : shadow_time_out_(30.0), shadow_distance_(0.01){};
+  virtual ~MultiLayerDepth()
+  {
   }
 
   void setShadowTimeOut(double time_out)
@@ -82,17 +82,18 @@ public:
     reset();
   }
 
-  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth (const sensor_msgs::ImageConstPtr& depth_msg,
-                                                           const sensor_msgs::ImageConstPtr& color_msg,
-                                                           sensor_msgs::CameraInfoConstPtr camera_info_msg);
+  sensor_msgs::PointCloud2Ptr
+  generatePointCloudFromDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                              const sensor_msgs::ImageConstPtr& color_msg,
+                              sensor_msgs::CameraInfoConstPtr camera_info_msg);
   void reset()
   {
     if (occlusion_compensation_)
     {
       // reset shadow buffer
-      memset(&shadow_depth_[0], 0, sizeof(float)*shadow_depth_.size());
-      memset(&shadow_buffer_[0], 0, sizeof(uint8_t)*shadow_buffer_.size());
-      memset(&shadow_timestamp_[0], 0, sizeof(double)*shadow_timestamp_.size());
+      memset(&shadow_depth_[0], 0, sizeof(float) * shadow_depth_.size());
+      memset(&shadow_buffer_[0], 0, sizeof(uint8_t) * shadow_buffer_.size());
+      memset(&shadow_timestamp_[0], 0, sizeof(double) * shadow_timestamp_.size());
     }
   }
 
@@ -102,19 +103,18 @@ protected:
                             sensor_msgs::CameraInfoConstPtr& camera_info_msg);
 
   /** @brief Convert color data to RGBA format */
-  template<typename T>
-  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                    std::vector<uint32_t>& rgba_color_raw);
+  template <typename T>
+  void convertColor(const sensor_msgs::ImageConstPtr& color_msg, std::vector<uint32_t>& rgba_color_raw);
 
   /** @brief Generate single-layered depth cloud (depth only) */
-  template<typename T>
-    sensor_msgs::PointCloud2Ptr generatePointCloudSL(const sensor_msgs::ImageConstPtr& depth_msg,
-                                                     std::vector<uint32_t>& rgba_color_raw);
+  template <typename T>
+  sensor_msgs::PointCloud2Ptr generatePointCloudSL(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                   std::vector<uint32_t>& rgba_color_raw);
 
   /** @brief Generate multi-layered depth cloud (depth+shadow) */
-  template<typename T>
-    sensor_msgs::PointCloud2Ptr generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
-                                                     std::vector<uint32_t>& rgba_color_raw);
+  template <typename T>
+  sensor_msgs::PointCloud2Ptr generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                   std::vector<uint32_t>& rgba_color_raw);
 
   // Helpers to generate pointcloud2 message
   sensor_msgs::PointCloud2Ptr initPointCloud();
@@ -124,16 +124,15 @@ protected:
   std::vector<float> projection_map_y_;
 
   // shadow buffers
-  std::vector< float > shadow_depth_;
-  std::vector< double > shadow_timestamp_;
-  std::vector< uint8_t > shadow_buffer_;
+  std::vector<float> shadow_depth_;
+  std::vector<double> shadow_timestamp_;
+  std::vector<uint8_t> shadow_buffer_;
 
   // configuration
   bool occlusion_compensation_;
   double shadow_time_out_;
   float shadow_distance_;
-
 };
 
-}
+} // namespace rviz
 #endif /* MULTI_LAYER_DEPTH_H_ */

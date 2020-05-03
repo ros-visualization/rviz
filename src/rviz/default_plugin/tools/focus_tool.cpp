@@ -45,9 +45,7 @@
 
 namespace rviz
 {
-
-FocusTool::FocusTool()
-  : Tool()
+FocusTool::FocusTool() : Tool()
 {
 }
 
@@ -58,7 +56,7 @@ FocusTool::~FocusTool()
 void FocusTool::onInitialize()
 {
   std_cursor_ = getDefaultCursor();
-  hit_cursor_ = makeIconCursor( "package://rviz/icons/crosshair.svg" );
+  hit_cursor_ = makeIconCursor("package://rviz/icons/crosshair.svg");
 }
 
 void FocusTool::activate()
@@ -69,22 +67,22 @@ void FocusTool::deactivate()
 {
 }
 
-int FocusTool::processMouseEvent( ViewportMouseEvent& event )
+int FocusTool::processMouseEvent(ViewportMouseEvent& event)
 {
   int flags = 0;
 
   Ogre::Vector3 pos;
-  bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
-  setCursor( success ? hit_cursor_ : std_cursor_ );
+  bool success = context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, pos);
+  setCursor(success ? hit_cursor_ : std_cursor_);
 
-  if ( !success )
+  if (!success)
   {
     Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
         (float)event.x / (float)event.viewport->getActualWidth(),
-        (float)event.y / (float)event.viewport->getActualHeight() );
+        (float)event.y / (float)event.viewport->getActualHeight());
 
     pos = mouse_ray.getPoint(1.0);
-    setStatus( "<b>Left-Click:</b> Look in this direction." );
+    setStatus("<b>Left-Click:</b> Look in this direction.");
   }
   else
   {
@@ -92,14 +90,14 @@ int FocusTool::processMouseEvent( ViewportMouseEvent& event )
     s << "<b>Left-Click:</b> Focus on this point.";
     s.precision(3);
     s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
-    setStatus( s.str().c_str() );
+    setStatus(s.str().c_str());
   }
 
-  if( event.leftUp() )
+  if (event.leftUp())
   {
-    if ( event.panel->getViewController() )
+    if (event.panel->getViewController())
     {
-      event.panel->getViewController()->lookAt( pos );
+      event.panel->getViewController()->lookAt(pos);
     }
     flags |= Finished;
   }
@@ -107,7 +105,7 @@ int FocusTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-}  // namespace rviz
+} // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::FocusTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS(rviz::FocusTool, rviz::Tool)

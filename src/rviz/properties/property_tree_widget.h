@@ -37,89 +37,92 @@
 
 namespace rviz
 {
-
 class Property;
 class SplitterHandle;
 
 /** Custom selection model for PropertyTreeWidget to always focus right column
 
-	... to make sure keystrokes are forwarded there. */
+  ... to make sure keystrokes are forwarded there. */
 class RVIZ_EXPORT PropertySelectionModel : public QItemSelectionModel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  PropertySelectionModel(QAbstractItemModel* model = 0);
+  PropertySelectionModel(QAbstractItemModel* model = nullptr);
 
-  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command);
+  void setCurrentIndex(const QModelIndex& index, QItemSelectionModel::SelectionFlags command) override;
 };
 
-class RVIZ_EXPORT PropertyTreeWidget: public QTreeView
+class RVIZ_EXPORT PropertyTreeWidget : public QTreeView
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  PropertyTreeWidget( QWidget* parent = 0 );
+  PropertyTreeWidget(QWidget* parent = nullptr);
 
   /** @brief Set the data model this widget should view. */
-  void setModel( PropertyTreeModel* model );
-  PropertyTreeModel* getModel() const { return model_; }
+  void setModel(PropertyTreeModel* model);
+  PropertyTreeModel* getModel() const
+  {
+    return model_;
+  }
 
   /** @brief Return the list of objects of a given type which are currently selected. */
-  template<class Type>
+  template <class Type>
   QList<Type*> getSelectedObjects()
+  {
+    QModelIndexList indexes = selectedIndexes();
+    int num_selected = indexes.size();
+
+    QList<Type*> objects_out;
+
+    for (int i = 0; i < num_selected; i++)
     {
-      QModelIndexList indexes = selectedIndexes();
-      int num_selected = indexes.size();
-
-      QList<Type*> objects_out;
-
-      for( int i = 0; i < num_selected; i++ )
+      if (indexes[i].column() == 0)
       {
-        if( indexes[ i ].column() == 0 )
+        Property* prop = model_->getProp(indexes[i]);
+        if (prop != model_->getRoot())
         {
-          Property* prop = model_->getProp( indexes[ i ] );
-          if( prop != model_->getRoot() )
+          Type* obj = qobject_cast<Type*>(prop);
+          if (obj)
           {
-            Type* obj = qobject_cast<Type*>( prop );
-            if( obj )
-            {
-              objects_out.push_back( obj );
-            }
+            objects_out.push_back(obj);
           }
         }
       }
-      return objects_out;
     }
+    return objects_out;
+  }
 
   /** @brief Write state to the given Config. */
-  void save( Config config ) const;
+  void save(Config config) const;
 
   /** @brief Read state from the given Config. */
-  void load( const Config& config );
+  void load(const Config& config);
 
 protected:
   /** @brief Called whenever current item changes.  Calls QTreeView
    * implementation then emits currentPropertyChanged(). */
-  virtual void currentChanged( const QModelIndex& current, const QModelIndex& previous );
+  void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
 
   /** @brief Called whenever selection changes.  Calls QTreeView
    * implementation then emits selectionHasChanged(). */
-  virtual void selectionChanged( const QItemSelection& selected, const QItemSelection& deselected );
+  void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
 
 protected Q_SLOTS:
-  virtual void propertyHiddenChanged( const Property* property );
+  virtual void propertyHiddenChanged(const Property* property);
 
 Q_SIGNALS:
-  void currentPropertyChanged( const Property* new_current_property );
+  void currentPropertyChanged(const Property* new_current_property);
   void selectionHasChanged();
 
 private:
-  /** @brief Recursively write full names of properties which are expanded in this view to the given Config. */
-  void saveExpandedEntries( Config config, const QModelIndex& parent_index, const QString& prefix ) const;
+  /** @brief Recursively write full names of properties which are expanded in this view to the given
+   * Config. */
+  void saveExpandedEntries(Config config, const QModelIndex& parent_index, const QString& prefix) const;
 
   /** @brief Recursively expand entries whose full names appear in expanded_full_names. */
-  void expandEntries( const QSet<QString>& expanded_full_names,
-                      const QModelIndex& parent_index,
-                      const QString& prefix );
+  void expandEntries(const QSet<QString>& expanded_full_names,
+                     const QModelIndex& parent_index,
+                     const QString& prefix);
 
   PropertyTreeModel* model_;
   SplitterHandle* splitter_handle_;

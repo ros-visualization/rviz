@@ -36,7 +36,7 @@
 // create an interactive marker server on the topic namespace simple_marker
 interactive_markers::InteractiveMarkerServer* server;
 
-visualization_msgs::InteractiveMarker makeMarker( float r, float g, float b )
+visualization_msgs::InteractiveMarker makeMarker(float r, float g, float b)
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
@@ -58,18 +58,17 @@ visualization_msgs::InteractiveMarker makeMarker( float r, float g, float b )
   // create a non-interactive control which contains the box
   visualization_msgs::InteractiveMarkerControl box_control;
   box_control.always_visible = true;
-  box_control.markers.push_back( box_marker );
+  box_control.markers.push_back(box_marker);
 
   // add the control to the interactive marker
-  int_marker.controls.push_back( box_control );
+  int_marker.controls.push_back(box_control);
 
   // create a control which will move the box
   // this control does not contain any markers,
   // which will cause RViz to insert two arrows
   visualization_msgs::InteractiveMarkerControl linear_control;
   linear_control.name = "move_x";
-  linear_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  linear_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
 
   // add the control to the interactive marker
   int_marker.controls.push_back(linear_control);
@@ -79,42 +78,42 @@ visualization_msgs::InteractiveMarker makeMarker( float r, float g, float b )
 
 bool is_red = false;
 
-void processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
 {
-  ROS_INFO_STREAM( feedback->marker_name << " is now at "
-      << feedback->pose.position.x << ", " << feedback->pose.position.y
-      << ", " << feedback->pose.position.z );
+  ROS_INFO_STREAM(feedback->marker_name << " is now at " << feedback->pose.position.x << ", "
+                                        << feedback->pose.position.y << ", "
+                                        << feedback->pose.position.z);
 
   bool changed = false;
   visualization_msgs::InteractiveMarker int_marker;
 
   // red when x < 0, green otherwise.  Update marker color when x
   // crosses boundary.
-  if( feedback->pose.position.x < 0 && !is_red )
+  if (feedback->pose.position.x < 0 && !is_red)
   {
-    printf( "turning red.\n" );
+    printf("turning red.\n");
     is_red = true;
-    int_marker = makeMarker( 1, 0, 0 );
+    int_marker = makeMarker(1, 0, 0);
     changed = true;
   }
-  if( feedback->pose.position.x >= 0 && is_red )
+  if (feedback->pose.position.x >= 0 && is_red)
   {
-    printf( "turning green.\n" );
+    printf("turning green.\n");
     is_red = false;
-    int_marker = makeMarker( 0, 1, 0 );
+    int_marker = makeMarker(0, 1, 0);
     changed = true;
   }
 
-  if( changed )
+  if (changed)
   {
-    printf( "changed.\n" );
+    printf("changed.\n");
     int_marker.pose = feedback->pose;
-    server->insert( int_marker );
+    server->insert(int_marker);
     server->applyChanges();
   }
 }
 
-visualization_msgs::InteractiveMarker makeCrazyMarker( bool linear )
+visualization_msgs::InteractiveMarker makeCrazyMarker(bool linear)
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
@@ -137,9 +136,9 @@ visualization_msgs::InteractiveMarker makeCrazyMarker( bool linear )
   // create a non-interactive control which contains the box
   visualization_msgs::InteractiveMarkerControl box_control;
   box_control.always_visible = true;
-  box_control.markers.push_back( box_marker );
+  box_control.markers.push_back(box_marker);
   box_control.name = "crazy";
-  if( linear )
+  if (linear)
   {
     box_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   }
@@ -153,7 +152,7 @@ visualization_msgs::InteractiveMarker makeCrazyMarker( bool linear )
   }
 
   // add the control to the interactive marker
-  int_marker.controls.push_back( box_control );
+  int_marker.controls.push_back(box_control);
   int_marker.pose.position.y = 3;
 
   return int_marker;
@@ -161,46 +160,43 @@ visualization_msgs::InteractiveMarker makeCrazyMarker( bool linear )
 
 bool is_linear = true;
 
-void processCrazyFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+void processCrazyFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
 {
-  ROS_INFO_STREAM( feedback->marker_name << " is now at pos "
-                   << feedback->pose.position.x << ", "
-                   << feedback->pose.position.y << ", "
-                   << feedback->pose.position.z << "; quat "
-                   << feedback->pose.orientation.x << ", "
-                   << feedback->pose.orientation.y << ", "
-                   << feedback->pose.orientation.z << ", "
-                   << feedback->pose.orientation.w );
+  ROS_INFO_STREAM(feedback->marker_name
+                  << " is now at pos " << feedback->pose.position.x << ", " << feedback->pose.position.y
+                  << ", " << feedback->pose.position.z << "; quat " << feedback->pose.orientation.x
+                  << ", " << feedback->pose.orientation.y << ", " << feedback->pose.orientation.z << ", "
+                  << feedback->pose.orientation.w);
 
   bool changed = false;
   visualization_msgs::InteractiveMarker int_marker;
 
   // linear when x < 0, rotary otherwise.  Update when x
   // crosses boundary.
-  if( feedback->pose.orientation.z < 0 && !is_linear )
+  if (feedback->pose.orientation.z < 0 && !is_linear)
   {
-    printf( "turning linear.\n" );
+    printf("turning linear.\n");
     is_linear = true;
-    int_marker = makeCrazyMarker( true );
+    int_marker = makeCrazyMarker(true);
     changed = true;
   }
-  if( feedback->pose.position.x > 0 && is_linear )
+  if (feedback->pose.position.x > 0 && is_linear)
   {
-    printf( "turning rotary.\n" );
+    printf("turning rotary.\n");
     is_linear = false;
-    int_marker = makeCrazyMarker( false );
+    int_marker = makeCrazyMarker(false);
     changed = true;
   }
 
-  if( changed )
+  if (changed)
   {
-    printf( "changed.\n" );
+    printf("changed.\n");
     int_marker.pose.position.x = 0;
     int_marker.pose.orientation.x = 0;
     int_marker.pose.orientation.y = 0;
     int_marker.pose.orientation.z = 0;
     int_marker.pose.orientation.w = 1;
-    server->insert( int_marker );
+    server->insert(int_marker);
     server->applyChanges();
   }
 }
@@ -220,7 +216,7 @@ int main(int argc, char** argv)
   server->insert(int_marker, &processFeedback);
 
   // create an interactive marker for our server
-  visualization_msgs::InteractiveMarker crazy_marker = makeCrazyMarker( true );
+  visualization_msgs::InteractiveMarker crazy_marker = makeCrazyMarker(true);
 
   // add the interactive marker to our collection &
   // tell the server to call processCrazyFeedback() when feedback arrives for it

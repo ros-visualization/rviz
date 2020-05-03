@@ -30,33 +30,33 @@
 #ifndef RVIZ_POINT_CLOUD_COMMON_H
 #define RVIZ_POINT_CLOUD_COMMON_H
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <deque>
-# include <queue>
-# include <vector>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <deque>
+#include <queue>
+#include <vector>
 
-# include <QObject>
-# include <QList>
+#include <QObject>
+#include <QList>
 
-# include <boost/shared_ptr.hpp>
-# include <boost/thread/mutex.hpp>
-# include <boost/thread/recursive_mutex.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
-# include <ros/spinner.h>
-# include <ros/callback_queue.h>
+#include <ros/spinner.h>
+#include <ros/callback_queue.h>
 
-# include <message_filters/time_sequencer.h>
+#include <message_filters/time_sequencer.h>
 
-# include <pluginlib/class_loader.hpp>
+#include <pluginlib/class_loader.hpp>
 
-# include <sensor_msgs/PointCloud.h>
-# include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
 
-# include "rviz/selection/selection_manager.h"
-# include "rviz/default_plugin/point_cloud_transformer.h"
-# include "rviz/properties/color_property.h"
-# include "rviz/ogre_helpers/point_cloud.h"
-# include "rviz/selection/forwards.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/default_plugin/point_cloud_transformer.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/selection/forwards.h"
 #endif
 
 namespace rviz
@@ -78,13 +78,15 @@ typedef std::vector<std::string> V_string;
  * \class PointCloudCommon
  * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
- * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
- * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
+ * By default it will assume channel 0 of the cloud is an intensity value, and will color them by
+ * intensity.
+ * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r,
+ * g and b
  * all being 8 bits.
  */
-class PointCloudCommon: public QObject
+class PointCloudCommon : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   struct CloudInfo
   {
@@ -96,11 +98,11 @@ public:
 
     ros::Time receive_time_;
 
-    Ogre::SceneManager *manager_;
+    Ogre::SceneManager* manager_;
 
     sensor_msgs::PointCloud2ConstPtr message_;
 
-    Ogre::SceneNode *scene_node_;
+    Ogre::SceneNode* scene_node_;
     boost::shared_ptr<PointCloud> cloud_;
     PointCloudSelectionHandlerPtr selection_handler_;
 
@@ -108,7 +110,7 @@ public:
 
     Ogre::Quaternion orientation_;
     Ogre::Vector3 position_;
-};
+  };
 
   typedef boost::shared_ptr<CloudInfo> CloudInfoPtr;
   typedef std::deque<CloudInfoPtr> D_CloudInfo;
@@ -116,10 +118,10 @@ public:
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
   typedef std::list<CloudInfoPtr> L_CloudInfo;
 
-  PointCloudCommon( Display* display );
-  ~PointCloudCommon();
+  PointCloudCommon(Display* display);
+  ~PointCloudCommon() override;
 
-  void initialize( DisplayContext* context, Ogre::SceneNode* scene_node );
+  void initialize(DisplayContext* context, Ogre::SceneNode* scene_node);
 
   void fixedFrameChanged();
   void reset();
@@ -128,9 +130,15 @@ public:
   void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
-  ros::CallbackQueueInterface* getCallbackQueue() { return &cbqueue_; }
+  ros::CallbackQueueInterface* getCallbackQueue()
+  {
+    return &cbqueue_;
+  }
 
-  Display* getDisplay() { return display_; }
+  Display* getDisplay()
+  {
+    return display_;
+  }
 
   bool auto_size_;
 
@@ -143,7 +151,7 @@ public:
   EnumProperty* style_property_;
   FloatProperty* decay_time_property_;
 
-  void setAutoSize( bool auto_size );
+  void setAutoSize(bool auto_size);
 
 public Q_SLOTS:
   void causeRetransform();
@@ -155,11 +163,10 @@ private Q_SLOTS:
   void updateAlpha();
   void updateXyzTransformer();
   void updateColorTransformer();
-  void setXyzTransformerOptions( EnumProperty* prop );
-  void setColorTransformerOptions( EnumProperty* prop );
+  void setXyzTransformerOptions(EnumProperty* prop);
+  void setColorTransformerOptions(EnumProperty* prop);
 
 private:
-
   /**
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
@@ -170,15 +177,15 @@ private:
 
   PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
   PointCloudTransformerPtr getColorTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  void updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud );
+  void updateTransformers(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void retransform();
   void onTransformerOptions(V_string& ops, uint32_t mask);
 
   void loadTransformers();
 
   float getSelectionBoxSize();
-  void setPropertiesHidden( const QList<Property*>& props, bool hide );
-  void fillTransformerOptions( EnumProperty* prop, uint32_t mask );
+  void setPropertiesHidden(const QList<Property*>& props, bool hide);
+  void fillTransformerOptions(EnumProperty* prop, uint32_t mask);
 
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
@@ -217,36 +224,39 @@ private:
   friend class PointCloudSelectionHandler;
 };
 
-class PointCloudSelectionHandler: public SelectionHandler
+class PointCloudSelectionHandler : public SelectionHandler
 {
 public:
-  PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfo* cloud_info, DisplayContext* context );
-  virtual ~PointCloudSelectionHandler();
+  PointCloudSelectionHandler(float box_size,
+                             PointCloudCommon::CloudInfo* cloud_info,
+                             DisplayContext* context);
+  ~PointCloudSelectionHandler() override;
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  void createProperties(const Picked& obj, Property* parent_property) override;
+  void destroyProperties(const Picked& obj, Property* parent_property) override;
 
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  bool needsAdditionalRenderPass(uint32_t pass) override
   {
-    if (pass < 2)
-    {
-      return true;
-    }
-
-    return false;
+    return pass < 2;
   }
 
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
+  void preRenderPass(uint32_t pass) override;
+  void postRenderPass(uint32_t pass) override;
 
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
+  void onSelect(const Picked& obj) override;
+  void onDeselect(const Picked& obj) override;
 
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
+  void getAABBs(const Picked& obj, V_AABB& aabbs) override;
 
-  void setBoxSize( float size ) { box_size_=size; }
+  void setBoxSize(float size)
+  {
+    box_size_ = size;
+  }
 
-  bool hasSelections() { return !boxes_.empty(); }
+  bool hasSelections()
+  {
+    return !boxes_.empty();
+  }
 
 private:
   PointCloudCommon::CloudInfo* cloud_info_;

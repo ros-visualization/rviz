@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.12 (2020-05-03)
+--------------------
+* [maint] clang-format (`#1502 <https://github.com/ros-visualization/rviz/issues/1502>`_)
+* [maint] Modernize python tests + examples
+* [maint] Fix clang compiler warnings
+* [maint] clang-tidy
+* [maint] Require C++11
+* Contributors: Robert Haschke
+
 1.13.11 (2020-04-27)
 --------------------
 * [feature] Provide load_config and save_config ROS services

@@ -37,32 +37,30 @@
 
 namespace rviz
 {
-
-ToolPropertiesPanel::ToolPropertiesPanel( QWidget* parent )
-  : Panel( parent )
+ToolPropertiesPanel::ToolPropertiesPanel(QWidget* parent) : Panel(parent)
 {
   QVBoxLayout* layout = new QVBoxLayout();
-  layout->setContentsMargins( 0, 0, 0, 0 );
+  layout->setContentsMargins(0, 0, 0, 0);
   tree_widget_ = new PropertyTreeWidget();
-  layout->addWidget( tree_widget_ );
-  setLayout( layout );
+  layout->addWidget(tree_widget_);
+  setLayout(layout);
 }
 
 void ToolPropertiesPanel::onInitialize()
 {
-  tree_widget_->setModel( vis_manager_->getToolManager()->getPropertyModel() );
+  tree_widget_->setModel(vis_manager_->getToolManager()->getPropertyModel());
 }
 
-void ToolPropertiesPanel::save( Config config ) const
+void ToolPropertiesPanel::save(Config config) const
 {
-  Panel::save( config );
-  tree_widget_->save( config );
+  Panel::save(config);
+  tree_widget_->save(config);
 }
 
-void ToolPropertiesPanel::load( const Config& config )
+void ToolPropertiesPanel::load(const Config& config)
 {
-  Panel::load( config );
-  tree_widget_->load( config );
+  Panel::load(config);
+  tree_widget_->load(config);
 }
 
 } // namespace rviz

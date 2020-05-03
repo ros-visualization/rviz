@@ -43,10 +43,7 @@
 
 namespace rviz
 {
-
-ROSImageTexture::ROSImageTexture()
-: new_image_(false)
-, median_frames_(5)
+ROSImageTexture::ROSImageTexture() : new_image_(false), median_frames_(5)
 {
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   width_ = empty_image_.getWidth();
@@ -55,7 +52,9 @@ ROSImageTexture::ROSImageTexture()
   static uint32_t count = 0;
   std::stringstream ss;
   ss << "ROSImageTexture" << count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
+  texture_ = Ogre::TextureManager::getSingleton().loadImage(
+      ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D,
+      0);
 
   setNormalizeFloatImage(true);
 }
@@ -85,26 +84,26 @@ const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
   return current_image_;
 }
 
-void ROSImageTexture::setMedianFrames( unsigned median_frames )
+void ROSImageTexture::setMedianFrames(unsigned median_frames)
 {
   median_frames_ = median_frames;
 }
 
-double ROSImageTexture::updateMedian( std::deque<double>& buffer, double value )
+double ROSImageTexture::updateMedian(std::deque<double>& buffer, double value)
 {
-  //update buffer
-  while(buffer.size() > median_frames_-1)
+  // update buffer
+  while (buffer.size() > median_frames_ - 1)
   {
     buffer.pop_back();
   }
   buffer.push_front(value);
   // get median
   std::deque<double> buffer2 = buffer;
-  std::nth_element( buffer2.begin(), buffer2.begin()+buffer2.size()/2, buffer2.end() );
-  return *( buffer2.begin()+buffer2.size()/2 );
+  std::nth_element(buffer2.begin(), buffer2.begin() + buffer2.size() / 2, buffer2.end());
+  return *(buffer2.begin() + buffer2.size() / 2);
 }
 
-void ROSImageTexture::setNormalizeFloatImage( bool normalize, double min, double max )
+void ROSImageTexture::setNormalizeFloatImage(bool normalize, double min, double max)
 {
   normalize_ = normalize;
   min_ = min;
@@ -112,8 +111,8 @@ void ROSImageTexture::setNormalizeFloatImage( bool normalize, double min, double
 }
 
 
-template<typename T>
-void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vector<uint8_t> &buffer  )
+template <typename T>
+void ROSImageTexture::normalize(T* image_data, size_t image_data_size, std::vector<uint8_t>& buffer)
 {
   // Prepare output buffer
   buffer.resize(image_data_size, 0);
@@ -121,13 +120,13 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
   T minValue;
   T maxValue;
 
-  if ( normalize_ )
+  if (normalize_)
   {
     T* input_ptr = image_data;
     // Find min. and max. pixel value
     minValue = std::numeric_limits<T>::max();
     maxValue = std::numeric_limits<T>::min();
-    for( unsigned i = 0; i < image_data_size; ++i )
+    for (unsigned i = 0; i < image_data_size; ++i)
     {
       if (*input_ptr == std::numeric_limits<double>::infinity() ||
           *input_ptr == -std::numeric_limits<double>::infinity() ||
@@ -137,15 +136,15 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
         continue;
       }
 
-      minValue = std::min( minValue, *input_ptr );
-      maxValue = std::max( maxValue, *input_ptr );
+      minValue = std::min(minValue, *input_ptr);
+      maxValue = std::max(maxValue, *input_ptr);
       input_ptr++;
     }
 
-    if ( median_frames_ > 1 )
+    if (median_frames_ > 1)
     {
-      minValue = updateMedian( min_buffer_, minValue );
-      maxValue = updateMedian( max_buffer_, maxValue );
+      minValue = updateMedian(min_buffer_, minValue);
+      maxValue = updateMedian(max_buffer_, maxValue);
     }
   }
   else
@@ -157,7 +156,7 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
 
   // Rescale floating point image and convert it to 8-bit
   double range = maxValue - minValue;
-  if( range > 0.0 )
+  if (range > 0.0)
   {
     T* input_ptr = image_data;
 
@@ -165,11 +164,13 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
     uint8_t* output_ptr = &buffer[0];
 
     // Rescale and quantize
-    for( size_t i = 0; i < image_data_size; ++i, ++output_ptr, ++input_ptr )
+    for (size_t i = 0; i < image_data_size; ++i, ++output_ptr, ++input_ptr)
     {
       double val = (double(*input_ptr - minValue) / range);
-      if ( val < 0 ) val = 0;
-      if ( val > 1 ) val = 1;
+      if (val < 0)
+        val = 0;
+      if (val > 1)
+        val = 1;
       *output_ptr = val * 255u;
     }
   }
@@ -236,7 +237,7 @@ bool ROSImageTexture::update()
            image->encoding == sensor_msgs::image_encodings::MONO16)
   {
     imageDataSize /= sizeof(uint16_t);
-    normalize<uint16_t>( (uint16_t*)&image->data[0], imageDataSize, buffer );
+    normalize<uint16_t>((uint16_t*)&image->data[0], imageDataSize, buffer);
     format = Ogre::PF_BYTE_L;
     imageDataPtr = &buffer[0];
   }
@@ -247,7 +248,7 @@ bool ROSImageTexture::update()
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
   {
     imageDataSize /= sizeof(float);
-    normalize<float>( (float*)&image->data[0], imageDataSize, buffer );
+    normalize<float>((float*)&image->data[0], imageDataSize, buffer);
     format = Ogre::PF_BYTE_L;
     imageDataPtr = &buffer[0];
   }

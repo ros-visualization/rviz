@@ -37,7 +37,6 @@
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
@@ -46,23 +45,23 @@ class PointCloudCommon;
  * \brief Displays an FluidPressure message of type sensor_msgs::FluidPressure
  *
  */
-class FluidPressureDisplay: public MessageFilterDisplay<sensor_msgs::FluidPressure>
+class FluidPressureDisplay : public MessageFilterDisplay<sensor_msgs::FluidPressure>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   FluidPressureDisplay();
-  ~FluidPressureDisplay();
+  ~FluidPressureDisplay() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void update( float wall_dt, float ros_dt );
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::FluidPressureConstPtr& msg );
+  void processMessage(const sensor_msgs::FluidPressureConstPtr& msg) override;
 
   PointCloudCommon* point_cloud_common_;
 };

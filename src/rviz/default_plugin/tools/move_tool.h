@@ -34,22 +34,24 @@
 
 namespace rviz
 {
-
 class DisplayContext;
 
-class MoveTool: public Tool
+class MoveTool : public Tool
 {
 public:
   MoveTool();
 
-  virtual void activate() {}
-  virtual void deactivate() {}
+  void activate() override
+  {
+  }
+  void deactivate() override
+  {
+  }
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+  int processMouseEvent(ViewportMouseEvent& event) override;
+  int processKeyEvent(QKeyEvent* event, RenderPanel* panel) override;
 };
 
-}
+} // namespace rviz
 
 #endif
-

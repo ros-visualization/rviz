@@ -45,44 +45,53 @@ class DisplayContext;
 class PropertyTreeModel;
 class RenderPanel;
 
-class RVIZ_EXPORT ToolManager: public QObject
+class RVIZ_EXPORT ToolManager : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ToolManager( DisplayContext* context );
-  virtual ~ToolManager();
+  ToolManager(DisplayContext* context);
+  ~ToolManager() override;
 
   /** @brief Initialization for after the DisplayContext is created.
    * Loads standard RViz tools. */
   void initialize();
 
-  void load( const Config& config );
-  void save( Config config ) const;
-  PropertyTreeModel* getPropertyModel() const { return property_tree_model_; }
+  void load(const Config& config);
+  void save(Config config) const;
+  PropertyTreeModel* getPropertyModel() const
+  {
+    return property_tree_model_;
+  }
 
   /** @brief Create a tool by class lookup name, add it to the list, and return it. */
-  Tool* addTool( const QString& tool_class_lookup_name );
+  Tool* addTool(const QString& tool_class_lookup_name);
 
   /**
    * \brief Return the tool currently in use.
    * \sa setCurrentTool()
    */
-  Tool* getCurrentTool() { return current_tool_; }
+  Tool* getCurrentTool()
+  {
+    return current_tool_;
+  }
 
   /**
    * \brief Return the tool at a given index in the Tool list.
    * If index is less than 0 or greater than the number of tools, this
    * will fail an assertion.
    */
-  Tool* getTool( int index );
+  Tool* getTool(int index);
 
-  int numTools() { return tools_.size(); }
-  void removeTool( int index );
+  int numTools()
+  {
+    return tools_.size();
+  }
+  void removeTool(int index);
 
   void removeAll();
 
   /** @brief Triggers redrawing the tool's icon/text in the toolbar. */
-  void refreshTool( Tool* tool );
+  void refreshTool(Tool* tool);
 
   /**
    * \brief Set the current tool.
@@ -91,7 +100,7 @@ public:
    * handleChar().
    * \sa getCurrentTool()
    */
-  void setCurrentTool( Tool* tool );
+  void setCurrentTool(Tool* tool);
 
   /**
    * \brief Set the default tool.
@@ -104,55 +113,59 @@ public:
    * release event.
    * \sa getDefaultTool()
    */
-  void setDefaultTool( Tool* tool );
+  void setDefaultTool(Tool* tool);
 
   /**
    * \brief Get the default tool.
    * \sa setDefaultTool()
    */
-  Tool* getDefaultTool() { return default_tool_; }
+  Tool* getDefaultTool()
+  {
+    return default_tool_;
+  }
 
   QStringList getToolClasses();
 
-  void handleChar( QKeyEvent* event, RenderPanel* panel );
+  void handleChar(QKeyEvent* event, RenderPanel* panel);
 
-  PluginlibFactory<Tool>* getFactory() { return factory_; }
+  PluginlibFactory<Tool>* getFactory()
+  {
+    return factory_;
+  }
 
 Q_SIGNALS:
   /** @brief Emitted when anything changes which will change the saved config file contents. */
   void configChanged();
 
   /** @brief Emitted by addTool() after the tool is added to the list of tools. */
-  void toolAdded( Tool* );
+  void toolAdded(Tool*);
 
   /** @brief Emitted by setCurrentTool() after the newly chosen tool
    * is activated. */
-  void toolChanged( Tool* );
+  void toolChanged(Tool*);
 
-  void toolRemoved( Tool* );
+  void toolRemoved(Tool*);
 
   /** @brief Emitted by refreshTool() to gedraw the tool's icon in the toolbar'. */
-  void toolRefreshed( Tool* );
+  void toolRefreshed(Tool*);
 
 private Q_SLOTS:
   /** @brief If @a property has children, it is added to the tool
    * property tree, and if it does not, it is removed. */
-  void updatePropertyVisibility( Property* property );
-  
+  void updatePropertyVisibility(Property* property);
+
   /** @brief Deactivates the current tool and sets the default tool. */
   void closeTool();
 
 private:
-
-  bool toKey( QString const& str, uint& key_out );
+  bool toKey(QString const& str, uint& key_out);
   PluginlibFactory<Tool>* factory_;
   PropertyTreeModel* property_tree_model_;
   QList<Tool*> tools_;
   DisplayContext* context_;
   Tool* current_tool_;
   Tool* default_tool_;
-  std::map<int,Tool*> shortkey_to_tool_map_;
-
+  std::map<int, Tool*> shortkey_to_tool_map_;
 };
 
 } // end namespace rviz

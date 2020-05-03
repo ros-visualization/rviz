@@ -22,14 +22,16 @@ JointInfo::JointInfo(const std::string& name, rviz::Property* parent_category)
   effort_ = 0;
   max_effort_ = 0;
 
-  // info->category_ = new Property( QString::fromStdString( info->name_ ) , QVariant(), "", joints_category_);
-  category_ =
-      new rviz::Property(QString::fromStdString(name_), true, "", parent_category, SLOT(updateVisibility()), this);
+  // info->category_ = new Property( QString::fromStdString( info->name_ ) , QVariant(), "",
+  // joints_category_);
+  category_ = new rviz::Property(QString::fromStdString(name_), true, "", parent_category,
+                                 SLOT(updateVisibility()), this);
 
   effort_property_ = new rviz::FloatProperty("Effort", 0, "Effort value of this joint.", category_);
   effort_property_->setReadOnly(true);
 
-  max_effort_property_ = new rviz::FloatProperty("Max Effort", 0, "Max Effort value of this joint.", category_);
+  max_effort_property_ =
+      new rviz::FloatProperty("Max Effort", 0, "Max Effort value of this joint.", category_);
   max_effort_property_->setReadOnly(true);
 }
 
@@ -77,28 +79,31 @@ JointInfo* EffortDisplay::createJoint(const std::string& joint)
 
 EffortDisplay::EffortDisplay()
 {
-  alpha_property_ = new rviz::FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.", this,
+  alpha_property_ = new rviz::FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
+                                            this, SLOT(updateColorAndAlpha()));
+
+  width_property_ = new rviz::FloatProperty("Width", 0.02, "Width to drow effort circle", this,
                                             SLOT(updateColorAndAlpha()));
 
-  width_property_ =
-      new rviz::FloatProperty("Width", 0.02, "Width to drow effort circle", this, SLOT(updateColorAndAlpha()));
+  scale_property_ = new rviz::FloatProperty("Scale", 1.0, "Scale to drow effort circle", this,
+                                            SLOT(updateColorAndAlpha()));
 
-  scale_property_ =
-      new rviz::FloatProperty("Scale", 1.0, "Scale to drow effort circle", this, SLOT(updateColorAndAlpha()));
-
-  history_length_property_ = new rviz::IntProperty("History Length", 1, "Number of prior measurements to display.",
-                                                   this, SLOT(updateHistoryLength()));
+  history_length_property_ =
+      new rviz::IntProperty("History Length", 1, "Number of prior measurements to display.", this,
+                            SLOT(updateHistoryLength()));
   history_length_property_->setMin(1);
   history_length_property_->setMax(100000);
 
-  robot_description_property_ = new rviz::StringProperty("Robot Description", "robot_description",
-                                                         "Name of the parameter to search for to load the robot "
-                                                         "description.",
-                                                         this, SLOT(updateRobotDescription()));
+  robot_description_property_ =
+      new rviz::StringProperty("Robot Description", "robot_description",
+                               "Name of the parameter to search for to load the robot "
+                               "description.",
+                               this, SLOT(updateRobotDescription()));
 
   tf_prefix_property_ = new StringProperty(
-      "TF Prefix", "", "Robot Model normally assumes the link name is the same as the tf frame name. "
-                       "This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
+      "TF Prefix", "",
+      "Robot Model normally assumes the link name is the same as the tf frame name. "
+      "This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
       this, SLOT(updateTfPrefix()));
 
   joints_category_ = new rviz::Property("Joints", QVariant(), "", this);
@@ -109,8 +114,8 @@ void EffortDisplay::onInitialize()
   MFDClass::onInitialize();
   // skip tf_filter_ (resetting it)
   delete tf_filter_;
-  tf_filter_ =
-      new tf2_ros::MessageFilter<sensor_msgs::JointState>(*context_->getTF2BufferPtr(), std::string(), 1, update_nh_);
+  tf_filter_ = new tf2_ros::MessageFilter<sensor_msgs::JointState>(*context_->getTF2BufferPtr(),
+                                                                   std::string(), 1, update_nh_);
 
   // but directly process messages
   sub_.registerCallback(boost::bind(&EffortDisplay::incomingMessage, this, _1));
@@ -182,8 +187,9 @@ void EffortDisplay::load()
     else
     {
       clear();
-      setStatus(rviz::StatusProperty::Error, "URDF", "Parameter [" + robot_description_property_->getString() +
-                                                         "] does not exist, and was not found by searchParam()");
+      setStatus(rviz::StatusProperty::Error, "URDF",
+                "Parameter [" + robot_description_property_->getString() +
+                    "] does not exist, and was not found by searchParam()");
       return;
     }
   }
@@ -269,7 +275,7 @@ void EffortDisplay::processMessage(const sensor_msgs::JointState::ConstPtr& msg)
     const std::string& joint_name = msg->name[i];
     JointInfo* joint_info = getJointInfo(joint_name);
     if (!joint_info)
-      continue;  // skip joints..
+      continue; // skip joints..
 
     // update effort property
     joint_info->setEffort(msg->effort[i]);
@@ -299,8 +305,8 @@ void EffortDisplay::processMessage(const sensor_msgs::JointState::ConstPtr& msg)
 
       tf2::Quaternion axis_orientation(orientation.x, orientation.y, orientation.z, orientation.w);
       tf2::Quaternion axis_rot = axis_orientation * axis_rotation;
-      Ogre::Quaternion joint_orientation(Ogre::Real(axis_rot.w()), Ogre::Real(axis_rot.x()), Ogre::Real(axis_rot.y()),
-                                         Ogre::Real(axis_rot.z()));
+      Ogre::Quaternion joint_orientation(Ogre::Real(axis_rot.w()), Ogre::Real(axis_rot.x()),
+                                         Ogre::Real(axis_rot.y()), Ogre::Real(axis_rot.z()));
       visual->setFramePosition(joint_name, position);
       visual->setFrameOrientation(joint_name, joint_orientation);
       visual->setFrameEnabled(joint_name, joint_info->getEnabled());
@@ -320,7 +326,7 @@ void EffortDisplay::processMessage(const sensor_msgs::JointState::ConstPtr& msg)
   visuals_.push_back(visual);
 }
 
-}  // end namespace rviz
+} // end namespace rviz
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.

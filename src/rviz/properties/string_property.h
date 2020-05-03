@@ -35,25 +35,36 @@
 
 namespace rviz
 {
-
 /** @brief Property specialized for string values. */
-class StringProperty: public Property
+class StringProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  StringProperty( const QString& name = QString(),
-                  const QString& default_value = QString(),
-                  const QString& description = QString(),
-                  Property* parent = 0,
-                  const char *changed_slot = 0,
-                  QObject* receiver = 0 );
+  StringProperty(const QString& name = QString(),
+                 const QString& default_value = QString(),
+                 const QString& description = QString(),
+                 Property* parent = nullptr,
+                 const char* changed_slot = nullptr,
+                 QObject* receiver = nullptr);
 
-  std::string getStdString() { return getValue().toString().toStdString(); }
-  QString getString() { return getValue().toString(); }
+  std::string getStdString()
+  {
+    return getValue().toString().toStdString();
+  }
+  QString getString()
+  {
+    return getValue().toString();
+  }
 
 public Q_SLOTS:
-  bool setString( const QString& str ) { return setValue( str ); }
-  bool setStdString( const std::string& std_str ) { return setValue( QString::fromStdString( std_str )); }
+  bool setString(const QString& str)
+  {
+    return setValue(str);
+  }
+  bool setStdString(const std::string& std_str)
+  {
+    return setValue(QString::fromStdString(std_str));
+  }
 };
 
 } // end namespace rviz

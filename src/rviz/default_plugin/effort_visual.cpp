@@ -37,7 +37,7 @@ void EffortVisual::getRainbowColor(float value, Ogre::ColourValue& color)
   int i = floor(h);
   float f = h - i;
   if (!(i & 1))
-    f = 1 - f;  // if i is even
+    f = 1 - f; // if i is even
   float n = 1 - f;
 
   if (i <= 1)
@@ -57,14 +57,14 @@ void EffortVisual::setEffort(const std::string& joint_name, double effort, doubl
   bool enabled = effort_enabled_.insert(std::make_pair(joint_name, true)).first->second;
 
   // enable or disable draw
-  if (effort_circle_.find(joint_name) != effort_circle_.end() && !enabled)  // enable->disable
+  if (effort_circle_.find(joint_name) != effort_circle_.end() && !enabled) // enable->disable
   {
     delete (effort_circle_[joint_name]);
     delete (effort_arrow_[joint_name]);
     effort_circle_.erase(joint_name);
     effort_arrow_.erase(joint_name);
   }
-  if (effort_circle_.find(joint_name) == effort_circle_.end() && enabled)  // disable -> enable
+  if (effort_circle_.find(joint_name) == effort_circle_.end() && enabled) // disable -> enable
   {
     effort_circle_[joint_name] = new rviz::BillboardLine(scene_manager_, parent_node_);
     effort_arrow_[joint_name] = new rviz::Arrow(scene_manager_, parent_node_);
@@ -93,14 +93,16 @@ void EffortVisual::setEffort(const std::string& joint_name, double effort, doubl
   {
     effort_arrow_[joint_name]->setDirection(orientation_[joint_name] * Ogre::Vector3(1, 0, 0));
   }
-  effort_arrow_[joint_name]->setPosition(
-      orientation_[joint_name] * Ogre::Vector3(0, 0.05 + effort_value * scale_ * 0.5, 0) + position_[joint_name]);
+  effort_arrow_[joint_name]->setPosition(orientation_[joint_name] *
+                                             Ogre::Vector3(0, 0.05 + effort_value * scale_ * 0.5, 0) +
+                                         position_[joint_name]);
   effort_circle_[joint_name]->clear();
   effort_circle_[joint_name]->setLineWidth(width_);
   for (int i = 0; i < 30; i++)
   {
-    Ogre::Vector3 point = Ogre::Vector3((0.05 + effort_value * scale_ * 0.5) * sin(i * 2 * M_PI / 32),
-                                        (0.05 + effort_value * scale_ * 0.5) * cos(i * 2 * M_PI / 32), 0);
+    Ogre::Vector3 point =
+        Ogre::Vector3((0.05 + effort_value * scale_ * 0.5) * sin(i * 2 * M_PI / 32),
+                      (0.05 + effort_value * scale_ * 0.5) * cos(i * 2 * M_PI / 32), 0);
     if (effort < 0)
       point.x = -point.x;
     effort_circle_[joint_name]->addPoint(orientation_[joint_name] * point + position_[joint_name]);
@@ -137,4 +139,4 @@ void EffortVisual::setScale(float s)
   scale_ = s;
 }
 
-}  // end namespace rviz
+} // end namespace rviz

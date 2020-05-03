@@ -36,38 +36,36 @@
 
 namespace rviz
 {
-
-PropertyTreeDelegate::PropertyTreeDelegate( QObject* parent_object )
-    : QStyledItemDelegate( parent_object )
+PropertyTreeDelegate::PropertyTreeDelegate(QObject* parent_object) : QStyledItemDelegate(parent_object)
 {
 }
 
-void PropertyTreeDelegate::paint( QPainter * painter,
-                                  const QStyleOptionViewItem & option,
-                                  const QModelIndex & index ) const
+void PropertyTreeDelegate::paint(QPainter* painter,
+                                 const QStyleOptionViewItem& option,
+                                 const QModelIndex& index) const
 {
-  Property* prop = static_cast<Property*>( index.internalPointer() );
-  if( !prop || !prop->paint( painter, option ))
+  Property* prop = static_cast<Property*>(index.internalPointer());
+  if (!prop || !prop->paint(painter, option))
   {
-    QStyledItemDelegate::paint( painter, option, index );
+    QStyledItemDelegate::paint(painter, option, index);
   }
 }
 
-QWidget *PropertyTreeDelegate::createEditor( QWidget *parent,
-                                             const QStyleOptionViewItem & option,
-                                             const QModelIndex &index ) const
+QWidget* PropertyTreeDelegate::createEditor(QWidget* parent,
+                                            const QStyleOptionViewItem& option,
+                                            const QModelIndex& index) const
 {
-  Property* prop = static_cast<Property*>( index.internalPointer() );
-  if( !prop || prop->getReadOnly())
+  Property* prop = static_cast<Property*>(index.internalPointer());
+  if (!prop || prop->getReadOnly())
   {
     return nullptr;
   }
-  
-  if( QWidget* editor = prop->createEditor( parent, option ))
+
+  if (QWidget* editor = prop->createEditor(parent, option))
   {
     return editor;
   }
-  return QStyledItemDelegate::createEditor( parent, option, index );
+  return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 } // end namespace rviz

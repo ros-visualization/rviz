@@ -2,13 +2,13 @@
 
 #include "sensor_msgs/Image.h"
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
-  ros::init( argc, argv, "image_test" );
+  ros::init(argc, argv, "image_test");
 
   ros::NodeHandle n;
 
-  ros::Publisher rgb_pub = n.advertise<sensor_msgs::Image>( "red_image", 0 );
+  ros::Publisher rgb_pub = n.advertise<sensor_msgs::Image>("red_image", 0);
 
   ros::Duration(0.1).sleep();
 

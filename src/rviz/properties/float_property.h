@@ -33,18 +33,17 @@
 
 namespace rviz
 {
-
 /** @brief Property specialized to enforce floating point max/min. */
-class FloatProperty: public Property
+class FloatProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  FloatProperty( const QString& name = QString(),
-                 float default_value = 0,
-                 const QString& description = QString(),
-                 Property* parent = 0,
-                 const char *changed_slot = 0,
-                 QObject* receiver = 0 );
+  FloatProperty(const QString& name = QString(),
+                float default_value = 0,
+                const QString& description = QString(),
+                Property* parent = nullptr,
+                const char* changed_slot = nullptr,
+                QObject* receiver = nullptr);
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -53,24 +52,42 @@ public:
    * aboutToChange() before changing the value and changed() after.
    *
    * Overridden from Property::setValue() to enforce minimum and maximum. */
-  virtual bool setValue( const QVariant& new_value );
-  
-  virtual float getFloat() const { return getValue().toFloat(); }
+  bool setValue(const QVariant& new_value) override;
 
-  void setMin( float min );
-  float getMin() { return min_; }
-  void setMax( float max );
-  float getMax() { return max_; }
+  virtual float getFloat() const
+  {
+    return getValue().toFloat();
+  }
+
+  void setMin(float min);
+  float getMin()
+  {
+    return min_;
+  }
+  void setMax(float max);
+  float getMax()
+  {
+    return max_;
+  }
 
 public Q_SLOTS:
   /** @brief Float-typed "SLOT" version of setValue(). */
-  bool setFloat( float new_value ) { return setValue( new_value ); }
+  bool setFloat(float new_value)
+  {
+    return setValue(new_value);
+  }
 
   /** @brief Add the given @a delta to the property value. */
-  bool add( float delta ) { return setValue( delta + getValue().toFloat() ); }
+  bool add(float delta)
+  {
+    return setValue(delta + getValue().toFloat());
+  }
 
   /** @brief Multiply the property value by the given @a factor. */
-  bool multiply( float factor ) { return setValue( factor * getValue().toFloat() ); }
+  bool multiply(float factor)
+  {
+    return setValue(factor * getValue().toFloat());
+  }
 
 private:
   float min_;

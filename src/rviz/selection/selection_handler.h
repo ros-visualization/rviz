@@ -55,7 +55,6 @@ class MovableObject;
 
 namespace rviz
 {
-
 class DisplayContext;
 class Property;
 class ViewportMouseEvent;
@@ -65,10 +64,10 @@ typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
 class RVIZ_EXPORT SelectionHandler
 {
 public:
-  SelectionHandler( DisplayContext* context );
+  SelectionHandler(DisplayContext* context);
   virtual ~SelectionHandler();
 
-  void addTrackedObjects( Ogre::SceneNode* node );
+  void addTrackedObjects(Ogre::SceneNode* node);
   void addTrackedObject(Ogre::MovableObject* object);
   void removeTrackedObject(Ogre::MovableObject* object);
 
@@ -81,7 +80,9 @@ public:
    * deleteProperties().
    *
    * This base implementation does nothing. */
-  virtual void createProperties( const Picked& /*obj*/, Property* /*parent_property*/ ) {}
+  virtual void createProperties(const Picked& /*obj*/, Property* /*parent_property*/)
+  {
+  }
 
   /** @brief Destroy all properties for the given picked object(s).
    *
@@ -90,7 +91,7 @@ public:
    * If createProperties() adds all the top-level properties to
    * #properties_, there is no need to override this in a
    * subclass. */
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  virtual void destroyProperties(const Picked& obj, Property* parent_property);
 
   /** @brief Override to update property values.
    *
@@ -101,7 +102,9 @@ public:
    * selected object(s).
    *
    * This base implementation does nothing. */
-  virtual void updateProperties() {}
+  virtual void updateProperties()
+  {
+  }
 
   virtual bool needsAdditionalRenderPass(uint32_t /*pass*/)
   {
@@ -118,7 +121,7 @@ public:
 
   /** @brief Set an object to listen to mouse events and other
    * interaction calls during use of the 'interact' tool. */
-  virtual void setInteractiveObject( InteractiveObjectWPtr object );
+  virtual void setInteractiveObject(InteractiveObjectWPtr object);
 
   /** @brief Get the object to listen to mouse events and other
    * interaction calls during use of the 'interact' tool.
@@ -129,18 +132,25 @@ public:
    * around after it was meant to be destroyed. */
   virtual InteractiveObjectWPtr getInteractiveObject();
 
-  CollObjectHandle getHandle() const { return pick_handle_; }
+  CollObjectHandle getHandle() const
+  {
+    return pick_handle_;
+  }
 
 protected:
   /** @brief Create or update a box for the given handle-int pair, with the box specified by @a aabb. */
-  void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
+  void createBox(const std::pair<CollObjectHandle, uint64_t>& handles,
+                 const Ogre::AxisAlignedBox& aabb,
+                 const std::string& material_name);
 
   /** @brief Destroy the box associated with the given handle-int pair, if there is one. */
   void destroyBox(const std::pair<CollObjectHandle, uint64_t>& handles);
 
   QList<Property*> properties_;
 
-  typedef std::map<std::pair<CollObjectHandle, uint64_t>, std::pair<Ogre::SceneNode*, Ogre::WireBoundingBox*> > M_HandleToBox;
+  typedef std::map<std::pair<CollObjectHandle, uint64_t>,
+                   std::pair<Ogre::SceneNode*, Ogre::WireBoundingBox*> >
+      M_HandleToBox;
   M_HandleToBox boxes_;
 
   DisplayContext* context_;
@@ -151,15 +161,15 @@ protected:
   class Listener : public Ogre::MovableObject::Listener
   {
   public:
-    Listener(SelectionHandler* handler)
-    : handler_(handler)
-    {}
-    virtual void objectMoved(Ogre::MovableObject* /*object*/)
+    Listener(SelectionHandler* handler) : handler_(handler)
+    {
+    }
+    void objectMoved(Ogre::MovableObject* /*object*/) override
     {
       handler_->updateTrackedBoxes();
     }
 
-    virtual void objectDestroyed(Ogre::MovableObject* object)
+    void objectDestroyed(Ogre::MovableObject* object) override
     {
       handler_->removeTrackedObject(object);
     }
@@ -184,6 +194,6 @@ typedef boost::shared_ptr<SelectionHandler> SelectionHandlerPtr;
 typedef std::vector<SelectionHandlerPtr> V_SelectionHandler;
 typedef std::set<SelectionHandlerPtr> S_SelectionHandler;
 
-}
+} // namespace rviz
 
 #endif

@@ -38,43 +38,41 @@
 
 namespace rviz
 {
-
 /** @brief Dock widget class for docking widgets into VisualizationFrame.
  *
  * Use setContentWidget() instead of QDockWidget::setWidget() if you
  * want the PanelDockWidget to be destroyed when the content widget is
  * destroyed. */
-class RVIZ_EXPORT PanelDockWidget: public QDockWidget
+class RVIZ_EXPORT PanelDockWidget : public QDockWidget
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  PanelDockWidget( const QString& name );
+  PanelDockWidget(const QString& name);
 
-  void setContentWidget( QWidget* child );
+  void setContentWidget(QWidget* child);
 
-  void setCollapsed( bool collapsed );
+  void setCollapsed(bool collapsed);
 
-  void setIcon( const QIcon& icon );
+  void setIcon(const QIcon& icon);
 
-  virtual void save( Config config );
-  virtual void load( const Config& config );
+  virtual void save(Config config);
+  virtual void load(const Config& config);
 
   /** @brief Override setVisible to respect the visibility override, */
-  virtual void setVisible( bool visible );
+  void setVisible(bool visible) override;
 
 protected:
-
-  virtual void closeEvent ( QCloseEvent * event );
+  void closeEvent(QCloseEvent* event) override;
 
 public Q_SLOTS:
 
-  void setWindowTitle( const QString& title );
+  void setWindowTitle(const QString& title);
 
   /** @ Override the visibility of the widget. **/
-  virtual void overrideVisibility( bool hide );
+  virtual void overrideVisibility(bool hide);
 
 private Q_SLOTS:
-  void onChildDestroyed( QObject* );
+  void onChildDestroyed(QObject* /*unused*/);
 
 Q_SIGNALS:
 
@@ -85,8 +83,8 @@ private:
   bool collapsed_;
   bool requested_visibility_;
   bool forced_hidden_;
-  QLabel *icon_label_;
-  QLabel *title_label_;
+  QLabel* icon_label_;
+  QLabel* title_label_;
 };
 
 } // end namespace rviz

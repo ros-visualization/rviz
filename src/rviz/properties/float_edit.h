@@ -33,15 +33,17 @@
 
 namespace rviz
 {
-
-class FloatEdit: public QLineEdit
+class FloatEdit : public QLineEdit
 {
-Q_OBJECT
-Q_PROPERTY( float value READ getValue WRITE setValue USER true)
+  Q_OBJECT
+  Q_PROPERTY(float value READ getValue WRITE setValue USER true)
 public:
-  FloatEdit( QWidget* parent = 0 );
-  virtual float getValue() { return value_; }
-  virtual void setValue( float new_value );
+  FloatEdit(QWidget* parent = nullptr);
+  virtual float getValue()
+  {
+    return value_;
+  }
+  virtual void setValue(float new_value);
 
 private Q_SLOTS:
   void updateValue();

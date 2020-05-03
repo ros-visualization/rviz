@@ -33,17 +33,16 @@
 
 namespace rviz
 {
-
-class StatusList: public StatusProperty
+class StatusList : public StatusProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  StatusList( const QString& name = QString( "Status" ), Property* parent = 0 );
+  StatusList(const QString& name = QString("Status"), Property* parent = nullptr);
 
-  virtual void setLevel( Level level );
-  
-  void setStatus( Level level, const QString& name, const QString& text );
-  void deleteStatus( const QString& name );
+  void setLevel(Level level) override;
+
+  void setStatus(Level level, const QString& name, const QString& text);
+  void deleteStatus(const QString& name);
   void clear();
   void updateLevel();
 
@@ -51,7 +50,7 @@ public:
    *
    * Setting the name to "Foo" will give a displayed name like "Foo:
    * Ok" or "Foo: Error". */
-  virtual void setName( const QString& name );
+  void setName(const QString& name) override;
 
 private:
   /** @brief Update the label text based on the name_prefix_ and the current status level. */

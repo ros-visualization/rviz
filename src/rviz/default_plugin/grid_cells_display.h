@@ -45,7 +45,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class ColorProperty;
 class FloatProperty;
 class PointCloud;
@@ -56,19 +55,19 @@ class PointCloud;
  */
 class GridCellsDisplay : public MessageFilterDisplay<nav_msgs::GridCells>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   GridCellsDisplay();
-  virtual ~GridCellsDisplay();
+  ~GridCellsDisplay() override;
 
-  virtual void onInitialize();
-  virtual void reset();
+  void onInitialize() override;
+  void reset() override;
 
 private Q_SLOTS:
   void updateAlpha();
 
 private:
-  void processMessage( const nav_msgs::GridCells::ConstPtr& msg );
+  void processMessage(const nav_msgs::GridCells::ConstPtr& msg) override;
 
   PointCloud* cloud_;
 
@@ -81,4 +80,3 @@ private:
 } // namespace rviz
 
 #endif /* RVIZ_GRID_CELLS_DISPLAY_H */
-

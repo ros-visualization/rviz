@@ -51,7 +51,6 @@ class BillboardChain;
 
 namespace rviz
 {
-
 /**
  * \class BillboardLine
  * \brief An object that displays a multi-segment line strip rendered as billboards
@@ -62,41 +61,50 @@ public:
   /**
    * \brief Constructor
    * @param manager Scene manager this object is a part of
-   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
+   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene
+   * node.
    */
-  BillboardLine( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = NULL );
-  virtual ~BillboardLine();
+  BillboardLine(Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = nullptr);
+  ~BillboardLine() override;
 
   void clear();
   void newLine();
   void addPoint(const Ogre::Vector3& point);
   void addPoint(const Ogre::Vector3& point, const Ogre::ColourValue& color);
 
-  void setLineWidth( float width );
+  void setLineWidth(float width);
 
   void setMaxPointsPerLine(uint32_t max);
   void setNumLines(uint32_t num);
 
   // overrides from Object
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setScale( const Ogre::Vector3& scale );
-  virtual void setColor( float r, float g, float b, float a );
-  virtual const Ogre::Vector3& getPosition();
-  virtual const Ogre::Quaternion& getOrientation();
+  void setOrientation(const Ogre::Quaternion& orientation) override;
+  void setPosition(const Ogre::Vector3& position) override;
+  void setScale(const Ogre::Vector3& scale) override;
+  void setColor(float r, float g, float b, float a) override;
+  const Ogre::Vector3& getPosition() override;
+  const Ogre::Quaternion& getOrientation() override;
 
   /**
    * \brief Get the scene node associated with this object
    * @return The scene node associated with this object
    */
-  Ogre::SceneNode* getSceneNode() { return scene_node_; }
+  Ogre::SceneNode* getSceneNode()
+  {
+    return scene_node_;
+  }
 
   /**
    * \brief We have no objects that we can set user data on
    */
-  void setUserData( const Ogre::Any& /*data*/ ) {}
+  void setUserData(const Ogre::Any& /*data*/) override
+  {
+  }
 
-  Ogre::MaterialPtr getMaterial() { return material_; }
+  Ogre::MaterialPtr getMaterial()
+  {
+    return material_;
+  }
 
 private:
   void setupChains();
@@ -129,5 +137,3 @@ private:
 } // namespace rviz
 
 #endif
-
-

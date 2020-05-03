@@ -39,22 +39,27 @@ class RenderWindow;
 
 namespace rviz
 {
-
 class RenderSystem;
 
-class RenderWidget: public QWidget
+class RenderWidget : public QWidget
 {
 public:
-  RenderWidget( RenderSystem* render_system, QWidget *parent = 0 );
-  virtual ~RenderWidget();
-  Ogre::RenderWindow* getRenderWindow() { return render_window_; }
+  RenderWidget(RenderSystem* render_system, QWidget* parent = nullptr);
+  ~RenderWidget() override;
+  Ogre::RenderWindow* getRenderWindow()
+  {
+    return render_window_;
+  }
 
 protected:
-  virtual void moveEvent(QMoveEvent *e);
-  virtual void paintEvent(QPaintEvent *e);
-  virtual void resizeEvent(QResizeEvent *e);
+  void moveEvent(QMoveEvent* e) override;
+  void paintEvent(QPaintEvent* e) override;
+  void resizeEvent(QResizeEvent* e) override;
 
-  QPaintEngine *paintEngine() const { return 0; }
+  QPaintEngine* paintEngine() const override
+  {
+    return nullptr;
+  }
 
   RenderSystem* render_system_;
   Ogre::RenderWindow* render_window_;

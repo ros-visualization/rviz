@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
+import roslib
 import sys
 setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 from python_qt_binding import QT_BINDING

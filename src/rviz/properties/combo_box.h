@@ -33,13 +33,12 @@
 
 namespace rviz
 {
-
-class ComboBox: public QComboBox
+class ComboBox : public QComboBox
 {
-Q_OBJECT
-Q_PROPERTY(QString currentText READ currentText USER true)
+  Q_OBJECT
+  Q_PROPERTY(QString currentText READ currentText USER true)
 public:
-  ComboBox( QWidget* parent = 0 );
+  ComboBox(QWidget* parent = nullptr);
 };
 
 } // end namespace rviz

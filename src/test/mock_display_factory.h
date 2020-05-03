@@ -33,11 +33,10 @@
 
 namespace rviz
 {
-
-class MockDisplayFactory: public DisplayFactory
+class MockDisplayFactory : public DisplayFactory
 {
 protected:
-  virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
+  virtual Display* makeRaw(const QString& class_id, QString* error_return = NULL);
 };
 
 } // end namespace rviz

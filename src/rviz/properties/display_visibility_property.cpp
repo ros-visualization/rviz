@@ -37,18 +37,17 @@
 
 namespace rviz
 {
-
-DisplayVisibilityProperty::DisplayVisibilityProperty( uint32_t vis_bit,
-    Display* display,
-    const QString& name,
-    bool default_value,
-    const QString& description,
-    Property* parent,
-    const char *changed_slot,
-    QObject* receiver )
-: BoolProperty( name, default_value, description, parent, changed_slot, receiver )
-, vis_bit_(vis_bit)
-, display_(display)
+DisplayVisibilityProperty::DisplayVisibilityProperty(uint32_t vis_bit,
+                                                     Display* display,
+                                                     const QString& name,
+                                                     bool default_value,
+                                                     const QString& description,
+                                                     Property* parent,
+                                                     const char* changed_slot,
+                                                     QObject* receiver)
+  : BoolProperty(name, default_value, description, parent, changed_slot, receiver)
+  , vis_bit_(vis_bit)
+  , display_(display)
 {
   custom_name_ = (name.size() != 0);
   update();
@@ -61,24 +60,23 @@ DisplayVisibilityProperty::~DisplayVisibilityProperty()
 void DisplayVisibilityProperty::update()
 {
   // update name, unless we had a custom name given in the constructor
-  if ( !custom_name_ && getName() != display_->getName() )
+  if (!custom_name_ && getName() != display_->getName())
   {
-    setName( display_->getName() );
+    setName(display_->getName());
   }
-  if ( getBool() &&
-       (getViewFlags( 0 ) & Qt::ItemIsEnabled ) )
+  if (getBool() && (getViewFlags(0) & Qt::ItemIsEnabled))
   {
-    display_->setVisibilityBits( vis_bit_ );
+    display_->setVisibilityBits(vis_bit_);
   }
   else
   {
-    display_->unsetVisibilityBits( vis_bit_ );
+    display_->unsetVisibilityBits(vis_bit_);
   }
 }
 
-bool DisplayVisibilityProperty::setValue( const QVariant& new_value )
+bool DisplayVisibilityProperty::setValue(const QVariant& new_value)
 {
-  if ( Property::setValue( new_value ) )
+  if (Property::setValue(new_value))
   {
     update();
     return true;
@@ -88,21 +86,21 @@ bool DisplayVisibilityProperty::setValue( const QVariant& new_value )
 
 bool DisplayVisibilityProperty::getBool() const
 {
-  if ( !display_->isEnabled() )
+  if (!display_->isEnabled())
   {
     return false;
   }
   return BoolProperty::getBool();
 }
 
-Qt::ItemFlags DisplayVisibilityProperty::getViewFlags( int column ) const
+Qt::ItemFlags DisplayVisibilityProperty::getViewFlags(int column) const
 {
-  if ( !display_->isEnabled() )
+  if (!display_->isEnabled())
   {
     return Qt::ItemIsSelectable;
   }
-  return BoolProperty::getViewFlags( column );
+  return BoolProperty::getViewFlags(column);
 }
 
 
-}  // namespace rviz
+} // namespace rviz

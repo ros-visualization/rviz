@@ -43,19 +43,19 @@
 
 namespace rviz
 {
-
 static const QString ANY_AXIS("arbitrary");
 
 // helper function to create axis strings from option ID
 inline QString fmtAxis(int i)
 {
-  return QStringLiteral("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i-1)/2));
+  return QStringLiteral("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i - 1) / 2));
 }
 
 FrameViewController::FrameViewController()
 {
-  axis_property_ = new EnumProperty("Point towards", fmtAxis(6), "Point the camera along the given axis of the frame.",
-                                    nullptr, SLOT(changedAxis()), this);
+  axis_property_ = new EnumProperty("Point towards", fmtAxis(6),
+                                    "Point the camera along the given axis of the frame.", nullptr,
+                                    SLOT(changedAxis()), this);
   axis_property_->addOption(ANY_AXIS, -1);
   this->addChild(axis_property_, yaw_property_->rowNumberInParent());
   // x,y,z axes get integers from 1..6: +x, -x, +y, -y, +z, -z
@@ -63,7 +63,8 @@ FrameViewController::FrameViewController()
     axis_property_->addOption(fmtAxis(i), i);
   previous_axis_ = axis_property_->getOptionInt();
 
-  locked_property_ = new BoolProperty("Lock Camera", false, "Lock camera in its current pose relative to the frame", this);
+  locked_property_ = new BoolProperty("Lock Camera", false,
+                                      "Lock camera in its current pose relative to the frame", this);
 }
 
 void FrameViewController::onInitialize()
@@ -75,11 +76,11 @@ void FrameViewController::onInitialize()
 void FrameViewController::reset()
 {
   camera_->setPosition(Ogre::Vector3::ZERO);
-  Eigen::Vector3d axis(0,0,0);
+  Eigen::Vector3d axis(0, 0, 0);
   int option = previous_axis_;
   if (option >= 1 && option <= 6)
   {
-    axis[(option-1)/2] = (option % 2) ? +1 : -1;
+    axis[(option - 1) / 2] = (option % 2) ? +1 : -1;
     Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(), axis);
     camera_->setOrientation(Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()) * ROBOT_TO_CAMERA_ROTATION);
   }
@@ -99,13 +100,15 @@ void FrameViewController::handleMouseEvent(ViewportMouseEvent& event)
 int FrameViewController::actualCameraAxisOption(double precision) const
 {
   // compare current camera direction with unit axes
-  Ogre::Vector3 actual = (camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse()) * Ogre::Vector3::UNIT_X;
-  for (unsigned int i=0; i < 3; ++i) {
-    Ogre::Vector3 axis(0,0,0);
+  Ogre::Vector3 actual =
+      (camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse()) * Ogre::Vector3::UNIT_X;
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    Ogre::Vector3 axis(0, 0, 0);
     axis[i] = 1.0;
     auto scalar_product = axis.dotProduct(actual);
     if (std::abs(scalar_product) > 1.0 - precision)
-      return 1 + 2*i + (scalar_product > 0 ? 0 : 1);
+      return 1 + 2 * i + (scalar_product > 0 ? 0 : 1);
   }
   return -1;
 }
@@ -113,7 +116,7 @@ int FrameViewController::actualCameraAxisOption(double precision) const
 void FrameViewController::setAxisFromCamera()
 {
   int actual = actualCameraAxisOption();
-  if (axis_property_->getOptionInt() == actual)  // no change?
+  if (axis_property_->getOptionInt() == actual) // no change?
     return;
 
   QSignalBlocker block(axis_property_);
@@ -135,7 +138,7 @@ void FrameViewController::changedAxis()
 
 inline void FrameViewController::rememberAxis(int current)
 {
-  if (current >= 1)  // remember previous axis selection
+  if (current >= 1) // remember previous axis selection
     previous_axis_ = current;
 }
 
@@ -147,11 +150,11 @@ void FrameViewController::onTargetFrameChanged(const Ogre::Vector3& /* old_refer
 
 void FrameViewController::updateTargetSceneNode()
 {
-  if ( getNewTransform() )
+  if (getNewTransform())
   {
     // track both, position and orientation of reference frame
-    target_scene_node_->setPosition( reference_position_ );
-    target_scene_node_->setOrientation( reference_orientation_ );
+    target_scene_node_->setPosition(reference_position_);
+    target_scene_node_->setOrientation(reference_orientation_);
     context_->queueRender();
   }
 }
@@ -159,4 +162,4 @@ void FrameViewController::updateTargetSceneNode()
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::FrameViewController, rviz::ViewController )
+PLUGINLIB_EXPORT_CLASS(rviz::FrameViewController, rviz::ViewController)

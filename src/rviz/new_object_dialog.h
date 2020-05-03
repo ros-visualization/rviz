@@ -43,10 +43,9 @@ class QLabel;
 
 namespace rviz
 {
-
 class NewObjectDialog : public QDialog
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** Dialog for choosing a new object to load with a pluginlib ClassLoader.
    *
@@ -63,26 +62,26 @@ public:
    * @param display_name_output Pointer to a string where dialog will
    *        put the display name entered, or NULL (default) if display
    *        name entry field should not be shown. */
-  NewObjectDialog( Factory* factory,
-                   const QString& object_type,
-                   const QStringList& disallowed_display_names,
-                   const QStringList& disallowed_class_lookup_names,
-                   QString* lookup_name_output,
-                   QString* display_name_output = 0,
-                   QWidget* parent = 0 );
+  NewObjectDialog(Factory* factory,
+                  const QString& object_type,
+                  const QStringList& disallowed_display_names,
+                  const QStringList& disallowed_class_lookup_names,
+                  QString* lookup_name_output,
+                  QString* display_name_output = nullptr,
+                  QWidget* parent = nullptr);
 
-  virtual QSize sizeHint () const;
+  QSize sizeHint() const override;
 
 public Q_SLOTS:
-  virtual void accept();
+  void accept() override;
 
 private Q_SLOTS:
-  void onDisplaySelected( QTreeWidgetItem* selected_item );
+  void onDisplaySelected(QTreeWidgetItem* selected_item);
   void onNameChanged();
 
 private:
   /** Fill the tree widget with classes from the class loader. */
-  void fillTree( QTreeWidget* tree );
+  void fillTree(QTreeWidget* tree);
 
   /** Returns true if entered display name is non-empty and unique and
    * if lookup name is non-empty. */
@@ -90,7 +89,7 @@ private:
 
   /** Display an error message to the user, or clear the previous
    * error message if error_text is empty. */
-  void setError( const QString& error_text );
+  void setError(const QString& error_text);
 
   Factory* factory_;
   const QStringList& disallowed_display_names_;
@@ -112,6 +111,6 @@ private:
   QString lookup_name_;
 };
 
-} //namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_NEW_OBJECT_DIALOG_H

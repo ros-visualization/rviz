@@ -61,17 +61,16 @@ namespace fs = boost::filesystem;
 
 namespace rviz
 {
-
 class ResourceIOStream : public Assimp::IOStream
 {
 public:
-  ResourceIOStream(const resource_retriever::MemoryResource& res)
-  : res_(res)
-  , pos_(res.data.get())
-  {}
+  ResourceIOStream(const resource_retriever::MemoryResource& res) : res_(res), pos_(res.data.get())
+  {
+  }
 
   ~ResourceIOStream() override
-  {}
+  {
+  }
 
   size_t Read(void* buffer, size_t size, size_t count) override
   {
@@ -87,9 +86,13 @@ public:
     return to_read;
   }
 
-  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) override { ROS_BREAK(); return 0; }
+  size_t Write(const void* /*buffer*/, size_t /*size*/, size_t /*count*/) override
+  {
+    ROS_BREAK();
+    return 0;
+  }
 
-  aiReturn Seek( size_t offset, aiOrigin origin) override
+  aiReturn Seek(size_t offset, aiOrigin origin) override
   {
     uint8_t* new_pos = nullptr;
     switch (origin)
@@ -126,7 +129,9 @@ public:
     return res_.size;
   }
 
-  void Flush() override {}
+  void Flush() override
+  {
+  }
 
 private:
   resource_retriever::MemoryResource res_;
@@ -205,11 +210,15 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
 /** @brief Recursive mesh-building function.
  * @param scene is the assimp scene containing the whole mesh.
  * @param node is the current assimp node, which is part of a tree of nodes being recursed over.
- * @param material_table is indexed the same as scene->mMaterials[], and should have been filled out already by loadMaterials(). */
-void buildMesh( const aiScene* scene, const aiNode* node,
-                const Ogre::MeshPtr& mesh,
-                Ogre::AxisAlignedBox& aabb, float& radius, const float scale,
-                std::vector<Ogre::MaterialPtr>& material_table )
+ * @param material_table is indexed the same as scene->mMaterials[], and should have been filled out
+ * already by loadMaterials(). */
+void buildMesh(const aiScene* scene,
+               const aiNode* node,
+               const Ogre::MeshPtr& mesh,
+               Ogre::AxisAlignedBox& aabb,
+               float& radius,
+               const float scale,
+               std::vector<Ogre::MaterialPtr>& material_table)
 {
   if (!node)
   {
@@ -217,7 +226,7 @@ void buildMesh( const aiScene* scene, const aiNode* node,
   }
 
   aiMatrix4x4 transform = node->mTransformation;
-  aiNode *pnode = node->mParent;
+  aiNode* pnode = node->mParent;
   while (pnode)
   {
     // Don't convert to y-up orientation, which is what the root node in
@@ -265,10 +274,10 @@ void buildMesh( const aiScene* scene, const aiNode* node,
 
     // allocate the vertex buffer
     vertex_data->vertexCount = input_mesh->mNumVertices;
-    Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(vertex_decl->getVertexSize(0),
-                                                                          vertex_data->vertexCount,
-                                                                          Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
-                                                                          false);
+    Ogre::HardwareVertexBufferSharedPtr vbuf =
+        Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+            vertex_decl->getVertexSize(0), vertex_data->vertexCount,
+            Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
 
     vertex_data->vertexBufferBinding->setBinding(0, vbuf);
     float* vertices = static_cast<float*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
@@ -316,14 +325,12 @@ void buildMesh( const aiScene* scene, const aiNode* node,
     }
 
     // If we have less than 65536 (2^16) vertices, we can use a 16-bit index buffer.
-    if( vertex_data->vertexCount < (1<<16) )
+    if (vertex_data->vertexCount < (1 << 16))
     {
       // allocate index buffer
       submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
-        Ogre::HardwareIndexBuffer::IT_16BIT,
-        submesh->indexData->indexCount,
-        Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
-        false);
+          Ogre::HardwareIndexBuffer::IT_16BIT, submesh->indexData->indexCount,
+          Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
 
       Ogre::HardwareIndexBufferSharedPtr ibuf = submesh->indexData->indexBuffer;
       uint16_t* indices = static_cast<uint16_t*>(ibuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
@@ -340,7 +347,7 @@ void buildMesh( const aiScene* scene, const aiNode* node,
 
       ibuf->unlock();
     }
-    else 
+    else
     {
       // Else we have more than 65536 (2^16) vertices, so we must
       // use a 32-bit index buffer (or subdivide the mesh, which
@@ -348,10 +355,8 @@ void buildMesh( const aiScene* scene, const aiNode* node,
 
       // allocate index buffer
       submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
-        Ogre::HardwareIndexBuffer::IT_32BIT,
-        submesh->indexData->indexCount,
-        Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
-        false);
+          Ogre::HardwareIndexBuffer::IT_32BIT, submesh->indexData->indexCount,
+          Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
 
       Ogre::HardwareIndexBufferSharedPtr ibuf = submesh->indexData->indexBuffer;
       uint32_t* indices = static_cast<uint32_t*>(ibuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
@@ -370,11 +375,11 @@ void buildMesh( const aiScene* scene, const aiNode* node,
     }
     vbuf->unlock();
 
-    Ogre::MaterialPtr const & material = material_table[input_mesh->mMaterialIndex];
+    Ogre::MaterialPtr const& material = material_table[input_mesh->mMaterialIndex];
     submesh->setMaterialName(material->getName(), material->getGroup());
   }
 
-  for (uint32_t i=0; i < node->mNumChildren; ++i)
+  for (uint32_t i = 0; i < node->mNumChildren; ++i)
   {
     buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale, material_table);
   }
@@ -409,7 +414,8 @@ void loadTexture(const std::string& resource_path)
       try
       {
         image.load(stream, extension);
-        Ogre::TextureManager::getSingleton().loadImage(resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+        Ogre::TextureManager::getSingleton().loadImage(
+            resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
       }
       catch (Ogre::Exception& e)
       {
@@ -422,13 +428,15 @@ void loadTexture(const std::string& resource_path)
 // Mostly cribbed from gazebo
 /** @brief Load all materials needed by the given scene.
  * @param resource_path the path to the resource from which this scene is being loaded.
- *        loadMaterials() assumes textures for this scene are relative to the same directory that this scene is in.
+ *        loadMaterials() assumes textures for this scene are relative to the same directory that this
+ * scene is in.
  * @param scene the assimp scene to load materials for.
- * @param material_table_out Reference to the resultant material table, filled out by this function.  Is indexed the same as scene->mMaterials[].
+ * @param material_table_out Reference to the resultant material table, filled out by this function.  Is
+ * indexed the same as scene->mMaterials[].
  */
 void loadMaterials(const std::string& resource_path,
                    const aiScene* scene,
-                   std::vector<Ogre::MaterialPtr>& material_table_out )
+                   std::vector<Ogre::MaterialPtr>& material_table_out)
 {
 #if BOOST_FILESYSTEM_VERSION == 3
   std::string ext = fs::path(resource_path).extension().string();
@@ -436,7 +444,8 @@ void loadMaterials(const std::string& resource_path,
   std::string ext = fs::path(resource_path).extension();
 #endif
   boost::algorithm::to_lower(ext);
-  if (ext == ".stl" || ext == ".stlb")  // STL meshes don't support proper materials: use Ogre's default material
+  if (ext == ".stl" ||
+      ext == ".stlb") // STL meshes don't support proper materials: use Ogre's default material
   {
     material_table_out.push_back(Ogre::MaterialManager::getSingleton().getByName("BaseWhiteNoLighting"));
     return;
@@ -446,21 +455,22 @@ void loadMaterials(const std::string& resource_path,
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
-    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(
+        ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     material_table_out.push_back(mat);
 
     Ogre::Technique* tech = mat->getTechnique(0);
     Ogre::Pass* pass = tech->getPass(0);
 
-    aiMaterial *amat = scene->mMaterials[i];
+    aiMaterial* amat = scene->mMaterials[i];
 
     Ogre::ColourValue diffuse(1.0, 1.0, 1.0, 1.0);
     Ogre::ColourValue specular(1.0, 1.0, 1.0, 1.0);
     Ogre::ColourValue ambient(0, 0, 0, 1.0);
 
-    for (uint32_t j=0; j < amat->mNumProperties; j++)
+    for (uint32_t j = 0; j < amat->mNumProperties; j++)
     {
-      aiMaterialProperty *prop = amat->mProperties[j];
+      aiMaterialProperty* prop = amat->mProperties[j];
       std::string propKey = prop->mKey.data;
 
       if (propKey == "$tex.file")
@@ -468,7 +478,7 @@ void loadMaterials(const std::string& resource_path,
         aiString texName;
         aiTextureMapping mapping;
         uint32_t uvIndex;
-        amat->GetTexture(aiTextureType_DIFFUSE,0, &texName, &mapping, &uvIndex);
+        amat->GetTexture(aiTextureType_DIFFUSE, 0, &texName, &mapping, &uvIndex);
 
         // Assume textures are in paths relative to the mesh
         std::string texture_path = fs::path(resource_path).parent_path().string() + "/" + texName.data;
@@ -516,42 +526,42 @@ void loadMaterials(const std::string& resource_path,
       {
         int model;
         amat->Get(AI_MATKEY_SHADING_MODEL, model);
-        switch(model)
+        switch (model)
         {
-          case aiShadingMode_Flat:
-            mat->setShadingMode(Ogre::SO_FLAT);
-            break;
-          case aiShadingMode_Phong:
-            mat->setShadingMode(Ogre::SO_PHONG);
-            break;
-          case aiShadingMode_Gouraud:
-          default:
-            mat->setShadingMode(Ogre::SO_GOURAUD);
-            break;
+        case aiShadingMode_Flat:
+          mat->setShadingMode(Ogre::SO_FLAT);
+          break;
+        case aiShadingMode_Phong:
+          mat->setShadingMode(Ogre::SO_PHONG);
+          break;
+        case aiShadingMode_Gouraud:
+        default:
+          mat->setShadingMode(Ogre::SO_GOURAUD);
+          break;
         }
       }
     }
 
     int mode = aiBlendMode_Default;
     amat->Get(AI_MATKEY_BLEND_FUNC, mode);
-    switch(mode)
+    switch (mode)
     {
-      case aiBlendMode_Additive:
-        mat->setSceneBlending(Ogre::SBT_ADD);
-        break;
-      case aiBlendMode_Default:
-      default:
-        {
-          if (diffuse.a < 0.99)
-          {
-            pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-          }
-          else
-          {
-            pass->setSceneBlending(Ogre::SBT_REPLACE);
-          }
-        }
-        break;
+    case aiBlendMode_Additive:
+      mat->setSceneBlending(Ogre::SBT_ADD);
+      break;
+    case aiBlendMode_Default:
+    default:
+    {
+      if (diffuse.a < 0.99)
+      {
+        pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      }
+      else
+      {
+        pass->setSceneBlending(Ogre::SBT_REPLACE);
+      }
+    }
+    break;
     }
 
     mat->setAmbient(ambient * 0.5);
@@ -563,22 +573,22 @@ void loadMaterials(const std::string& resource_path,
 
 
 /*@brief - Get the scaling from units used in this mesh file to meters.
-  
+
   This function applies only to Collada files. It is necessary because
   ASSIMP does not currently expose an api to retrieve the scaling factor.
-  
+
   @Param[in] resource_path   -   The url of a resource containing a mesh.
-  
+
   @Returns The scaling factor that converts the mesh to meters. Returns 1.0
-  for meshes which do not explicitly encode such a scaling. 
-  
+  for meshes which do not explicitly encode such a scaling.
+
 */
 
 float getMeshUnitRescale(const std::string& resource_path)
 {
   float unit_scale(1.0);
 
-  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
+  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats.
   tinyxml2::XMLDocument xmlDoc;
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
@@ -591,7 +601,7 @@ float getMeshUnitRescale(const std::string& resource_path)
     ROS_ERROR("%s", e.what());
     return unit_scale;
   }
-  
+
   if (res.size == 0)
   {
     return unit_scale;
@@ -599,25 +609,26 @@ float getMeshUnitRescale(const std::string& resource_path)
 
 
   // Use the resource retriever to get the data.
-  const char * data = reinterpret_cast<const char * > (res.data.get());
+  const char* data = reinterpret_cast<const char*>(res.data.get());
   // As the data pointer provided by resource retriever is not null-terminated, also pass res.size
   xmlDoc.Parse(data, res.size);
 
   // Find the appropriate element if it exists
-  if(!xmlDoc.Error())
+  if (!xmlDoc.Error())
   {
-    tinyxml2::XMLElement * colladaXml = xmlDoc.FirstChildElement("COLLADA");
-    if(colladaXml)
+    tinyxml2::XMLElement* colladaXml = xmlDoc.FirstChildElement("COLLADA");
+    if (colladaXml)
     {
-      tinyxml2::XMLElement *assetXml = colladaXml->FirstChildElement("asset");
-      if(assetXml)
+      tinyxml2::XMLElement* assetXml = colladaXml->FirstChildElement("asset");
+      if (assetXml)
       {
-        tinyxml2::XMLElement *unitXml = assetXml->FirstChildElement("unit");
+        tinyxml2::XMLElement* unitXml = assetXml->FirstChildElement("unit");
         if (unitXml && unitXml->Attribute("meter"))
         {
           // Failing to convert leaves unit_scale as the default.
-          if(unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
-            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to determine scaling. unit element: "
+          if (unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
+            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to "
+                            "determine scaling. unit element: "
                             << unitXml->GetText());
         }
       }
@@ -625,7 +636,6 @@ float getMeshUnitRescale(const std::string& resource_path)
   }
   return unit_scale;
 }
-
 
 
 Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
@@ -639,7 +649,8 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
   std::vector<Ogre::MaterialPtr> material_table;
   loadMaterials(name, scene, material_table);
 
-  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(
+      name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
@@ -691,7 +702,8 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
-      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(
+          resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
       ser.importMesh(stream, mesh.get());
 
       return mesh;
@@ -700,7 +712,10 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
     {
       Assimp::Importer importer;
       importer.SetIOHandler(new ResourceIOSystem());
-      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_FindInvalidData|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
+      const aiScene* scene =
+          importer.ReadFile(resource_path, aiProcess_SortByPType | aiProcess_FindInvalidData |
+                                               aiProcess_GenNormals | aiProcess_Triangulate |
+                                               aiProcess_GenUVCoords | aiProcess_FlipUVs);
       if (!scene)
       {
         ROS_ERROR("Could not load resource [%s]: %s", resource_path.c_str(), importer.GetErrorString());
@@ -713,5 +728,5 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
   return Ogre::MeshPtr();
 }
-  
-}  // namespace rviz
+
+} // namespace rviz

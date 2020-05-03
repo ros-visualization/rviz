@@ -36,15 +36,14 @@ class QLabel;
 
 namespace rviz
 {
-
-class LoadingDialog: public QDialog
+class LoadingDialog : public QDialog
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  LoadingDialog( QWidget* parent = 0 );
+  LoadingDialog(QWidget* parent = nullptr);
 
 public Q_SLOTS:
-  void showMessage( const QString& message );
+  void showMessage(const QString& message);
 
 protected:
   QLabel* label_;
