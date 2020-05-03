@@ -13,7 +13,7 @@ rospy.init_node('posearray')
 while not rospy.is_shutdown():
 
    ps = PoseArray()
-   ps.header.frame_id = "/base_link"
+   ps.header.frame_id = "base_link"
    ps.header.stamp = rospy.Time.now()
    
    pose = Pose()

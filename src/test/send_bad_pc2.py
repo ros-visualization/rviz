@@ -30,7 +30,7 @@ pfz.count = 1
 
 pc = PointCloud2()
 
-pc.header.frame_id = "/map"
+pc.header.frame_id = "map"
 pc.header.stamp = rospy.Time.now()
 
 pc.fields = [ pfx, pfy, pfz ]

@@ -59,7 +59,7 @@ while not rospy.is_shutdown():
 
     # Define static pose with covariance
     pose_with_cov = PoseWithCovarianceStamped()
-    pose_with_cov.header.frame_id = "/base_link"
+    pose_with_cov.header.frame_id = "base_link"
     pose_with_cov.header.stamp = stamp
 
     pose_with_cov.pose.pose.position.x = 3
@@ -78,7 +78,7 @@ while not rospy.is_shutdown():
 
     # Define a dynamic pose that should move inside the deviation
     pose = PoseStamped()
-    pose.header.frame_id = "/base_link"
+    pose.header.frame_id = "base_link"
     pose.header.stamp = stamp
 
     pose.pose.position.x = pose_with_cov.pose.pose.position.x + linear_deviation*cos( 10 * angle )

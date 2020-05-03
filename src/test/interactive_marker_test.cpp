@@ -40,7 +40,7 @@ visualization_msgs::InteractiveMarker makeMarker( float r, float g, float b )
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/base_link";
+  int_marker.header.frame_id = "base_link";
   int_marker.name = "my_marker";
   int_marker.description = "Simple 1-DOF Control";
 
@@ -118,7 +118,7 @@ visualization_msgs::InteractiveMarker makeCrazyMarker( bool linear )
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/base_link";
+  int_marker.header.frame_id = "base_link";
   int_marker.name = "crazy_marker";
   int_marker.description = "Unusual 1-DOF Control";
 

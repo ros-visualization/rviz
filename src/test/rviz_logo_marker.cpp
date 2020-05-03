@@ -13,7 +13,7 @@ void makeMarker( )
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/rviz_logo";
+  int_marker.header.frame_id = "rviz_logo";
   int_marker.name = "R";
 
   int_marker.pose.orientation.x = 0.0;

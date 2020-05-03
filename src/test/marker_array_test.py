@@ -19,7 +19,7 @@ MARKERS_MAX = 100
 while not rospy.is_shutdown():
 
    marker = Marker()
-   marker.header.frame_id = "/base_link"
+   marker.header.frame_id = "base_link"
    marker.type = marker.SPHERE
    marker.action = marker.ADD
    marker.scale.x = 0.2

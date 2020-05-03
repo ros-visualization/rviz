@@ -166,7 +166,7 @@ VisualizationManager::VisualizationManager(
   ip->setIcon( loadPixmap("package://rviz/icons/options.png") );
   global_options_ = ip;
 
-  fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "/map",
+  fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "map",
                                                "Frame into which all data is transformed before being displayed.",
                                                global_options_, frame_manager_, false,
                                                SLOT( updateFixedFrame() ), this );

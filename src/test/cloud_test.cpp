@@ -32,7 +32,7 @@ int main( int argc, char** argv )
       if (cloud.channels.empty())
       {
         cloud.header.stamp = tm;
-        cloud.header.frame_id = "/base_link";
+        cloud.header.frame_id = "base_link";
 
         cloud.channels.resize(1);
         int32_t xcount = 100;
@@ -67,7 +67,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       cloud.points.resize(5);
       cloud.channels.resize(2);
@@ -111,7 +111,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       cloud.points.resize(5);
       cloud.channels.resize(3);
@@ -160,7 +160,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       int num_rows = 1;
       int num_cols = 200;

@@ -697,7 +697,7 @@ void MapDisplay::showMap()
   frame_ = current_map_.header.frame_id;
   if (frame_.empty())
   {
-    frame_ = "/map";
+    frame_ = "map";
   }
 
   bool map_status_set = false;
