@@ -2,6 +2,38 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.0 (2020-05-11)
+-------------------
+* [feature] Added scale and color properties to Marker selection panel (`#1436 <https://github.com/ros-visualization/rviz/issues/1436>`_)
+* [feature] `queue-size` property to `MessageFilterDisplay` (`#1428 <https://github.com/ros-visualization/rviz/issues/1428>`_)
+* [feature] Added ability to set Orbit camera's field of view (`#1362 <https://github.com/ros-visualization/rviz/issues/1362>`_)
+* [feature] Added ability to set alpha of Axes and TF displays (`#1357 <https://github.com/ros-visualization/rviz/issues/1357>`_)
+* [maint] Finalize `tf2` migration (`#1497 <https://github.com/ros-visualization/rviz/issues/1497>`_)
+  Support for `tf1` is dropped. The old `getTFClient()` needs to be replaced by `getTF2BufferPtr()`.
+* [maint] clang-tidy fixes
+* [maint] Modified Python API to allow import rviz.srv (for service messages provided by rviz)
+  In your python scripts, replace `import rviz` with: `from rviz import bindings as rviz`
+* [maint] Dropped support for outdated upstream libraries
+  * OGRE < 1.9
+  * boost::filesystem < 3
+  * assimp <= 2.0
+  * Qt < 5
+* [maint] API cleanup + fix of several warnings (requiring ABI changes)
+  - provide virtual constructors were required
+  - fix signed/unsigned API params
+  - Removed redundant forward of _notifyCurrentCamera()
+  - Renamed `add_tool_action_` -> `toolbar_separator_`
+  - MarkerSelection: fixed constness of methods
+  - Removed deprecated `STLLoader`
+* [maint] Ogre 1.9 ... 1.12+ compatibility (Merge pull request `#1434 <https://github.com/ros-visualization/rviz/issues/1434>`_)
+  - Ogre compatibility header `ogre_helpers/compatibility.h` to mitigate API differences
+  - Avoid referring to anonymous scene nodes by name
+* [maint] Prefer vendor-specific OpenGL library
+* [maint] Changed semantics of saving
+  - When `is_read_only_` is false, the property doesn't need to be saved as its value is computed
+  - When `save_` is false, the property and all its children are not saved
+* Contributors: Alex Spitzer, Fan Jiang, Hans Gaiser, Maarten de Vries, Micho Radovnikovich, Robert Haschke, Sean Yen, Simon Schmeisser, dkaznacheev
+
 1.13.12 (2020-05-03)
 --------------------
 * [maint] clang-format (`#1502 <https://github.com/ros-visualization/rviz/issues/1502>`_)
