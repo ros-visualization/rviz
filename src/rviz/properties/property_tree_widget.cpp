@@ -103,11 +103,12 @@ void PropertyTreeWidget::setModel(PropertyTreeModel* model)
   }
   model_ = model;
   QTreeView::setModel(model_);
-  QItemSelectionModel* m = selectionModel();
-  setSelectionModel(new PropertySelectionModel(model_));
-  m->deleteLater();
   if (model_)
   {
+    QItemSelectionModel* m = selectionModel();
+    setSelectionModel(new PropertySelectionModel(model_));
+    m->deleteLater();
+
     connect(model_, SIGNAL(propertyHiddenChanged(const Property*)), this,
             SLOT(propertyHiddenChanged(const Property*)), Qt::QueuedConnection);
     connect(model_, SIGNAL(expand(const QModelIndex&)), this, SLOT(expand(const QModelIndex&)));
