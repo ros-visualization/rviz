@@ -49,7 +49,7 @@ namespace Ogre
 {
 class SceneManager;
 class SceneNode;
-}
+} // namespace Ogre
 
 // needed for timeSignal
 Q_DECLARE_METATYPE(ros::Time);

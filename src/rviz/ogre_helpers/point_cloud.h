@@ -56,7 +56,7 @@ class RenderQueue;
 class Camera;
 class RenderSystem;
 class Matrix4;
-}
+} // namespace Ogre
 
 namespace rviz
 {

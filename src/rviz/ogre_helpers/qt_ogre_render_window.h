@@ -42,7 +42,7 @@ class Root;
 class RenderWindow;
 class Viewport;
 class Camera;
-}
+} // namespace Ogre
 
 namespace rviz
 {
@@ -68,9 +68,9 @@ public:
    */
   virtual void setPreRenderCallback(boost::function<void()> func);
   /**
-     * Set a callback which is called after each render
-     * @param func The callback functor
-     */
+   * Set a callback which is called after each render
+   * @param func The callback functor
+   */
   virtual void setPostRenderCallback(boost::function<void()> func);
 
   /** Overrides the default implementation.

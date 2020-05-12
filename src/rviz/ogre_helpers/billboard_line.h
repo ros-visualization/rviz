@@ -47,7 +47,7 @@ class SceneNode;
 class Quaternion;
 class Any;
 class BillboardChain;
-}
+} // namespace Ogre
 
 namespace rviz
 {

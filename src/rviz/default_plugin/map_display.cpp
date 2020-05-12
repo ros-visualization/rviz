@@ -238,10 +238,10 @@ MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(
   color_scheme_property_->addOption("costmap", 1);
   color_scheme_property_->addOption("raw", 2);
 
-  draw_under_property_ =
-      new Property("Draw Behind", false, "Rendering option, controls whether or not the map is always"
-                                         " drawn behind everything else.",
-                   this, SLOT(updateDrawUnder()));
+  draw_under_property_ = new Property(
+      "Draw Behind", false,
+      "Rendering option, controls whether or not the map is always drawn behind everything else.", this,
+      SLOT(updateDrawUnder()));
 
   resolution_property_ =
       new FloatProperty("Resolution", 0, "Resolution of the map. (not editable)", this);

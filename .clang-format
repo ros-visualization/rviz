@@ -23,7 +23,7 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: None
 AllowShortCaseLabelsOnASingleLine: false
 
 AlwaysBreakTemplateDeclarations: true
@@ -59,6 +59,7 @@ BreakBeforeBraces: Custom
 # Control of individual brace wrapping cases
 BraceWrapping:
     AfterClass: true
+    AfterCaseLabel: true
     AfterControlStatement: true
     AfterEnum: true
     AfterFunction: true

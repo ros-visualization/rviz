@@ -39,7 +39,7 @@ namespace Ogre
 {
 class SceneNode;
 class ManualObject;
-}
+} // namespace Ogre
 
 namespace rviz
 {

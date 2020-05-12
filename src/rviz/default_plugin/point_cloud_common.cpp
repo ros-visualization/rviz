@@ -336,10 +336,10 @@ PointCloudCommon::PointCloudCommon(Display* display)
                                                  SLOT(updateBillboardSize()), this);
   point_pixel_size_property_->setMin(1);
 
-  alpha_property_ =
-      new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the points.  Note that this "
-                                      "is experimental and does not always look correct.",
-                        display_, SLOT(updateAlpha()), this);
+  alpha_property_ = new FloatProperty("Alpha", 1.0,
+                                      "Amount of transparency to apply to the points. "
+                                      "Note that this is experimental and does not always look correct.",
+                                      display_, SLOT(updateAlpha()), this);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 

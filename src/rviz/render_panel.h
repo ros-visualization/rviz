@@ -47,7 +47,7 @@ class Root;
 class Camera;
 class RaySceneQuery;
 class ParticleSystem;
-}
+} // namespace Ogre
 
 namespace ros
 {

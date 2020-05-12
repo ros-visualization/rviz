@@ -51,7 +51,7 @@ namespace Ogre
 class WireBoundingBox;
 class SceneNode;
 class MovableObject;
-}
+} // namespace Ogre
 
 namespace rviz
 {

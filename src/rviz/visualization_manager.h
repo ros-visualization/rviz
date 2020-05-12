@@ -50,7 +50,7 @@ class Root;
 class SceneManager;
 class SceneNode;
 class Light;
-}
+} // namespace Ogre
 
 namespace ros
 {
@@ -407,8 +407,7 @@ protected:
 
   QTimer* update_timer_; ///< Update timer.  Display::update is called on each display whenever this
                          /// timer fires
-  ros::Time
-      last_update_ros_time_; ///< Update stopwatch.  Stores how long it's been since the last update
+  ros::Time last_update_ros_time_; ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
 
   volatile bool shutting_down_;

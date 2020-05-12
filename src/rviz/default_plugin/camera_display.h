@@ -52,7 +52,7 @@ class SceneNode;
 class ManualObject;
 class Rectangle2D;
 class Camera;
-}
+} // namespace Ogre
 
 namespace rviz
 {

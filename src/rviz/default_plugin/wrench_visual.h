@@ -9,7 +9,7 @@ namespace rviz
 {
 class Arrow;
 class BillboardLine;
-}
+} // namespace rviz
 
 namespace rviz
 {

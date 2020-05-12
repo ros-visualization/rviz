@@ -38,7 +38,7 @@ namespace Ogre
 class Camera;
 class SceneNode;
 class SceneManager;
-}
+} // namespace Ogre
 
 namespace rviz
 {

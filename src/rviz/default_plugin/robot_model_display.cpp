@@ -64,10 +64,10 @@ RobotModelDisplay::RobotModelDisplay()
                    "Whether to display the collision representation of the robot.", this,
                    SLOT(updateCollisionVisible()));
 
-  update_rate_property_ =
-      new FloatProperty("Update Interval", 0, "Interval at which to update the links, in seconds. "
-                                              " 0 means to update every update cycle.",
-                        this);
+  update_rate_property_ = new FloatProperty("Update Interval", 0,
+                                            "Interval at which to update the links, in seconds. "
+                                            "0 means to update every update cycle.",
+                                            this);
   update_rate_property_->setMin(0);
 
   alpha_property_ = new FloatProperty("Alpha", 1, "Amount of transparency to apply to the links.", this,

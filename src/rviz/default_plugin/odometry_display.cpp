@@ -47,16 +47,16 @@ namespace rviz
 {
 OdometryDisplay::OdometryDisplay()
 {
-  position_tolerance_property_ =
-      new FloatProperty("Position Tolerance", .1, "Distance, in meters from the last arrow dropped, "
-                                                  "that will cause a new arrow to drop.",
-                        this);
+  position_tolerance_property_ = new FloatProperty("Position Tolerance", .1,
+                                                   "Distance, in meters from the last arrow dropped, "
+                                                   "that will cause a new arrow to drop.",
+                                                   this);
   position_tolerance_property_->setMin(0);
 
-  angle_tolerance_property_ =
-      new FloatProperty("Angle Tolerance", .1, "Angular distance from the last arrow dropped, "
-                                               "that will cause a new arrow to drop.",
-                        this);
+  angle_tolerance_property_ = new FloatProperty("Angle Tolerance", .1,
+                                                "Angular distance from the last arrow dropped, "
+                                                "that will cause a new arrow to drop.",
+                                                this);
   angle_tolerance_property_->setMin(0);
 
   keep_property_ =

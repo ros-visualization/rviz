@@ -19,7 +19,7 @@ namespace rviz
 class ColorProperty;
 class FloatProperty;
 class IntProperty;
-}
+} // namespace rviz
 
 namespace rviz
 {

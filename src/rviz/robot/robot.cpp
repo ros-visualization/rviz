@@ -716,8 +716,9 @@ void Robot::update(const LinkUpdater& updater)
       // NaN.
       if (visual_orientation.isNaN())
       {
-        ROS_ERROR_THROTTLE(1.0, "visual orientation of %s contains NaNs. Skipping render as long as the "
-                                "orientation is invalid.",
+        ROS_ERROR_THROTTLE(1.0,
+                           "visual orientation of %s contains NaNs. "
+                           "Skipping render as long as the orientation is invalid.",
                            link->getName().c_str());
         continue;
       }
@@ -731,15 +732,17 @@ void Robot::update(const LinkUpdater& updater)
       }
       if (collision_orientation.isNaN())
       {
-        ROS_ERROR_THROTTLE(1.0, "collision orientation of %s contains NaNs. Skipping render as long as "
-                                "the orientation is invalid.",
+        ROS_ERROR_THROTTLE(1.0,
+                           "collision orientation of %s contains NaNs. "
+                           "Skipping render as long as the orientation is invalid.",
                            link->getName().c_str());
         continue;
       }
       if (collision_position.isNaN())
       {
-        ROS_ERROR_THROTTLE(1.0, "collision position of %s contains NaNs. Skipping render as long as the "
-                                "position is invalid.",
+        ROS_ERROR_THROTTLE(1.0,
+                           "collision position of %s contains NaNs. "
+                           "Skipping render as long as the position is invalid.",
                            link->getName().c_str());
         continue;
       }

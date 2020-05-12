@@ -59,9 +59,10 @@ PathDisplay::PathDisplay()
   style_property_->addOption("Lines", LINES);
   style_property_->addOption("Billboards", BILLBOARDS);
 
-  line_width_property_ = new FloatProperty("Line Width", 0.03, "The width, in meters, of each path line."
-                                                               "Only works with the 'Billboards' style.",
-                                           this, SLOT(updateLineWidth()), this);
+  line_width_property_ = new FloatProperty(
+      "Line Width", 0.03,
+      "The width, in meters, of each path line. Only works with the 'Billboards' style.", this,
+      SLOT(updateLineWidth()), this);
   line_width_property_->setMin(0.001);
   line_width_property_->hide();
 
