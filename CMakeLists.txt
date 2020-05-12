@@ -204,7 +204,11 @@ catkin_package(
     visualization_msgs
 )
 
-include_directories(SYSTEM
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.14.0")
+    set(SYSTEM "SYSTEM")
+endif()
+
+include_directories(${SYSTEM}
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
@@ -214,7 +218,7 @@ include_directories(SYSTEM
 )
 #catkin_lint: ignore_once external_directory
 include_directories(src ${EXPORT_HEADER_DIR})
-include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
+include_directories(${SYSTEM} ${catkin_INCLUDE_DIRS})
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
