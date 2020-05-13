@@ -413,7 +413,14 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   }
 
   Point* begin = &points_.front() + point_count_;
+#if defined(__GNUC__) && (__GNUC__ >= 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
   memcpy(begin, points, sizeof(Point) * num_points);
+#if defined(__GNUC__) && (__GNUC__ >= 8)
+#pragma GCC diagnostic pop
+#endif
 
   uint32_t vpp = getVerticesPerPoint();
   Ogre::RenderOperation::OperationType op_type;

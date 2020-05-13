@@ -765,6 +765,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport,
   ros::WallTime end = ros::WallTime::now();
   ros::WallDuration d = end - start;
   //  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
+  Q_UNUSED(d);
 
   Ogre::MaterialManager::getSingleton().removeListener(this);
 

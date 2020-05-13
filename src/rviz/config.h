@@ -131,7 +131,7 @@ public:
   /** @brief Default constructor.  Creates an empty config object. */
   Config();
   /** @brief Copy constructor.  Copies only the reference to the data, not the data itself. */
-  Config(const Config& source);
+  Config(const Config& source) = default;
   /** @brief Convenience constructor, makes a Value type Config object with the given value. */
   Config(const QVariant& value);
 

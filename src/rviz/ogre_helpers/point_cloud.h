@@ -67,6 +67,8 @@ public:
   PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords);
   ~PointCloudRenderable() override;
 
+  using Ogre::SimpleRenderable::getRenderOperation;
+
   Ogre::RenderOperation* getRenderOperation()
   {
     return &mRenderOp;

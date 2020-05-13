@@ -123,10 +123,6 @@ Config::Config() : node_(new Config::Node())
 {
 }
 
-Config::Config(const Config& source) : node_(source.node_)
-{
-}
-
 Config::Config(const QVariant& value) : node_(new Config::Node())
 {
   setValue(value);

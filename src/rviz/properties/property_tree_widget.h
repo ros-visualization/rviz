@@ -55,11 +55,19 @@ public:
 class RVIZ_EXPORT PropertyTreeWidget : public QTreeView
 {
   Q_OBJECT
+
 public:
   PropertyTreeWidget(QWidget* parent = nullptr);
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
   /** @brief Set the data model this widget should view. */
   void setModel(PropertyTreeModel* model);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
   PropertyTreeModel* getModel() const
   {
     return model_;
