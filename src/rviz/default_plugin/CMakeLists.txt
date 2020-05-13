@@ -47,6 +47,8 @@ set(SOURCE_FILES
   range_display.cpp
   relative_humidity_display.cpp
   robot_model_display.cpp
+  screw_display.cpp
+  screw_visual.cpp
   temperature_display.cpp
   tf_display.cpp
   tools/focus_tool.cpp
@@ -64,8 +66,6 @@ set(SOURCE_FILES
   view_controllers/fixed_orientation_ortho_view_controller.cpp
   view_controllers/fps_view_controller.cpp
   view_controllers/frame_view_controller.cpp
-  wrench_display.cpp
-  wrench_visual.cpp
 )
 
 add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
