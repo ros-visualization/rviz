@@ -81,7 +81,7 @@ void LaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan
   {
     auto tf = context_->getTF2BufferPtr();
 
-    projector_->transformLaserScanToPointCloud(fixed_frame_.toStdString(), *scan, *cloud, *tf,
+    projector_->transformLaserScanToPointCloud(fixed_frame_.toStdString(), *scan, *cloud, *tf, -1.0,
                                                laser_geometry::channel_option::Intensity);
   }
   catch (tf2::TransformException& e)
