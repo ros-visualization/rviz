@@ -71,7 +71,7 @@ void GoalTool::onPoseSet(double x, double y, double theta)
   tf2::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
   geometry_msgs::PoseStamped goal;
-  tf2::convert(goal.pose.orientation, quat);
+  goal.pose.orientation=tf2::toMsg(quat);
   goal.pose.position.x = x;
   goal.pose.position.y = y;
   goal.header.frame_id = fixed_frame;
