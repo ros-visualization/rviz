@@ -712,17 +712,17 @@ void frameCallback(const ros::TimerEvent& /*unused*/)
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped t;
 
-  tf2::convert(tf2::Vector3(0.0, 0.0, (counter % 1000) * 0.01), t.transform.translation);
-  tf2::convert(tf2::Quaternion(0.0, 0.0, 0.0, 1.0), t.transform.rotation);
+  t.transform.translation = tf2::toMsg(tf2::Vector3(0.0, 0.0, (counter % 1000) * 0.01));
+  t.transform.rotation = tf2::toMsg(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
   t.header.frame_id = "base_link";
   t.child_frame_id = "my_link";
   t.header.stamp = ros::Time::now();
   br.sendTransform(t);
 
-  tf2::convert(tf2::Vector3(0.0, 0.0, 0.0), t.transform.translation);
+  t.transform.translation = tf2::toMsg(tf2::Vector3(0.0, 0.0, 0.0));
   tf2::Quaternion q;
   q.setRPY(M_PI * 0.25, M_PI * 0.25, 0.0);
-  tf2::convert(q, t.transform.rotation);
+  t.transform.rotation = tf2::toMsg(q);
   t.header.frame_id = "base_link";
   t.child_frame_id = "rotate_base_link";
   t.header.stamp = ros::Time::now();

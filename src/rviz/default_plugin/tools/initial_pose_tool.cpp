@@ -29,6 +29,7 @@
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include <rviz/display_context.h>
 #include <rviz/properties/string_property.h>
@@ -85,9 +86,11 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   pose.pose.pose.position.x = x;
   pose.pose.pose.position.y = y;
 
+
+  geometry_msgs::Quaternion quat_msg;
   tf2::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
-  tf2::convert(pose.pose.pose.orientation, quat);
+  pose.pose.pose.orientation = tf2::toMsg(quat);
   pose.pose.covariance[6 * 0 + 0] = std::pow(std_dev_x_->getFloat(), 2);
   pose.pose.covariance[6 * 1 + 1] = std::pow(std_dev_y_->getFloat(), 2);
   pose.pose.covariance[6 * 5 + 5] = std::pow(std_dev_theta_->getFloat(), 2);

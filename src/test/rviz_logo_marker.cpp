@@ -26,7 +26,7 @@ void makeMarker()
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::MESH_RESOURCE;
 
-  tf2::convert(tf2::Quaternion(tf2::Vector3(0, 0, 1), 0.2), marker.pose.orientation);
+  marker.pose.orientation = tf2::toMsg(tf2::Quaternion(tf2::Vector3(0, 0, 1), 0.2));
 
   marker.pose.position.x = 0;
   marker.pose.position.y = -0.22;
@@ -84,10 +84,10 @@ void publishCallback(const ros::TimerEvent& /*unused*/)
 {
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped transform;
-  tf2::convert(tf2::Vector3(3, 1, 0), transform.transform.translation);
+  transform.transform.translation = tf2::toMsg(tf2::Vector3(3, 1, 0));
   tf2::Quaternion q;
   q.setRPY(0, 0, M_PI * 0.9);
-  tf2::convert(q, transform.transform.rotation);
+  transform.transform.rotation = tf2::toMsg(q);
   transform.header.frame_id = "base_link";
   transform.header.stamp = ros::Time::now();
   transform.child_frame_id = "rviz_logo";
