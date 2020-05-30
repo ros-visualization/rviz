@@ -10,7 +10,7 @@ from sensor_msgs.msg import PointField
 from std_msgs.msg import Header
 
 rospy.init_node( 'pc2_publisher' )
-pub = rospy.Publisher( 'test_cloud', PointCloud2 )
+pub = rospy.Publisher( 'test_cloud', PointCloud2, queue_size=10)
 
 rate = 1
 moving = True
