@@ -33,7 +33,7 @@ def publishPC2():
         for j in range(height):
            x = float(i) * 4 / width
            y = float(j) * 4 / height
-           z = 0.1 *  math.sin(float(i)/10.0) * math.sin(float(j)/10.0)
+           z = 0.5 *  math.sin(float(i)/10.0) * math.sin(float(j)/10.0)
            pt = [x, y, z]
            points.append(pt)
 
