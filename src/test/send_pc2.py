@@ -10,7 +10,7 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import PointField
 from std_msgs.msg import Header
 
-rate = 100
+rate = 10
 moving = True
 width = 100
 height = 100
