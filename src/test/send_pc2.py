@@ -5,7 +5,6 @@
 import math
 import rospy
 import numpy as np
-import itertools
 from sensor_msgs import point_cloud2
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import PointField
