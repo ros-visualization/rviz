@@ -17,7 +17,8 @@ height = 100
 def publishPC2(count):
     fields = [ PointField('x', 0, PointField.FLOAT32, 1),
                PointField('y', 4, PointField.FLOAT32, 1),
-               PointField('z', 8, PointField.FLOAT32, 1) ]
+               PointField('z', 8, PointField.FLOAT32, 1),
+               PointField('intensity', 12, PointField.FLOAT32, 1) ]
 
     header = Header()
     header.frame_id = "map"
@@ -30,7 +31,8 @@ def publishPC2(count):
            x = float(i) * 4 / width
            y = float(j) * 4 / height
            z = 0.5 *  math.sin(float(i - count)/10.0) * math.sin(float(j)/10.0)
-           pt = [x, y, z]
+           intensity = z
+           pt = [x, y, z, intensity]
            points.append(pt)
 
     pc2 = point_cloud2.create_cloud(header, fields, points)
