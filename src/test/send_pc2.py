@@ -4,6 +4,8 @@
 
 import math
 import rospy
+import numpy as np
+import itertools
 from sensor_msgs import point_cloud2
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import PointField
@@ -23,24 +25,24 @@ def publishPC2(count):
     header = Header()
     header.frame_id = "map"
     header.stamp = rospy.Time.now()
+    
+    i, j = np.meshgrid(range(width), range(height))
 
-    count = 0
-    points = []
-    for i in range(width):
-        for j in range(height):
-           x = float(i) * 4 / width
-           y = float(j) * 4 / height
-           z = 0.5 *  math.sin(float(i - count)/10.0) * math.sin(float(j)/10.0)
-           intensity = z
-           pt = [x, y, z, intensity]
-           points.append(pt)
+    x = i * 4 / width
+    y = j * 4 / height
+    z = (0.5 * np.sin((i-count)/10.0) * np.sin(j/10.0))
+
+    points = list(zip(x.ravel(), y.ravel(), z.ravel(), z.ravel()))
+
+    if (moving):
+        count += 1
 
     pc2 = point_cloud2.create_cloud(header, fields, points)
     pub.publish( pc2 )
 
 if __name__ == '__main__':
     rospy.init_node( 'pc2_publisher' )
-    pub = rospy.Publisher( 'test_cloud', PointCloud2, queue_size=100)
+    pub = rospy.Publisher( 'test_cloud', PointCloud2, queue_size=100 )
 
     count = 0
     while not rospy.is_shutdown():
