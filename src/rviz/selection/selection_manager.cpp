@@ -582,17 +582,20 @@ void SelectionManager::unpackColors(const Ogre::PixelBox& box, V_CollObject& pix
 
   pixels.clear();
   pixels.reserve(w * h);
+  size_t size = Ogre::PixelUtil::getMemorySize(1, 1, 1, box.format);
 
   for (int y = 0; y < h; y++)
   {
     for (int x = 0; x < w; x++)
     {
-      uint32_t pos = (x + y * w) * 4;
-
-      uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
-      uint32_t handle = colorToHandle(box.format, pix_val);
-
-      pixels.push_back(handle);
+      if (size == 4) // In case of a 4-byte color format, we can directly process the 32-bit values
+      {
+        uint32_t pos = (x + y * w) * 4;
+        uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
+        pixels.push_back(colorToHandle(box.format, pix_val));
+      }
+      else
+        pixels.push_back(colorToHandle(const_cast<Ogre::PixelBox&>(box).getColourAt(x, y, 1)));
     }
   }
 }
