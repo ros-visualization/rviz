@@ -275,7 +275,7 @@ private:
               unsigned texture_width,
               unsigned textured_height);
 
-  void unpackColors(const Ogre::PixelBox& box, V_CollObject& pixels);
+  void unpackColors(Ogre::PixelBox& box, V_CollObject& pixels);
 
   void setDepthTextureSize(unsigned width, unsigned height);
 
