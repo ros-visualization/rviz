@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.13 (2020-06-24)
+--------------------
+* [feature] Make the goal pose tool magenta (`#1520 <https://github.com/ros-visualization/rviz/issues/1520>`_)
+* [bugfix]  Fix memory access in case of 3-byte pixel formats (`#1519 <https://github.com/ros-visualization/rviz/issues/1519>`_)
+* [bugfix]  PropertyTree: set custom SelectionModel only with valid model (`#1504 <https://github.com/ros-visualization/rviz/issues/1504>`_)
+* Contributors: Ivor Wanders, Michael Görner, Robert Haschke
+
 1.13.12 (2020-05-03)
 --------------------
 * [maint] clang-format (`#1502 <https://github.com/ros-visualization/rviz/issues/1502>`_)
