@@ -2,6 +2,20 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.1 (2020-06-24)
+-------------------
+* Merged melodic-devel improvements
+  * [feature] Make the goal pose tool magenta (`#1520 <https://github.com/ros-visualization/rviz/issues/1520>`_)
+  * [bugfix]  Fix memory access in case of 3-byte pixel formats (`#1519 <https://github.com/ros-visualization/rviz/issues/1519>`_)
+  * [bugfix]  PropertyTree: set custom SelectionModel only with valid model (`#1504 <https://github.com/ros-visualization/rviz/issues/1504>`_)
+* [bugfix] Fix initial pose and goal pose tools (`#1510 <https://github.com/ros-visualization/rviz/issues/1510>`_)
+* [bugfix] Fix cutoff in LaserScanDisplay (`#1512 <https://github.com/ros-visualization/rviz/issues/1512>`_)
+* [maint]  Added test/send_point_cloud_2.py (`#1514 <https://github.com/ros-visualization/rviz/issues/1514>`_)
+* [maint]  Fix (or silence) warnings of newer gcc / clang
+* [maint]  clang-format-10
+* PropertyTree: set custom SelectionModel only with valid model (`#1504 <https://github.com/ros-visualization/rviz/issues/1504>`_)
+* Contributors: Evan Flynn, G.Doisy, Ivor Wanders, Michael Görner, Robert Haschke
+
 1.14.0 (2020-05-11)
 -------------------
 * [feature] Added scale and color properties to Marker selection panel (`#1436 <https://github.com/ros-visualization/rviz/issues/1436>`_)
