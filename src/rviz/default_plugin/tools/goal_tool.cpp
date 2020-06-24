@@ -31,6 +31,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <rviz/display_context.h>
+#include <rviz/ogre_helpers/arrow.h>
 #include <rviz/properties/string_property.h>
 
 #include <rviz/default_plugin/tools/goal_tool.h>
@@ -49,6 +50,7 @@ GoalTool::GoalTool()
 void GoalTool::onInitialize()
 {
   PoseTool::onInitialize();
+  arrow_->setColor(1.0f, 0.0f, 1.0f, 1.0f);
   setName("2D Nav Goal");
   updateTopic();
 }
