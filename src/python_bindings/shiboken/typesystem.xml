@@ -2,23 +2,24 @@
 <typesystem package="librviz_shiboken">
   <load-typesystem name="typesystem_core.xml" generate="no"/>
   <load-typesystem name="typesystem_gui.xml" generate="no"/>
-  <namespace-type name="rviz"/>
-  <object-type name="rviz::VisualizationFrame"/>
-  <object-type name="rviz::VisualizationManager"/>
-  <object-type name="rviz::Display"/>
-  <object-type name="rviz::DisplayGroup"/>
-  <object-type name="rviz::OgreLogging"/>
-  <object-type name="rviz::Property"/>
-  <object-type name="rviz::BoolProperty"/>
-  <object-type name="rviz::PanelDockWidget"/>
-  <object-type name="rviz::ViewManager"/>
-  <object-type name="rviz::ViewController"/>
-  <object-type name="rviz::Tool"/>
-  <object-type name="rviz::ToolManager"/>
-  <object-type name="rviz::Config">
-    <enum-type name="Type"/>
-    <object-type name="MapIterator"/>
-  </object-type>
-  <object-type name="rviz::YamlConfigReader"/>
-  <object-type name="rviz::YamlConfigWriter"/>
+  <namespace-type name="rviz">
+    <object-type name="VisualizationFrame"/>
+    <object-type name="VisualizationManager"/>
+    <object-type name="Display"/>
+    <object-type name="DisplayGroup"/>
+    <object-type name="OgreLogging"/>
+    <object-type name="Property"/>
+    <object-type name="BoolProperty"/>
+    <object-type name="PanelDockWidget"/>
+    <object-type name="ViewManager"/>
+    <object-type name="ViewController"/>
+    <object-type name="Tool"/>
+    <object-type name="ToolManager"/>
+    <object-type name="Config">
+      <enum-type name="Type"/>
+      <object-type name="MapIterator"/>
+    </object-type>
+    <object-type name="YamlConfigReader"/>
+    <object-type name="YamlConfigWriter"/>
+  </namespace-type>
 </typesystem>
