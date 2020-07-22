@@ -203,7 +203,7 @@ protected:
     return mAABB;
   }
 
-  const Ogre::String& getName() const override
+  const Ogre::String& getName() const
   {
     return mName;
   }
