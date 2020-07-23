@@ -203,7 +203,11 @@ protected:
     return mAABB;
   }
 
+#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR <= 9
+  const Ogre::String& getName() const override
+#else
   const Ogre::String& getName() const
+#endif
   {
     return mName;
   }
