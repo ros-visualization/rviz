@@ -137,9 +137,6 @@ void CameraDisplay::onInitialize()
     camera_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
   }
 
-  //bg_scene_node_ = scene_node_->createChildSceneNode();
-  //fg_scene_node_ = scene_node_->createChildSceneNode();
-
   bg_scene_node_ = camera_scene_manager_->getRootSceneNode()->createChildSceneNode();
   fg_scene_node_ = camera_scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -202,7 +199,7 @@ void CameraDisplay::onInitialize()
   render_panel_->getRenderWindow()->setActive(false);
   render_panel_->resize(640, 480);
   render_panel_->initialize(context_->getSceneManager(), context_);
-  //render_panel_->initialize(camera_scene_manager_, context_);
+  // render_panel_->initialize(camera_scene_manager_, context_);
 
   setAssociatedWidget(render_panel_);
 
@@ -227,10 +224,13 @@ void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& /*evt*/
 {
   QString image_position = image_position_property_->getString();
 
-  if(has_run_once_) {
+  if (has_run_once_)
+  {
     fg_scene_node_->setVisible(caminfo_ok_ && (image_position == OVERLAY || image_position == BOTH));
     bg_scene_node_->setVisible(caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH));
-  } else {
+  }
+  else
+  {
     has_run_once_ = true;
   }
 

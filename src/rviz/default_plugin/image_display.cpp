@@ -148,7 +148,7 @@ ImageDisplay::~ImageDisplay()
 
 void ImageDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& /*evt*/)
 {
-  if(has_run_once_)
+  if (has_run_once_)
   {
     img_scene_node_->setVisible(true);
   }

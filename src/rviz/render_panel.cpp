@@ -101,7 +101,7 @@ void RenderPanel::leaveEvent(QEvent* /*event*/)
   }
 }
 
-void RenderPanel::resizeEvent(QResizeEvent * event)
+void RenderPanel::resizeEvent(QResizeEvent* event)
 {
   QWidget::resizeEvent(event);
   render_window_->windowMovedOrResized();
