@@ -145,7 +145,6 @@ void CameraDisplay::onInitialize()
 
   {
     static int count = 0;
-    num_display_id_ = count;
     UniformStringStream ss;
     ss << "CameraDisplayObject" << count++;
 

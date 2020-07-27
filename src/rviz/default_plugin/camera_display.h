@@ -139,8 +139,6 @@ private:
   uint32_t vis_bit_;
 
   bool has_run_once_;
-
-  int num_display_id_;
 };
 
 } // namespace rviz
