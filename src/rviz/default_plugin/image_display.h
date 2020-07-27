@@ -59,7 +59,7 @@ namespace rviz
  * \class ImageDisplay
  *
  */
-class ImageDisplay : public ImageDisplayBase
+class ImageDisplay : public ImageDisplayBase, public Ogre::RenderTargetListener
 {
   Q_OBJECT
 public:
@@ -70,6 +70,10 @@ public:
   void onInitialize() override;
   void update(float wall_dt, float ros_dt) override;
   void reset() override;
+
+  // Overrides from Ogre::RenderTargetListener
+  void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt) override;
+  void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt) override;
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
@@ -98,6 +102,8 @@ private:
   FloatProperty* max_property_;
   IntProperty* median_buffer_size_property_;
   bool got_float_image_;
+
+  bool has_run_once_;
 };
 
 } // namespace rviz

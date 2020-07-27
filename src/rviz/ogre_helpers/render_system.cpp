@@ -423,7 +423,7 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(WindowIDType window_id,
         // Created a non-stereo window.  Discard it and try again (below)
         // without the stereo parameter.
         ogre_root_->detachRenderTarget(window);
-        window->destroy();
+        ogre_root_->destroyRenderTarget(window);
         window = nullptr;
         stream << "x";
         is_stereo = false;
@@ -480,6 +480,7 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(const std::string& name,
       if (x_baddrawable_error)
       {
         ogre_root_->detachRenderTarget(window);
+        ogre_root_->destroyRenderTarget(window);
         window = nullptr;
         x_baddrawable_error = false;
       }
