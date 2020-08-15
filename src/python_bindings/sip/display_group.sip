@@ -5,6 +5,7 @@ class DisplayGroup: rviz::Display /NoDefaultCtors/
 {
 %TypeHeaderCode
 #define ROS_PACKAGE_NAME "rviz"
+#include <boost/shared_ptr.hpp>
 #include <rviz/display_group.h>
 %End
 

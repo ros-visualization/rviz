@@ -26,12 +26,18 @@ find_package(Boost REQUIRED
 find_package(urdfdom_headers REQUIRED)
 
 find_package(ASSIMP REQUIRED)
+if(TARGET assimp::assimp)
+  set(ASSIMP_LIBRARIES assimp::assimp)
+endif()
 include_directories(${ASSIMP_INCLUDE_DIRS})
 
 # OGRE doesn't come with correctly installed cmake files.
 # We need both, OGRE and OGRE-Overlay. Look for both simulatenously and use prefix X_
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(X OGRE OGRE-Overlay)
+if(NOT X_FOUND)
+  find_package(OGRE REQUIRED COMPONENTS Overlay)
+endif()
 
 # TODO: adapt version for Noetic release
 # Disable deprecation warnings for OGRE >= 1.10
@@ -65,10 +71,15 @@ endif(NOT DEFINED OGRE_LIBRARIES)
 message(STATUS "OGRE_LIBRARIES=${OGRE_LIBRARIES}")
 
 # Define OGRE_INCLUDE_DIRS as find_package would do
-set(OGRE_INCLUDE_DIRS ${X_INCLUDE_DIRS})
+if(DEFINED X_INCLUDE_DIRS)
+  set(OGRE_INCLUDE_DIRS ${X_INCLUDE_DIRS})
+endif()
 message(STATUS "OGRE_INCLUDE_DIRS=${OGRE_INCLUDE_DIRS}")
 
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
+if(DEFINED OGRE_PLUGIN_DIR)
+  set(OGRE_PLUGIN_PATH "${OGRE_PLUGIN_DIR}")
+endif()
 if(NOT DEFINED OGRE_PLUGIN_PATH)
   execute_process(COMMAND
     ${PKG_CONFIG_EXECUTABLE} --variable=plugindir OGRE
