@@ -27,6 +27,7 @@ find_package(urdfdom_headers REQUIRED)
 
 find_package(ASSIMP REQUIRED)
 if(TARGET assimp::assimp)
+  # since ASSIMP v5.0.0, it no longer defines ASSIMP_LIBRARIES.
   set(ASSIMP_LIBRARIES assimp::assimp)
 endif()
 include_directories(${ASSIMP_INCLUDE_DIRS})
