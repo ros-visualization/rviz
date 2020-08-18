@@ -26,6 +26,10 @@ find_package(Boost REQUIRED
 find_package(urdfdom_headers REQUIRED)
 
 find_package(ASSIMP REQUIRED)
+if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
+  # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
+  set(ASSIMP_LIBRARIES assimp::assimp)
+endif()
 include_directories(${ASSIMP_INCLUDE_DIRS})
 
 # OGRE doesn't come with correctly installed cmake files.
