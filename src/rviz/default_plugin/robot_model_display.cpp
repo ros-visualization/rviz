@@ -140,23 +140,30 @@ void RobotModelDisplay::load()
   context_->queueRender();
 
   std::string content;
-  if (!update_nh_.getParam(robot_description_property_->getStdString(), content))
+  try
   {
-    std::string loc;
-    if (update_nh_.searchParam(robot_description_property_->getStdString(), loc))
+    if (!update_nh_.getParam(robot_description_property_->getStdString(), content))
     {
-      update_nh_.getParam(loc, content);
+      std::string loc;
+      if (update_nh_.searchParam(robot_description_property_->getStdString(), loc))
+      {
+        update_nh_.getParam(loc, content);
+      }
+      else
+      {
+        clear();
+        setStatus(StatusProperty::Error, "URDF",
+                  "Parameter [" + robot_description_property_->getString() +
+                      "] does not exist, and was not found by searchParam()");
+        // try again in a second
+        QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+        return;
+      }
     }
-    else
-    {
-      clear();
-      setStatus(StatusProperty::Error, "URDF",
-                "Parameter [" + robot_description_property_->getString() +
-                    "] does not exist, and was not found by searchParam()");
-      // try again in a second
-      QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
-      return;
-    }
+  }
+  catch (const ros::Exception& e)
+  {
+    ROS_ERROR_STREAM_NAMED("RobotModelDisplay", e.what());
   }
 
   if (content.empty())
