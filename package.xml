@@ -5,6 +5,8 @@
      3D visualization tool for ROS.
   </description>
   <maintainer email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</maintainer>
+  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <maintainer email="alejandro@openrobotics.org">Alejandro Hernandez Cordero</maintainer>
   <license>BSD</license>
   <license>Creative Commons</license>
 
