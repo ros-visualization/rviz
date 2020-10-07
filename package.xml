@@ -4,7 +4,6 @@
   <description>
      3D visualization tool for ROS.
   </description>
-  <maintainer email="william@osrfoundation.org">William Woodall</maintainer>
   <maintainer email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</maintainer>
   <license>BSD</license>
   <license>Creative Commons</license>
@@ -12,6 +11,7 @@
   <author>Dave Hershberger</author>
   <author>David Gossow</author>
   <author>Josh Faust</author>
+  <author email="william@osrfoundation.org">William Woodall</author>
   <url type="website">http://wiki.ros.org/rviz</url>
   <url type="repository">https://github.com/ros-visualization/rviz</url>
   <url type="bugtracker">https://github.com/ros-visualization/rviz/issues</url>
