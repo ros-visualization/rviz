@@ -25,6 +25,7 @@ WrenchVisual::WrenchVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* p
   frame_node_ = parent_node->createChildSceneNode();
   force_node_ = frame_node_->createChildSceneNode();
   torque_node_ = frame_node_->createChildSceneNode();
+  hide_small_values_ = true;
 
   // We create the arrow object within the frame node so that we can
   // set its position and direction relative to its header frame.
