@@ -1,5 +1,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <QTimer>
 
 #include <rviz/visualization_manager.h>
 #include <rviz/properties/color_property.h>
@@ -182,21 +183,32 @@ void EffortDisplay::load()
 {
   // get robot_description
   std::string content;
-  if (!update_nh_.getParam(robot_description_property_->getStdString(), content))
+  try
   {
-    std::string loc;
-    if (update_nh_.searchParam(robot_description_property_->getStdString(), loc))
+    if (!update_nh_.getParam(robot_description_property_->getStdString(), content))
     {
-      update_nh_.getParam(loc, content);
+      std::string loc;
+      if (update_nh_.searchParam(robot_description_property_->getStdString(), loc))
+        update_nh_.getParam(loc, content);
+      else
+      {
+        clear();
+        setStatus(StatusProperty::Error, "URDF",
+                  QString("Parameter [%1] does not exist, and was not found by searchParam()")
+                      .arg(robot_description_property_->getString()));
+        // try again in a second
+        QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+        return;
+      }
     }
-    else
-    {
-      clear();
-      setStatus(rviz::StatusProperty::Error, "URDF",
-                "Parameter [" + robot_description_property_->getString() +
-                    "] does not exist, and was not found by searchParam()");
-      return;
-    }
+  }
+  catch (const ros::InvalidNameException& e)
+  {
+    clear();
+    setStatus(StatusProperty::Error, "URDF",
+              QString("Invalid parameter name: %1.\n%2")
+                  .arg(robot_description_property_->getString(), e.what()));
+    return;
   }
 
   if (content.empty())
