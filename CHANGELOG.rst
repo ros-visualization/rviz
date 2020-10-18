@@ -2,6 +2,21 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.2 (2020-10-19)
+-------------------
+* Merged melodic-devel improvements
+  * [fix]   SplitterHandle: Consider scrollbar width. Fixes `#1545 <https://github.com/ros-visualization/rviz/issues/1545>`_.
+  * [fix]   Handle InvalidNameException when loading robot description
+  * [fix]   WrenchVisual: Add missing initialization of ``hide_small_values_``
+  * [fix]   Fixup `#1519 <https://github.com/ros-visualization/rviz/issues/1519>`_: Correctly (and efficiently) handle 3-byte pixel formats
+  * [maint] Adapt to clang-format-10
+* [fix]     Selectively install font definition file, suppressing Ogre runtime warning
+* [fix]     Suppress cmake warning from libassimp
+* [feature] Generic ScrewDisplay for TwistStamped, AccelStamped, and WrenchStamped
+* [maint]   Find OGRE based on cmake config and fallback to pkg-config
+* [maint]   Correctly link against libassimp for version >= 5.0
+* Contributors: Chris Lalancette, Markus Vieth, Robert Haschke, Sean Yen, Wolf Vollprecht
+
 1.14.1 (2020-06-24)
 -------------------
 * Merged melodic-devel improvements
