@@ -7,13 +7,13 @@ namespace Ogre
 {
 class Vector3;
 class Quaternion;
-}
+} // namespace Ogre
 
 namespace rviz
 {
 class Arrow;
 class BillboardLine;
-}
+} // namespace rviz
 
 namespace rviz
 {

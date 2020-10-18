@@ -38,7 +38,7 @@ namespace Ogre
 {
 class OverlaySystem;
 class SceneManager;
-}
+} // namespace Ogre
 
 namespace rviz
 {

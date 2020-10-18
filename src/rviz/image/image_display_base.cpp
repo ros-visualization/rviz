@@ -122,8 +122,9 @@ void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
 void ImageDisplayBase::failedMessage(const sensor_msgs::Image::ConstPtr& msg,
                                      tf2_ros::FilterFailureReason reason)
 {
-  setStatusStd(StatusProperty::Error, "Image", context_->getFrameManager()->discoverFailureReason(
-                                                   msg->header.frame_id, msg->header.stamp, "", reason));
+  setStatusStd(StatusProperty::Error, "Image",
+               context_->getFrameManager()->discoverFailureReason(msg->header.frame_id,
+                                                                  msg->header.stamp, "", reason));
 }
 
 

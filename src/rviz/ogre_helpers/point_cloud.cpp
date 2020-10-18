@@ -66,6 +66,7 @@ static float g_billboard_sphere_vertices[3 * 3] = {
 };
 
 static float g_box_vertices[6 * 6 * 3] = {
+    // clang-format off
     // front
     -0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
     0.5f, -0.5f, -0.5f,
@@ -85,7 +86,7 @@ static float g_box_vertices[6 * 6 * 3] = {
 
     // bottom
     -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5,
-};
+}; // clang-format on
 
 Ogre::String PointCloud::sm_Type = "PointCloud";
 

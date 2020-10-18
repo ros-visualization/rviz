@@ -56,7 +56,7 @@ typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler>
 
 /** @brief Displays the pose from a geometry_msgs::PoseWithCovarianceStamped message. */
 class PoseWithCovarianceDisplay
-    : public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
+  : public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
 {
   Q_OBJECT
 public:

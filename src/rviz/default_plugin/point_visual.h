@@ -7,7 +7,7 @@ namespace Ogre
 {
 class Vector3;
 class Quaternion;
-}
+} // namespace Ogre
 
 namespace rviz
 {

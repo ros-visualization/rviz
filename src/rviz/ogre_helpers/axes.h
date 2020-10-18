@@ -46,7 +46,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class ColourValue;
-}
+} // namespace Ogre
 
 namespace rviz
 {

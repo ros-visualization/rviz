@@ -55,10 +55,10 @@ RangeDisplay::RangeDisplay()
       "Buffer Length", 1, "Number of prior measurements to display.", this, SLOT(updateBufferLength()));
   buffer_length_property_->setMin(1);
 
-  queue_size_property_ =
-      new IntProperty("Queue Size", 100, "Size of the tf message filter queue. It usually needs to be "
+  queue_size_property_ = new IntProperty("Queue Size", 100,
+                                         "Size of the tf message filter queue. It usually needs to be "
                                          "set at least as high as the number of sonar frames.",
-                      this, SLOT(updateQueueSize()));
+                                         this, SLOT(updateQueueSize()));
 }
 
 void RangeDisplay::onInitialize()

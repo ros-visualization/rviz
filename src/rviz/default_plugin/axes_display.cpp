@@ -108,9 +108,9 @@ void AxesDisplay::update(float /*dt*/, float /*ros_dt*/)
     }
     else
     {
-      setStatus(StatusProperty::Error, "Transform", "Could not transform from [" + qframe +
-                                                        "] to Fixed Frame [" + fixed_frame_ +
-                                                        "] for an unknown reason");
+      setStatus(StatusProperty::Error, "Transform",
+                "Could not transform from [" + qframe + "] to Fixed Frame [" + fixed_frame_ +
+                    "] for an unknown reason");
     }
   }
 }

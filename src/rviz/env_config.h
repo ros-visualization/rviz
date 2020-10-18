@@ -36,6 +36,6 @@ namespace rviz
 std::string get_version();
 std::string get_distro();
 std::string get_ogre_plugin_path();
-}
+} // namespace rviz
 
 #endif // RVIZ_ENV_CONFIG_H

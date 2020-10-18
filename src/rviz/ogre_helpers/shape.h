@@ -42,7 +42,7 @@ class SceneManager;
 class SceneNode;
 class Any;
 class Entity;
-}
+} // namespace Ogre
 
 namespace rviz
 {

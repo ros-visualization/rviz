@@ -21,7 +21,7 @@ class StringProperty;
 class CategoryProperty;
 class BoolProperty;
 class RosTopicProperty;
-}
+} // namespace rviz
 
 namespace urdf
 {

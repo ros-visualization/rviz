@@ -181,10 +181,10 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
   scale_property_ =
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
 
-  update_rate_property_ =
-      new FloatProperty("Update Interval", 0, "The interval, in seconds, at which to update the frame "
-                                              "transforms.  0 means to do so every update cycle.",
-                        this);
+  update_rate_property_ = new FloatProperty("Update Interval", 0,
+                                            "The interval, in seconds, at which to update the frame "
+                                            "transforms. 0 means to do so every update cycle.",
+                                            this);
   update_rate_property_->setMin(0);
 
   frame_timeout_property_ = new FloatProperty(

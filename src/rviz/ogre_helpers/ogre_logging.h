@@ -63,7 +63,12 @@ public:
   static void configureLogging();
 
 private:
-  typedef enum { StandardOut, FileLogging, NoLogging } Preference;
+  typedef enum
+  {
+    StandardOut,
+    FileLogging,
+    NoLogging
+  } Preference;
   static Preference preference_;
   static QString filename_;
 };

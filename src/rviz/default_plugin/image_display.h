@@ -51,7 +51,7 @@ namespace Ogre
 {
 class SceneNode;
 class Rectangle2D;
-}
+} // namespace Ogre
 
 namespace rviz
 {

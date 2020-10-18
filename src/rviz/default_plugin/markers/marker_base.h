@@ -45,7 +45,7 @@ class SceneNode;
 class Vector3;
 class Quaternion;
 class Entity;
-}
+} // namespace Ogre
 
 namespace rviz
 {

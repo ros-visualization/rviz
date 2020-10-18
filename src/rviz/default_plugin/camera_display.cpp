@@ -400,9 +400,9 @@ bool CameraDisplay::updateCamera()
 
   if (img_height == 0.0 || img_width == 0.0)
   {
-    setStatus(StatusProperty::Error, "Camera Info", "Could not determine width/height of image due to "
-                                                    "malformed CameraInfo (either width or height is "
-                                                    "0)");
+    setStatus(StatusProperty::Error, "Camera Info",
+              "Could not determine width/height of image due to malformed CameraInfo "
+              "(either width or height is 0)");
     return false;
   }
 
@@ -542,10 +542,9 @@ void CameraDisplay::reset()
     const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic);
     boost::mutex::scoped_lock lock(caminfo_mutex_);
     if (!current_caminfo_)
-      setStatus(StatusProperty::Warn, "Camera Info", "No CameraInfo received on [" +
-                                                         QString::fromStdString(caminfo_topic) +
-                                                         "].\n"
-                                                         "Topic may not exist.");
+      setStatus(StatusProperty::Warn, "Camera Info",
+                "No CameraInfo received on [" + QString::fromStdString(caminfo_topic) +
+                    "].\nTopic may not exist.");
   }
 }
 

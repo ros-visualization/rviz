@@ -46,7 +46,7 @@ class ManualObject;
 class SceneNode;
 
 class Any;
-}
+} // namespace Ogre
 
 namespace rviz
 {

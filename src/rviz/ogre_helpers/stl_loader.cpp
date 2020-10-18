@@ -144,19 +144,19 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
   size_t expected_size = binary_stl_header_len + num_triangles * number_of_bytes_per_triangle;
   if (num_bytes < expected_size)
   {
-    ROS_ERROR_STREAM("The STL file '" << origin << "' is malformed. According "
-                                                   "to the binary STL header it should have '"
-                                      << num_triangles << "' triangles, but it has too little"
-                                      << " data for that to be the case.");
+    ROS_ERROR_STREAM("The STL file '"
+                     << origin << "' is malformed. According to the binary STL header it should have '"
+                     << num_triangles
+                     << "' triangles, but it has too little data for that to be the case.");
     return false;
   }
   else if (num_bytes > expected_size)
   {
-    ROS_WARN_STREAM("The STL file '" << origin << "' is malformed. According "
-                                                  "to the binary STL header it should have '"
-                                     << num_triangles << "' triangles, but it has too much"
-                                     << " data for that to be the case. The extra data will be"
-                                     << " ignored.");
+    ROS_WARN_STREAM("The STL file '"
+                    << origin << "' is malformed. According to the binary STL header it should have '"
+                    << num_triangles
+                    << "' triangles, but it has too much data for that to be the case. "
+                       "The extra data will be ignored.");
   }
 
   // load the binary STL data

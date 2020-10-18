@@ -54,7 +54,7 @@ namespace Ogre
 class RenderQueue;
 class Camera;
 class Font;
-}
+} // namespace Ogre
 
 namespace rviz
 {

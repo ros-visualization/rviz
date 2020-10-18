@@ -40,7 +40,7 @@ namespace ogre_tools
 {
 // TODO: remove in noetic
 // Please use assimp or rviz::loadMeshFromResource directly
-class[[deprecated]] STLLoader
+class [[deprecated]] STLLoader
 {
 public:
   STLLoader();

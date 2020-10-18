@@ -38,7 +38,7 @@ namespace Ogre
 class Camera;
 class SceneNode;
 class SceneManager;
-}
+} // namespace Ogre
 
 namespace rviz
 {
@@ -106,30 +106,30 @@ public:
    */
   virtual void yaw(float angle) = 0;
   /**
-     * \brief Pitch the camera.
-     *
-     * Calls to pitch are cumulative, so:
-     *   pitch(PI);
-     *   pitch(PI);
-     *
-     * is equivalent to
-     *  pitch(2*PI);
-     *
-     * @param angle Angle to pitch, in radians
-     */
+   * \brief Pitch the camera.
+   *
+   * Calls to pitch are cumulative, so:
+   *   pitch(PI);
+   *   pitch(PI);
+   *
+   * is equivalent to
+   *  pitch(2*PI);
+   *
+   * @param angle Angle to pitch, in radians
+   */
   virtual void pitch(float angle) = 0;
   /**
-       * \brief Roll the camera.
-       *
-       * Calls to roll are cumulative, so:
-       *   roll(PI);
-       *   roll(PI);
-       *
-       * is equivalent to
-       *  roll(2*PI);
-       *
-       * @param angle Angle to roll, in radians
-       */
+   * \brief Roll the camera.
+   *
+   * Calls to roll are cumulative, so:
+   *   roll(PI);
+   *   roll(PI);
+   *
+   * is equivalent to
+   *  roll(2*PI);
+   *
+   * @param angle Angle to roll, in radians
+   */
   virtual void roll(float angle) = 0;
 
   /**

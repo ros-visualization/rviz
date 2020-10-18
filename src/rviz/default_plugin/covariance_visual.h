@@ -48,7 +48,7 @@ namespace Ogre
 class SceneManager;
 class SceneNode;
 class Any;
-}
+} // namespace Ogre
 
 namespace Eigen
 {

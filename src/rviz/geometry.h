@@ -35,7 +35,7 @@ namespace Ogre
 class Plane;
 class Vector3;
 class Vector2;
-}
+} // namespace Ogre
 
 namespace rviz
 {

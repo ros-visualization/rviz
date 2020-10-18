@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 /*
-* measure_tool.cpp
-*
-*  Created on: Aug 8, 2012
-*      Author: gossow
-*/
+ * measure_tool.cpp
+ *
+ *  Created on: Aug 8, 2012
+ *      Author: gossow
+ */
 
 #include "measure_tool.h"
 

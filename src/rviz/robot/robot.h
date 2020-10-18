@@ -57,7 +57,7 @@ namespace rviz
 {
 class Object;
 class Axes;
-}
+} // namespace rviz
 
 namespace tf
 {
