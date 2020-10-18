@@ -1,6 +1,6 @@
 # This config file for Travis CI utilizes https://github.com/ros-planning/moveit_ci/ package.
 os: linux
-dist: xenial  # distro used by Travis, moveit_ci uses the docker image's distro
+dist: bionic  # distro used by Travis, moveit_ci uses the docker image's distro
 services:
   - docker
 language: cpp
@@ -19,12 +19,15 @@ env:
     - WARNINGS_OK=false
     - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
 
-  jobs:
-    - TEST=catkin_lint,clang-format
-    - TEST=abi,clang-tidy-fix
+jobs:
+  include:
+    - env: TEST=catkin_lint,clang-format
+    - env: TEST=abi,clang-tidy-fix
+#    Unfortunately, BEFORE_SCRIPT is ran before rosdep and thus hasn't an effect
+#    - env: BEFORE_SCRIPT="apt-get remove -q -y libogre-1.9.0v5; apt-get install -q -y libogre-1.12-dev"
 
 before_script:
-  - git clone -q --depth=1 https://github.com/rhaschke/moveit_ci.git .moveit_ci
+  - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci
 
 script:
   - .moveit_ci/travis.sh
