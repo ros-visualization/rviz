@@ -589,14 +589,10 @@ void SelectionManager::unpackColors(Ogre::PixelBox& box, V_CollObject& pixels)
   {
     for (int x = 0; x < w; x++)
     {
-      if (size == 4) // In case of a 4-byte color format, we can directly process the 32-bit values
-      {
-        uint32_t pos = (x + y * w) * 4;
-        uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
-        pixels.push_back(colorToHandle(box.format, pix_val));
-      }
-      else // otherwise perform "official" transformation into float-based Ogre::ColourValue and back
-        pixels.push_back(colorToHandle(box.getColourAt(x, y, 1)));
+      uint32_t pos = (x + y * w) * size;
+      uint32_t pix_val = 0;
+      memcpy((uint8_t*)&pix_val, (uint8_t*)box.data + pos, size);
+      pixels.push_back(colorToHandle(box.format, pix_val));
     }
   }
 }

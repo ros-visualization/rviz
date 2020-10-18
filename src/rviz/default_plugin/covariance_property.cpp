@@ -47,8 +47,7 @@ CovarianceProperty::CovarianceProperty(const QString& name,
                                        Property* parent,
                                        const char* changed_slot,
                                        QObject* receiver)
-  // NOTE: changed_slot and receiver aren't passed to BoolProperty here, but initialized at the end of
-  // this constructor
+  // NOTE: changed() signal will only be initialized at the end of this constructor
   : BoolProperty(name, default_value, description, parent)
 {
   position_property_ =
@@ -104,14 +103,14 @@ CovarianceProperty::CovarianceProperty(const QString& name,
   orientation_offset_property_ = new FloatProperty(
       "Offset", 1.0f,
       "For 3D poses is the distance where to position the ellipses representing orientation covariance. "
-      "For 2D poses is the height of the triangle representing the variance on yaw",
+      "For 2D poses is the height of the triangle representing the variance on yaw.",
       orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
   orientation_offset_property_->setMin(0);
 
   orientation_scale_property_ =
       new FloatProperty("Scale", 1.0f,
                         "Scale factor to be applied to orientation covariance shapes. "
-                        "Corresponds to the number of standard deviations to display",
+                        "Corresponds to the number of standard deviations to display.",
                         orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
   orientation_scale_property_->setMin(0);
 

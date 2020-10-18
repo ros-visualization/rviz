@@ -37,7 +37,7 @@
 namespace Ogre
 {
 class Any;
-}
+} // namespace Ogre
 
 
 namespace rviz

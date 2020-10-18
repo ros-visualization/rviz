@@ -53,20 +53,18 @@ double deg2rad(double degrees)
 void makeRightHanded(Eigen::Matrix3d& eigenvectors, Eigen::Vector3d& eigenvalues)
 {
   // Note that sorting of eigenvalues may end up with left-hand coordinate system.
-  // So here we correctly sort it so that it does end up being righ-handed and normalised.
-  Eigen::Vector3d c0 = eigenvectors.block<3, 1>(0, 0);
+  // So here we correctly sort it so that it does end up being right-handed and normalised.
+  Eigen::Vector3d c0 = eigenvectors.col(0);
   c0.normalize();
-  Eigen::Vector3d c1 = eigenvectors.block<3, 1>(0, 1);
+  Eigen::Vector3d c1 = eigenvectors.col(1);
   c1.normalize();
-  Eigen::Vector3d c2 = eigenvectors.block<3, 1>(0, 2);
+  Eigen::Vector3d c2 = eigenvectors.col(2);
   c2.normalize();
   Eigen::Vector3d cc = c0.cross(c1);
   if (cc.dot(c2) < 0)
   {
     eigenvectors << c1, c0, c2;
-    double e = eigenvalues[0];
-    eigenvalues[0] = eigenvalues[1];
-    eigenvalues[1] = e;
+    std::swap(eigenvalues[0], eigenvalues[1]);
   }
   else
   {
@@ -91,9 +89,7 @@ void makeRightHanded(Eigen::Matrix2d& eigenvectors, Eigen::Vector2d& eigenvalues
   if (cc[2] < 0)
   {
     eigenvectors << c1.head<2>(), c0.head<2>();
-    double e = eigenvalues[0];
-    eigenvalues[0] = eigenvalues[1];
-    eigenvalues[1] = e;
+    std::swap(eigenvalues[0], eigenvalues[1]);
   }
   else
   {
@@ -129,9 +125,10 @@ void computeShapeScaleAndOrientation3D(const Eigen::Matrix3d& covariance,
   makeRightHanded(eigenvectors, eigenvalues);
 
   // Define the rotation
-  orientation.FromRotationMatrix(Ogre::Matrix3(
-      eigenvectors(0, 0), eigenvectors(0, 1), eigenvectors(0, 2), eigenvectors(1, 0), eigenvectors(1, 1),
-      eigenvectors(1, 2), eigenvectors(2, 0), eigenvectors(2, 1), eigenvectors(2, 2)));
+  orientation.FromRotationMatrix(Ogre::Matrix3( // clang-format off
+      eigenvectors(0, 0), eigenvectors(0, 1), eigenvectors(0, 2),
+      eigenvectors(1, 0), eigenvectors(1, 1), eigenvectors(1, 2),
+      eigenvectors(2, 0), eigenvectors(2, 1), eigenvectors(2, 2))); // clang-format on
 
   // Define the scale. eigenvalues are the variances, so we take the sqrt to draw the standard deviation
   scale.x = 2 * std::sqrt(eigenvalues[0]);
@@ -179,8 +176,9 @@ void computeShapeScaleAndOrientation2D(const Eigen::Matrix2d& covariance,
   // deviation. The scale of the missing dimension is set to zero.
   if (plane == YZ_PLANE)
   {
-    orientation.FromRotationMatrix(Ogre::Matrix3(1, 0, 0, 0, eigenvectors(0, 0), eigenvectors(0, 1), 0,
-                                                 eigenvectors(1, 0), eigenvectors(1, 1)));
+    orientation.FromRotationMatrix(Ogre::Matrix3(1, 0, 0, // clang-format off
+                                                 0, eigenvectors(0, 0), eigenvectors(0, 1),
+                                                 0, eigenvectors(1, 0), eigenvectors(1, 1))); // clang-format on
 
     scale.x = 0;
     scale.y = 2 * std::sqrt(eigenvalues[0]);
@@ -188,8 +186,10 @@ void computeShapeScaleAndOrientation2D(const Eigen::Matrix2d& covariance,
   }
   else if (plane == XZ_PLANE)
   {
-    orientation.FromRotationMatrix(Ogre::Matrix3(eigenvectors(0, 0), 0, eigenvectors(0, 1), 0, 1, 0,
-                                                 eigenvectors(1, 0), 0, eigenvectors(1, 1)));
+    orientation.FromRotationMatrix(
+        Ogre::Matrix3(eigenvectors(0, 0), 0, eigenvectors(0, 1), // clang-format off
+                      0, 1, 0,
+                      eigenvectors(1, 0), 0, eigenvectors(1, 1))); // clang-format on
 
     scale.x = 2 * std::sqrt(eigenvalues[0]);
     scale.y = 0;
@@ -197,8 +197,10 @@ void computeShapeScaleAndOrientation2D(const Eigen::Matrix2d& covariance,
   }
   else // plane == XY_PLANE
   {
-    orientation.FromRotationMatrix(Ogre::Matrix3(eigenvectors(0, 0), eigenvectors(0, 1), 0,
-                                                 eigenvectors(1, 0), eigenvectors(1, 1), 0, 0, 0, 1));
+    orientation.FromRotationMatrix(
+        Ogre::Matrix3(eigenvectors(0, 0), eigenvectors(0, 1), 0, // clang-format off
+                      eigenvectors(1, 0), eigenvectors(1, 1), 0,
+                      0, 0, 1)); // clang-format on
 
     scale.x = 2 * std::sqrt(eigenvalues[0]);
     scale.y = 2 * std::sqrt(eigenvalues[1]);
@@ -428,8 +430,7 @@ void CovarianceVisual::updateOrientation(const Eigen::Matrix6d& covariance, Shap
       covarianceAxis = covariance.block<2, 2>(3, 3);
     }
 
-    // NOTE: The cylinder mesh is oriented along its y axis, thus we want to flat it out into the XZ
-    // plane
+    // NOTE: The cylinder mesh is oriented along its y axis, we want to flat it out into the XZ plane
     computeShapeScaleAndOrientation2D(covarianceAxis, shape_scale, shape_orientation, XZ_PLANE);
     // Give a minimal height for the cylinder for better visualization
     shape_scale.y = 0.001;

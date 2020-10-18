@@ -179,11 +179,10 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
-  update_rate_property_ =
-      new FloatProperty("Update Interval", 0,
-                        "The interval, in seconds, at which to update the frame transforms. "
-                        "0 means to do so every update cycle.",
-                        this);
+  update_rate_property_ = new FloatProperty("Update Interval", 0,
+                                            "The interval, in seconds, at which to update the frame "
+                                            "transforms. 0 means to do so every update cycle.",
+                                            this);
   update_rate_property_->setMin(0);
 
   frame_timeout_property_ = new FloatProperty(
