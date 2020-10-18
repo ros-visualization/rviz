@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.14 (2020-10-18)
+--------------------
+* [fix]   SplitterHandle: Consider scrollbar width. Fixes `#1545 <https://github.com/ros-visualization/rviz/issues/1545>`_.
+* [fix]   Handle InvalidNameException when loading robot description
+* [fix]   WrenchVisual: Add missing initialization of ``hide_small_values_``
+* [fix]   Fixup `#1519 <https://github.com/ros-visualization/rviz/issues/1519>`_: Correctly (and efficiently) handle 3-byte pixel formats
+* [maint] Adapt to clang-format-10
+* Contributors: Robert Haschke, Wolf Vollprecht
+
 1.13.13 (2020-06-24)
 --------------------
 * [feature] Make the goal pose tool magenta (`#1520 <https://github.com/ros-visualization/rviz/issues/1520>`_)
