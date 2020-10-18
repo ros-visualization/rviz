@@ -18,7 +18,6 @@ env:
     - CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing"
     - WARNINGS_OK=false
     - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
-    - BEFORE_SCRIPT="apt-get install -yq libassimp-dev; sed -i 's/if(ON)/if(1)/g' /usr/lib/x86_64-linux-gnu/cmake/assimp-5.0/assimpTargets.cmake"
 
   jobs:
     - TEST=catkin_lint,clang-format

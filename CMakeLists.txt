@@ -25,6 +25,7 @@ find_package(Boost REQUIRED
 
 find_package(urdfdom_headers REQUIRED)
 
+set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # required due to a bug in assimp 5.0
 find_package(ASSIMP REQUIRED)
 if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
   # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
