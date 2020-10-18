@@ -30,7 +30,6 @@ if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
   # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
   set(ASSIMP_LIBRARIES assimp::assimp)
 endif()
-include_directories(${ASSIMP_INCLUDE_DIRS})
 
 find_package(OGRE QUIET COMPONENTS Overlay)
 if(NOT OGRE_FOUND)
@@ -212,21 +211,18 @@ catkin_package(
     visualization_msgs
 )
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.14.0")
-    set(SYSTEM "SYSTEM")
-endif()
-
-include_directories(${SYSTEM}
+#catkin_lint: ignore_once external_directory
+include_directories(src ${EXPORT_HEADER_DIR})
+include_directories(SYSTEM
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
   ${TinyXML2_INCLUDE_DIRS}
   ${urdfdom_headers_INCLUDE_DIRS}
+  ${ASSIMP_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
-#catkin_lint: ignore_once external_directory
-include_directories(src ${EXPORT_HEADER_DIR})
-include_directories(${SYSTEM} ${catkin_INCLUDE_DIRS})
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
