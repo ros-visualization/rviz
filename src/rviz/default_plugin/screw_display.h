@@ -35,7 +35,7 @@ public:
   // Constructor.  pluginlib::ClassLoader creates instances by calling
   // the default constructor, so make sure you have one.
   ScrewDisplay();
-  ~ScrewDisplay() override;
+  ~ScrewDisplay() override = default;
 
 protected:
   // Overrides of public virtual functions from the Display class.
