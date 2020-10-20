@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.3 (2020-10-20)
+-------------------
+* Fixed linking issue on Debian Buster: missing ~ScrewDisplay
+* Contributors: Robert Haschke
+
 1.14.2 (2020-10-19)
 -------------------
 * Merged melodic-devel improvements
