@@ -38,7 +38,8 @@ class ComboBox : public QComboBox
   Q_OBJECT
   Q_PROPERTY(QString currentText READ currentText USER true)
 public:
-  ComboBox(QWidget* parent = nullptr);
+  using QComboBox::QComboBox;
+  void showPopup() override;
 };
 
 } // end namespace rviz
