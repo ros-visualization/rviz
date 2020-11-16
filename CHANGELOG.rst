@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.4 (2020-11-16)
+-------------------
+* [fix] MessageFilterDisplay: process messages synchronously (`#1560 <https://github.com/ros-visualization/rviz/issues/1560>`_)
+* [fix] Enforce GLSL 1.4 on Mesa systems (`#1559 <https://github.com/ros-visualization/rviz/issues/1559>`_)
+* [fix] Fix layout of editors in PropertyWidget (`#1558 <https://github.com/ros-visualization/rviz/issues/1558>`_)
+* Contributors: Robert Haschke
+
 1.14.3 (2020-10-20)
 -------------------
 * Fixed linking issue on Debian Buster: missing ~ScrewDisplay
