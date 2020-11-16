@@ -42,6 +42,8 @@
 #include <rviz/display.h>
 #include <rviz/rviz_export.h>
 
+Q_DECLARE_METATYPE(boost::shared_ptr<const void>)
+
 namespace rviz
 {
 /** @brief Helper superclass for MessageFilterDisplay, needed because
@@ -63,11 +65,14 @@ public:
                         "w.r.t. your data, but it can greatly increase memory usage as well.",
                         this, SLOT(updateQueueSize()));
     queue_size_property_->setMin(0);
+    qRegisterMetaType<boost::shared_ptr<const void>>(); // required to send via queued connection
   }
 
 protected Q_SLOTS:
   virtual void updateTopic() = 0;
   virtual void updateQueueSize() = 0;
+private Q_SLOTS:
+  virtual void processTypeErasedMessage(boost::shared_ptr<const void> type_erased_msg) = 0;
 
 protected:
   RosTopicProperty* topic_property_;
@@ -203,7 +208,15 @@ protected:
     {
       return;
     }
+    // process message synchronously in main GUI thread to avoid race conditions
+    QMetaObject::invokeMethod(this, "processTypeErasedMessage", Qt::QueuedConnection,
+                              Q_ARG(boost::shared_ptr<const void>,
+                                    boost::static_pointer_cast<const void>(msg)));
+  }
 
+  void processTypeErasedMessage(boost::shared_ptr<const void> type_erased_msg) override
+  {
+    auto msg = boost::static_pointer_cast<const MessageType>(type_erased_msg);
     ++messages_received_;
     setStatus(StatusProperty::Ok, "Topic", QString::number(messages_received_) + " messages received");
 
