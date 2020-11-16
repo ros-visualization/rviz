@@ -27,12 +27,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/combo_box.h"
+#include <rviz/properties/combo_box.h>
+#include <QAbstractItemView>
 
 namespace rviz
 {
-ComboBox::ComboBox(QWidget* parent) : QComboBox(parent)
+// allow popup list to become larger than QCombBox itself
+void ComboBox::showPopup()
 {
+  auto view = this->view();
+  view->setMinimumWidth(view->sizeHintForColumn(0));
+  QComboBox::showPopup();
 }
 
 } // end namespace rviz
