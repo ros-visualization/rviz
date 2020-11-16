@@ -61,6 +61,8 @@ QWidget* EditableEnumProperty::createEditor(QWidget* parent, const QStyleOptionV
   Q_EMIT requestOptions(this);
 
   EditableComboBox* cb = new EditableComboBox(parent);
+  // avoid larger comboxbox than column width of PropertyWidget
+  cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
   cb->addItems(strings_);
   cb->setEditText(getValue().toString());
   QObject::connect(cb, SIGNAL(currentIndexChanged(const QString&)), this,

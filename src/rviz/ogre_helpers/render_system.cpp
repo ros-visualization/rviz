@@ -169,6 +169,7 @@ void RenderSystem::loadOgrePlugins()
 
 void RenderSystem::detectGlVersion()
 {
+  bool mesa_workaround = false;
   if (force_gl_version_)
   {
     gl_version_ = force_gl_version_;
@@ -176,11 +177,11 @@ void RenderSystem::detectGlVersion()
   else
   {
     Ogre::RenderSystem* renderSys = ogre_root_->getRenderSystem();
-    renderSys->createRenderSystemCapabilities();
-    const Ogre::RenderSystemCapabilities* caps = renderSys->getCapabilities();
+    const Ogre::RenderSystemCapabilities* caps = renderSys->createRenderSystemCapabilities();
     int major = caps->getDriverVersion().major;
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
+    mesa_workaround = caps->getDeviceName().find("Mesa ") != std::string::npos && gl_version_ >= 320;
   }
 
   switch (gl_version_)
@@ -211,8 +212,16 @@ void RenderSystem::detectGlVersion()
     }
     break;
   }
-  ROS_INFO_STREAM("OpenGl version: " << (float)gl_version_ / 100.0 << " (GLSL "
-                                     << (float)glsl_version_ / 100.0 << ").");
+  if (mesa_workaround)
+  { // https://github.com/ros-visualization/rviz/issues/1508
+    ROS_INFO("OpenGl version: %.1f (GLSL %.1f) limited to GLSL 1.4 on Mesa system.",
+             (float)gl_version_ / 100.0, (float)glsl_version_ / 100.0);
+
+    gl_version_ = 310;
+    glsl_version_ = 140;
+    return;
+  }
+  ROS_INFO("OpenGl version: %.1f (GLSL %.1f).", (float)gl_version_ / 100.0, (float)glsl_version_ / 100.0);
 }
 
 void RenderSystem::setupRenderSystem()

@@ -50,7 +50,8 @@ SplitterHandle::SplitterHandle(QTreeView* parent)
 bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
 {
   if (event_target == parent_ &&
-      (event->type() == QEvent::Resize || event->type() == QEvent::LayoutRequest))
+      (event->type() == QEvent::Resize || event->type() == QEvent::LayoutRequest ||
+       event->type() == QEvent::Show))
   {
     updateGeometry();
   }
