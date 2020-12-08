@@ -11,6 +11,8 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
 
+#include "rviz/default_plugin/rviz_default_plugin_export.h"
+
 namespace Ogre
 {
 class SceneNode;
@@ -29,7 +31,7 @@ namespace rviz
 class ScrewVisual;
 
 template <class MessageType>
-class RVIZ_EXPORT ScrewDisplay : public rviz::MessageFilterDisplay<MessageType>
+class RVIZ_DEFAULT_PLUGIN_EXPORT ScrewDisplay : public rviz::MessageFilterDisplay<MessageType>
 {
 public:
   // Constructor.  pluginlib::ClassLoader creates instances by calling
