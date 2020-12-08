@@ -1,10 +1,4 @@
 <library path="librviz_default_plugin">
-  <class name="rviz/AccelStamped" type="rviz::AccelStampedDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays from geometry_msgs/AccelStamped message
-    </description>
-    <message_type>geometry_msgs/AccelStamped</message_type>
-  </class>
   <class name="rviz/Axes" type="rviz::AxesDisplay" base_class_type="rviz::Display">
     <description>
       Displays an axis at the Target Frame's origin.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Axes"&gt;More Information&lt;/a&gt;.
