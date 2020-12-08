@@ -8,7 +8,7 @@ namespace rviz
 {
 // For API compatibility we provide the old WrenchVisual class as well
 class [[deprecated("Replace with ScrewVisual")]] WrenchVisual;
-class RVIZ_EXPORT WrenchVisual : public ScrewVisual
+class WrenchVisual : public ScrewVisual
 {
 public:
   using ScrewVisual::ScrewVisual;
