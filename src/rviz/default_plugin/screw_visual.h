@@ -13,7 +13,7 @@ class BillboardLine;
 namespace rviz
 {
 // ScrewVisual visualizes a single screw, i.e. a wrench, twist, or acceleration
-class RVIZ_EXPORT ScrewVisual
+class ScrewVisual
 {
 public:
   // Constructor.  Creates the visual stuff and puts it into the scene, but in an unconfigured state.
