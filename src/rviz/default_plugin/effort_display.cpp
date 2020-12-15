@@ -119,7 +119,7 @@ void EffortDisplay::onInitialize()
                                                                    std::string(), 1, update_nh_);
 
   // but directly process messages
-  sub_.registerCallback(boost::bind(&EffortDisplay::incomingMessage, this, _1));
+  sub_.registerCallback(boost::bind(&EffortDisplay::incomingMessage, this, boost::placeholders::_1));
   updateHistoryLength();
 }
 

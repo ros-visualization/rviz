@@ -181,15 +181,18 @@ void ImageDisplayBase::subscribe()
 
       if (targetFrame_.empty())
       {
-        sub_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
+        sub_->registerCallback(
+            boost::bind(&ImageDisplayBase::incomingMessage, this, boost::placeholders::_1));
       }
       else
       {
         tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::Image>(
             *sub_, *context_->getTF2BufferPtr(), targetFrame_, queue_size_property_->getInt(),
             update_nh_));
-        tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
-        tf_filter_->registerFailureCallback(boost::bind(&ImageDisplayBase::failedMessage, this, _1, _2));
+        tf_filter_->registerCallback(
+            boost::bind(&ImageDisplayBase::incomingMessage, this, boost::placeholders::_1));
+        tf_filter_->registerFailureCallback(boost::bind(
+            &ImageDisplayBase::failedMessage, this, boost::placeholders::_1, boost::placeholders::_2));
       }
     }
     setStatus(StatusProperty::Ok, "Topic", "OK");

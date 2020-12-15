@@ -41,7 +41,7 @@
 
 #include <tf2_ros/buffer.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -302,7 +302,8 @@ void DepthCloudDisplay::subscribe()
       // subscribe to CameraInfo  topic
       std::string info_topic = image_transport::getCameraInfoTopic(depthmap_topic);
       cam_info_sub_->subscribe(threaded_nh_, info_topic, queue_size_);
-      cam_info_sub_->registerCallback(boost::bind(&DepthCloudDisplay::caminfoCallback, this, _1));
+      cam_info_sub_->registerCallback(
+          boost::bind(&DepthCloudDisplay::caminfoCallback, this, boost::placeholders::_1));
 
       if (!color_topic.empty() && !color_transport.empty())
       {
@@ -314,14 +315,15 @@ void DepthCloudDisplay::subscribe()
         sync_depth_color_->connectInput(*depthmap_tf_filter_, *rgb_sub_);
         sync_depth_color_->setInterMessageLowerBound(0, ros::Duration(0.5));
         sync_depth_color_->setInterMessageLowerBound(1, ros::Duration(0.5));
-        sync_depth_color_->registerCallback(
-            boost::bind(&DepthCloudDisplay::processMessage, this, _1, _2));
+        sync_depth_color_->registerCallback(boost::bind(
+            &DepthCloudDisplay::processMessage, this, boost::placeholders::_1, boost::placeholders::_2));
 
         pointcloud_common_->color_transformer_property_->setValue("RGB8");
       }
       else
       {
-        depthmap_tf_filter_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1));
+        depthmap_tf_filter_->registerCallback(
+            boost::bind(&DepthCloudDisplay::processMessage, this, boost::placeholders::_1));
       }
     }
   }

@@ -77,8 +77,10 @@ void MarkerDisplay::onInitialize()
                                                              queue_size_property_->getInt(), update_nh_);
 
   tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
-  tf_filter_->registerFailureCallback(boost::bind(&MarkerDisplay::failedMarker, this, _1, _2));
+  tf_filter_->registerCallback(
+      boost::bind(&MarkerDisplay::incomingMarker, this, boost::placeholders::_1));
+  tf_filter_->registerFailureCallback(
+      boost::bind(&MarkerDisplay::failedMarker, this, boost::placeholders::_1, boost::placeholders::_2));
 
   namespace_config_enabled_state_.clear();
 }

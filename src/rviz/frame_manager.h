@@ -192,9 +192,11 @@ public:
   template <class M>
   void registerFilterForTransformStatusCheck(tf2_ros::MessageFilter<M>* filter, Display* display)
   {
-    filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
-    filter->registerFailureCallback(boost::bind(
-        &FrameManager::failureCallback<M, tf2_ros::FilterFailureReason>, this, _1, _2, display));
+    filter->registerCallback(
+        boost::bind(&FrameManager::messageCallback<M>, this, boost::placeholders::_1, display));
+    filter->registerFailureCallback(
+        boost::bind(&FrameManager::failureCallback<M, tf2_ros::FilterFailureReason>, this,
+                    boost::placeholders::_1, boost::placeholders::_2, display));
   }
 
   /** @brief Return the current fixed frame name. */

@@ -35,7 +35,7 @@
 #include <QTimer>
 #include <QWindow>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>
