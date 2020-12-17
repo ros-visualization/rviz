@@ -1185,6 +1185,19 @@ void VisualizationFrame::addTool(Tool* tool)
   tool_to_action_map_[tool] = action;
 
   remove_tool_menu_->addAction(tool->getName());
+
+  QObject::connect(tool, &Tool::nameChanged, this, &VisualizationFrame::onToolNameChanged);
+}
+
+void VisualizationFrame::onToolNameChanged(const QString& name)
+{
+  // Early return if the tool is not present
+  auto it = tool_to_action_map_.find(qobject_cast<Tool*>(sender()));
+  if (it == tool_to_action_map_.end())
+    return;
+
+  // Change the name of the action
+  it->second->setIconText(name);
 }
 
 void VisualizationFrame::onToolbarActionTriggered(QAction* action)
