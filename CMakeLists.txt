@@ -185,6 +185,7 @@ catkin_package(
     ${EXPORT_HEADER_DIR}
     ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_INCLUDE_DIRS}
+    ${OGRE_Overlay_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
   LIBRARIES
     rviz
@@ -217,6 +218,7 @@ include_directories(src ${EXPORT_HEADER_DIR})
 include_directories(SYSTEM
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
+  ${OGRE_Overlay_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
   ${TinyXML2_INCLUDE_DIRS}
