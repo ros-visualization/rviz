@@ -192,6 +192,7 @@ public:
 
 Q_SIGNALS:
   void close();
+  void nameChanged(const QString& name);
 
 protected:
   /** Override onInitialize to do any setup needed after the
