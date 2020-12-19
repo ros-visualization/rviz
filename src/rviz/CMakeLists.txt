@@ -137,6 +137,7 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${QT_LIBRARIES}
   ${OGRE_LIBRARIES}
+  ${OGRE_Overlay_LIBRARIES}
   ${OPENGL_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
   ${TinyXML2_LIBRARIES}
@@ -159,7 +160,7 @@ if(NOT WIN32)
   set_target_properties(executable PROPERTIES COMPILE_FLAGS "-std=c++11")
 endif()
 
-target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
+target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${OGRE_Overlay_LIBRARIES})
 
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
