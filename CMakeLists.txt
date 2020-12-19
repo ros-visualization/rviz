@@ -190,6 +190,7 @@ catkin_package(
   LIBRARIES
     rviz
     ${OGRE_LIBRARIES}
+    ${OGRE_Overlay_LIBRARIES}
     ${rviz_ADDITIONAL_LIBRARIES}
     ${OPENGL_LIBRARIES}
   CATKIN_DEPENDS
