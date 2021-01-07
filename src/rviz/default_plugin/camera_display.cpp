@@ -133,7 +133,7 @@ void CameraDisplay::onInitialize()
   {
     static uint32_t count = 0;
     std::stringstream ss;
-    ss << "ImageDisplay" << count++;
+    ss << "CameraDisplay" << count++;
     camera_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
   }
 
