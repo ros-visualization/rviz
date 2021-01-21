@@ -33,7 +33,12 @@ if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
 endif()
 
 find_package(OGRE QUIET COMPONENTS Overlay)
-if(NOT OGRE_FOUND)
+if(OGRE_FOUND)
+  if(${OGRE_VERSION} VERSION_LESS 1.11)
+    set(OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} ${OGRE_Overlay_INCLUDE_DIRS})
+    set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${OGRE_Overlay_LIBRARIES})
+  endif()
+else()
   # OGRE doesn't come with correctly installed cmake files on Linux. Use pkg-config instead.
   # We need both, OGRE and OGRE-Overlay. Look for both simulatenously and use prefix X_
   find_package(PkgConfig REQUIRED)
