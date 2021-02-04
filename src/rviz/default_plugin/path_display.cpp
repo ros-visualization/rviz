@@ -145,7 +145,7 @@ void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, size_t
   }
   else if (num < axes_vect.size())
   {
-    for (size_t i = axes_vect.size() - 1; num <= i; --i)
+    for (size_t i = num; i < axes_vect.size(); ++i)
     {
       delete axes_vect[i];
     }
@@ -165,7 +165,7 @@ void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, siz
   }
   else if (num < arrow_vect.size())
   {
-    for (size_t i = arrow_vect.size() - 1; num <= i; --i)
+    for (size_t i = num; i < arrow_vect.size(); ++i)
     {
       delete arrow_vect[i];
     }
