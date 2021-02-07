@@ -40,6 +40,10 @@
 #include <GL/glx.h>
 #endif
 
+#if defined(Q_OS_MAC)
+#include <OpenGL/gl.h>
+#endif
+
 // X.h #defines CursorShape to be "0".  Qt uses CursorShape in normal
 // C++ way.  This wasn't an issue until ogre_logging.h (below)
 // introduced a #include of <QString>.
@@ -155,10 +159,7 @@ void RenderSystem::setupDummyWindowId()
 
 void RenderSystem::loadOgrePlugins()
 {
-  std::string plugin_prefix = get_ogre_plugin_path() + "/";
-#ifdef Q_OS_MAC
-  plugin_prefix += "lib";
-#endif
+  std::string plugin_prefix = std::string(std::getenv("CONDA_PREFIX")) + "/lib/OGRE/";
   ogre_root_->loadPlugin(plugin_prefix + "RenderSystem_GL");
   ogre_root_->loadPlugin(plugin_prefix + "Plugin_OctreeSceneManager");
   ogre_root_->loadPlugin(plugin_prefix + "Plugin_ParticleFX");
@@ -183,8 +184,12 @@ void RenderSystem::detectGlVersion()
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
 
+#ifdef __linux__
     std::string gl_version_string = (const char*)glGetString(GL_VERSION);
     mesa_workaround = gl_version_string.find("Mesa 20.") != std::string::npos && gl_version_ >= 320;
+#else
+    mesa_workaround = false;
+#endif
   }
 
   switch (gl_version_)
@@ -435,7 +440,7 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(WindowIDType window_id,
         // Created a non-stereo window.  Discard it and try again (below)
         // without the stereo parameter.
         ogre_root_->detachRenderTarget(window);
-        window->destroy();
+        ogre_root_->destroyRenderTarget(window);
         window = nullptr;
         stream << "x";
         is_stereo = false;
@@ -492,6 +497,7 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(const std::string& name,
       if (x_baddrawable_error)
       {
         ogre_root_->detachRenderTarget(window);
+        ogre_root_->destroyRenderTarget(window);
         window = nullptr;
         x_baddrawable_error = false;
       }

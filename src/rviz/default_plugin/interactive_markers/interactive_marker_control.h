@@ -32,6 +32,11 @@
 
 
 #ifndef Q_MOC_RUN
+#ifdef _WIN32
+#undef ERROR
+#undef DELETE
+#endif
+
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 

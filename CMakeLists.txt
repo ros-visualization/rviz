@@ -24,13 +24,7 @@ find_package(Boost REQUIRED
 )
 
 find_package(urdfdom_headers REQUIRED)
-
-set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # required due to a bug in assimp 5.0
-find_package(ASSIMP REQUIRED)
-if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
-  # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
-  set(ASSIMP_LIBRARIES assimp::assimp)
-endif()
+find_package(assimp REQUIRED)
 
 find_package(OGRE QUIET COMPONENTS Overlay)
 if(OGRE_FOUND)
@@ -102,10 +96,10 @@ if(APPLE)
 endif()
 
 # Prefer newer vender-specific OpenGL library
-if (POLICY CMP0072)
-  cmake_policy(SET CMP0072 NEW)
-endif()
-find_package(OpenGL REQUIRED)
+# if (POLICY CMP0072)
+#   cmake_policy(SET CMP0072 NEW)
+# endif()
+# find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -219,7 +213,7 @@ catkin_package(
 
 #catkin_lint: ignore_once external_directory
 include_directories(src ${EXPORT_HEADER_DIR})
-include_directories(SYSTEM
+include_directories(
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
