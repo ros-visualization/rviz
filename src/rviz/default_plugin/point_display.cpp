@@ -106,14 +106,14 @@ void PointStampedDisplay::processMessage(const geometry_msgs::PointStamped::Cons
 
 
   // Now set or update the contents of the chosen visual.
+  float radius = radius_property_->getFloat();
+  visual->setRadius(radius); // has to be set before setting message
   visual->setMessage(msg);
   visual->setFramePosition(position);
   visual->setFrameOrientation(orientation);
   float alpha = alpha_property_->getFloat();
-  float radius = radius_property_->getFloat();
   Ogre::ColourValue color = color_property_->getOgreColor();
   visual->setColor(color.r, color.g, color.b, alpha);
-  visual->setRadius(radius);
 
 
   // And send it to the end of the circular buffer
