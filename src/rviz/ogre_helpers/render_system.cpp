@@ -184,7 +184,9 @@ void RenderSystem::detectGlVersion()
     int major = caps->getDriverVersion().major;
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
-    mesa_workaround = caps->getDeviceName().find("Mesa ") != std::string::npos && gl_version_ >= 320;
+
+    std::string gl_version_string = (const char*)glGetString(GL_VERSION);
+    mesa_workaround = gl_version_string.find("Mesa 20.") != std::string::npos && gl_version_ >= 320;
   }
 
   switch (gl_version_)
