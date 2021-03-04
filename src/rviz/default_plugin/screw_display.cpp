@@ -55,17 +55,18 @@ ScrewDisplay<MessageType>::ScrewDisplay()
   QObject::connect(angular_color_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  alpha_property_ = new FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.", this);
+  alpha_property_ =
+      new FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.", this);
   QObject::connect(alpha_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  linear_scale_property_ =
-      new FloatProperty(QString("%1 Arrow Scale").arg(lin), 2.0, QString("%1 arrow scale").arg(lin), this);
+  linear_scale_property_ = new FloatProperty(QString("%1 Arrow Scale").arg(lin), 2.0,
+                                             QString("%1 arrow scale").arg(lin), this);
   QObject::connect(linear_scale_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  angular_scale_property_ =
-      new FloatProperty(QString("%1 Arrow Scale").arg(ang), 2.0, QString("%1 arrow scale").arg(ang), this);
+  angular_scale_property_ = new FloatProperty(QString("%1 Arrow Scale").arg(ang), 2.0,
+                                              QString("%1 arrow scale").arg(ang), this);
   QObject::connect(angular_scale_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
