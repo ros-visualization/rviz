@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.16 (2021-03-04)
+--------------------
+* [fix]     Enforce GLSL 1.4 on more Mesa systems (`#1588 <https://github.com/ros-visualization/rviz/issues/1588>`_)
+* [fix]     PointStampedDisplay: show points from the very beginning (`#1586 <https://github.com/ros-visualization/rviz/issues/1586>`_)
+* [maint]   Augment system info at startup with used OpenGL device
+* [maint]   Remove warnings about ignored marker scale
+* [feature] Tool: Propagate name change to VisualizationFrame (`#1570 <https://github.com/ros-visualization/rviz/issues/1570>`_)
+* Contributors: João C. Monteiro, Robert Haschke
+
 1.13.15 (2020-11-16)
 --------------------
 * [fix] Enforce GLSL 1.4 on Mesa systems (`#1559 <https://github.com/ros-visualization/rviz/issues/1559>`_)
