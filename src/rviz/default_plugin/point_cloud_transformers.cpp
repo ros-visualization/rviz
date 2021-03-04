@@ -263,8 +263,8 @@ void IntensityPCTransformer::updateChannels(const sensor_msgs::PointCloud2ConstP
 void IntensityPCTransformer::updateAutoComputeIntensityBounds()
 {
   bool auto_compute = auto_compute_intensity_bounds_property_->getBool();
-  min_intensity_property_->setHidden(auto_compute);
-  max_intensity_property_->setHidden(auto_compute);
+  min_intensity_property_->setReadOnly(auto_compute);
+  max_intensity_property_->setReadOnly(auto_compute);
   if (auto_compute)
   {
     disconnect(min_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
