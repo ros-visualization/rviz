@@ -215,11 +215,13 @@ void IntensityPCTransformer::createProperties(Property* parent_property,
         "Min Intensity", 0,
         "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
         parent_property);
+    min_intensity_property_->setReadOnly(true);
 
     max_intensity_property_ = new FloatProperty(
         "Max Intensity", 4096,
         "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
         parent_property);
+    max_intensity_property_->setReadOnly(true);
 
     out_props.push_back(channel_name_property_);
     out_props.push_back(use_rainbow_property_);
