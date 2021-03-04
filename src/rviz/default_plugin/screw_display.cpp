@@ -190,6 +190,10 @@ void ScrewDisplay<MessageType>::processMessagePrivate(const std_msgs::Header& he
   visuals_.push_back(visual);
 }
 
+template class ScrewDisplay<geometry_msgs::AccelStamped>;
+template class ScrewDisplay<geometry_msgs::TwistStamped>;
+template class ScrewDisplay<geometry_msgs::WrenchStamped>;
+
 } // end namespace rviz
 
 // Tell pluginlib about these classes.  It is important to do this in
