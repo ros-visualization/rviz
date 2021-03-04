@@ -2,6 +2,21 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.5 (2021-03-04)
+-------------------
+* [fix]     IntensityPCTransformer: make min/max values read-only
+* [fix]     Fix ScrewDisplays (`#1593 <https://github.com/ros-visualization/rviz/issues/1593>`_)
+* [fix]     Enforce GLSL 1.4 on more Mesa systems (`#1588 <https://github.com/ros-visualization/rviz/issues/1588>`_)
+* [fix]     PointStampedDisplay: show points from the very beginning (`#1586 <https://github.com/ros-visualization/rviz/issues/1586>`_)
+* [fix]     Fix segfault in PathDisplay (`#1583 <https://github.com/ros-visualization/rviz/issues/1583>`_)
+* [fix]     Fix OGRE_INCLUDE_DIRS (`#1574 <https://github.com/ros-visualization/rviz/issues/1574>`_)
+* [fix]     Fix Windows compilation (`#1568 <https://github.com/ros-visualization/rviz/issues/1568>`_)
+* [fix]     Remove duplicate plugin description for AccelStamped
+* [maint]   Augment system info at startup with used OpenGL device
+* [maint]   Remove warnings about ignored marker scale
+* [feature] Tool: Propagate name change to VisualizationFrame (`#1570 <https://github.com/ros-visualization/rviz/issues/1570>`_)
+* Contributors: João C. Monteiro, Robert Haschke, Tobias Fischer
+
 1.14.4 (2020-11-16)
 -------------------
 * [fix] MessageFilterDisplay: process messages synchronously (`#1560 <https://github.com/ros-visualization/rviz/issues/1560>`_)
