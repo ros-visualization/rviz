@@ -45,40 +45,41 @@ ScrewDisplay<MessageType>::ScrewDisplay()
   auto ang = angular<MessageType>();
   linear_color_property_ =
       new ColorProperty(QString("%1 Color").arg(lin), QColor(204, 51, 51),
-                        QString("Color to draw the %1 arrows.").arg(QString(lin).toLower()));
+                        QString("Color to draw the %1 arrows.").arg(QString(lin).toLower()), this);
   QObject::connect(linear_color_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
   angular_color_property_ =
       new ColorProperty(QString("%1 Color").arg(ang), QColor(204, 204, 51),
-                        QString("Color to draw the %1 arrows.").arg(QString(ang).toLower()));
+                        QString("Color to draw the %1 arrows.").arg(QString(ang).toLower()), this);
   QObject::connect(angular_color_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  alpha_property_ = new FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.");
+  alpha_property_ =
+      new FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.", this);
   QObject::connect(alpha_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  linear_scale_property_ =
-      new FloatProperty(QString("%1 Arrow Scale").arg(lin), 2.0, QString("%1 arrow scale").arg(lin));
+  linear_scale_property_ = new FloatProperty(QString("%1 Arrow Scale").arg(lin), 2.0,
+                                             QString("%1 arrow scale").arg(lin), this);
   QObject::connect(linear_scale_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  angular_scale_property_ =
-      new FloatProperty(QString("%1 Arrow Scale").arg(ang), 2.0, QString("%1 arrow scale").arg(ang));
+  angular_scale_property_ = new FloatProperty(QString("%1 Arrow Scale").arg(ang), 2.0,
+                                              QString("%1 arrow scale").arg(ang), this);
   QObject::connect(angular_scale_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
-  width_property_ = new FloatProperty("Arrow Width", 0.5, "arrow width");
+  width_property_ = new FloatProperty("Arrow Width", 0.5, "arrow width", this);
   QObject::connect(width_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
   history_length_property_ =
-      new IntProperty("History Length", 1, "Number of prior measurements to display.");
+      new IntProperty("History Length", 1, "Number of prior measurements to display.", this);
   QObject::connect(history_length_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateHistoryLength);
 
-  hide_small_values_property_ = new BoolProperty("Hide Small Values", true, "Hide small values");
+  hide_small_values_property_ = new BoolProperty("Hide Small Values", true, "Hide small values", this);
   QObject::connect(hide_small_values_property_, &rviz::Property::changed, this,
                    &ScrewDisplay<MessageType>::updateProperties);
 
@@ -189,6 +190,10 @@ void ScrewDisplay<MessageType>::processMessagePrivate(const std_msgs::Header& he
   // And send it to the end of the circular buffer
   visuals_.push_back(visual);
 }
+
+template class ScrewDisplay<geometry_msgs::AccelStamped>;
+template class ScrewDisplay<geometry_msgs::TwistStamped>;
+template class ScrewDisplay<geometry_msgs::WrenchStamped>;
 
 } // end namespace rviz
 
