@@ -227,6 +227,9 @@ protected Q_SLOTS:
    * the shortcut key, onToolbarActionTriggered() is called. */
   void addTool(Tool* tool);
 
+  /** @brief React to name changes of a tool, updating the name of the associated QAction */
+  void onToolNameChanged(const QString& name);
+
   /** @brief Remove the given tool from the frame's toolbar. */
   void removeTool(Tool* tool);
 

@@ -216,12 +216,6 @@ void checkScaleLineStripAndList(const visualization_msgs::Marker& marker,
     ss << "Width LINE_LIST or LINE_STRIP is 0.0 (scale.x).";
     increaseLevel(::ros::console::levels::Warn, level);
   }
-  else if (marker.scale.y != 0.0 || marker.scale.z != 0.0)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "scale.y and scale.z of LINE_LIST or LINE_STRIP are ignored.";
-    increaseLevel(::ros::console::levels::Warn, level);
-  }
 }
 
 void checkScalePoints(const visualization_msgs::Marker& marker,
@@ -232,12 +226,6 @@ void checkScalePoints(const visualization_msgs::Marker& marker,
   {
     addSeparatorIfRequired(ss);
     ss << "Width and/or height of POINTS is 0.0 (scale.x, scale.y).";
-    increaseLevel(::ros::console::levels::Warn, level);
-  }
-  else if (marker.scale.z != 0.0)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "scale.z of POINTS is ignored.";
     increaseLevel(::ros::console::levels::Warn, level);
   }
 }
@@ -251,12 +239,6 @@ void checkScaleText(const visualization_msgs::Marker& marker,
     addSeparatorIfRequired(ss);
     ss << "Text height of TEXT_VIEW_FACING is 0.0 (scale.z).";
     increaseLevel(::ros::console::levels::Warn, level);
-  }
-  else if (marker.scale.x != 0.0 || marker.scale.y != 0.0)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "scale.x and scale.y of TEXT_VIEW_FACING are ignored.";
-    increaseLevel(::ros::console::levels::Debug, level);
   }
 }
 

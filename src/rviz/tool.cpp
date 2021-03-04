@@ -71,8 +71,14 @@ void Tool::setCursor(const QCursor& cursor)
 
 void Tool::setName(const QString& name)
 {
+  // Early return if the name did not change
+  if (name == name_)
+    return;
+
+  // Change the name and emit a signal to let slots know
   name_ = name;
   property_container_->setName(name_);
+  Q_EMIT nameChanged(name_);
 }
 
 void Tool::setDescription(const QString& description)
