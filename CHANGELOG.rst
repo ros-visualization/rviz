@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.6 (2021-03-11)
+-------------------
+* IntensityPCTransformer: make min/max values read-only if auto-compute is off
+* Contributors: Robert Haschke
+
 1.14.5 (2021-03-04)
 -------------------
 * [fix]     IntensityPCTransformer: make min/max values read-only
