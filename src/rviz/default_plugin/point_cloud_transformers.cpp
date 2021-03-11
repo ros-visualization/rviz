@@ -215,13 +215,11 @@ void IntensityPCTransformer::createProperties(Property* parent_property,
         "Min Intensity", 0,
         "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
         parent_property);
-    min_intensity_property_->setReadOnly(true);
 
     max_intensity_property_ = new FloatProperty(
         "Max Intensity", 4096,
         "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
         parent_property);
-    max_intensity_property_->setReadOnly(true);
 
     out_props.push_back(channel_name_property_);
     out_props.push_back(use_rainbow_property_);
@@ -265,8 +263,8 @@ void IntensityPCTransformer::updateChannels(const sensor_msgs::PointCloud2ConstP
 void IntensityPCTransformer::updateAutoComputeIntensityBounds()
 {
   bool auto_compute = auto_compute_intensity_bounds_property_->getBool();
-  min_intensity_property_->setHidden(auto_compute);
-  max_intensity_property_->setHidden(auto_compute);
+  min_intensity_property_->setReadOnly(auto_compute);
+  max_intensity_property_->setReadOnly(auto_compute);
   if (auto_compute)
   {
     disconnect(min_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
