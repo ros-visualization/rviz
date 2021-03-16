@@ -599,8 +599,11 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 
     try
     {
-      loadMeshFromResource(model_name);
-      entity = scene_manager_->createEntity(ss.str(), model_name);
+      if (loadMeshFromResource(model_name).isNull())
+        ROS_ERROR("Failed to load mesh resource '%s' for link '%s'.", model_name.c_str(),
+                  link->name.c_str());
+      else
+        entity = scene_manager_->createEntity(ss.str(), model_name);
     }
     catch (Ogre::InvalidParametersException& e)
     {
