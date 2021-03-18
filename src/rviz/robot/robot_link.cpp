@@ -154,9 +154,7 @@ void RobotLinkSelectionHandler::postRenderPass(uint32_t /*pass*/)
 
 RobotLink::RobotLink(Robot* robot,
                      const urdf::LinkConstSharedPtr& link,
-                     const std::string& parent_joint_name,
-                     bool visual,
-                     bool collision)
+                     const std::string& parent_joint_name)
   : robot_(robot)
   , scene_manager_(robot->getDisplayContext()->getSceneManager())
   , context_(robot->getDisplayContext())
@@ -203,7 +201,10 @@ RobotLink::RobotLink(Robot* robot,
 
   visual_node_ = robot_->getVisualNode()->createChildSceneNode();
   collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
+}
 
+void RobotLink::init(const urdf::LinkConstSharedPtr& link, bool visual, bool collision)
+{
   // create material for coloring links
   color_material_ =
       Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link color material", 0, ROS_PACKAGE_NAME));
@@ -599,20 +600,30 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 
     try
     {
-      if (!loadMeshFromResource(model_name).isNull())
+      if (loadMeshFromResource(model_name).isNull())
       {
-        entity = scene_manager_->createEntity(ss.str(), model_name);
+        Q_EMIT meshLoadingFailed(QString(name_.c_str()),
+                                 QString("Failed loading mesh '%1'").arg(model_name.c_str()));
+        return;
       }
+      entity = scene_manager_->createEntity(ss.str(), model_name);
     }
     catch (Ogre::InvalidParametersException& e)
     {
       ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might be an empty mesh: %s",
                 model_name.c_str(), link->name.c_str(), e.what());
+      Q_EMIT meshLoadingFailed(QString(name_.c_str()), QString("Could not convert mesh resource '%1'. "
+                                                               "It might be an empty mesh: %2")
+                                                           .arg(model_name.c_str())
+                                                           .arg(e.what()));
     }
     catch (Ogre::Exception& e)
     {
       ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link->name.c_str(),
                 e.what());
+      Q_EMIT meshLoadingFailed(
+          QString(name_.c_str()),
+          QString("Could not load model '%1': %2").arg(model_name.c_str()).arg(e.what()));
     }
     break;
   }

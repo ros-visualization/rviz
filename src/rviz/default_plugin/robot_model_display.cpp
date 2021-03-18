@@ -99,6 +99,8 @@ void RobotModelDisplay::onInitialize()
 {
   robot_ = new Robot(scene_node_, context_, "Robot: " + getName().toStdString(), this);
 
+  connect(robot_, &Robot::linkMeshLoadingFailed, this, &RobotModelDisplay::onLinkMeshLoadingFailed);
+
   updateVisualVisible();
   updateCollisionVisible();
   updateAlpha();
@@ -114,6 +116,11 @@ void RobotModelDisplay::updateRobotDescription()
 {
   if (isEnabled())
     load();
+}
+
+void RobotModelDisplay::onLinkMeshLoadingFailed(const QString& linkName, const QString& details)
+{
+  setStatus(StatusLevel::Error, linkName, details);
 }
 
 void RobotModelDisplay::updateVisualVisible()

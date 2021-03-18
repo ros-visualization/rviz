@@ -222,7 +222,10 @@ RobotLink* Robot::LinkFactory::createLink(Robot* robot,
                                           bool visual,
                                           bool collision)
 {
-  return new RobotLink(robot, link, parent_joint_name, visual, collision);
+  RobotLink* l = new RobotLink(robot, link, parent_joint_name);
+  connect(l, &RobotLink::meshLoadingFailed, robot, &Robot::linkMeshLoadingFailed);
+  l->init(link, visual, collision);
+  return l;
 }
 
 RobotJoint* Robot::LinkFactory::createJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)

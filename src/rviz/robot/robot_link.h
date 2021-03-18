@@ -85,11 +85,7 @@ class RobotLink : public QObject
 {
   Q_OBJECT
 public:
-  RobotLink(Robot* robot,
-            const urdf::LinkConstSharedPtr& link,
-            const std::string& parent_joint_name,
-            bool visual,
-            bool collision);
+  RobotLink(Robot* robot, const urdf::LinkConstSharedPtr& link, const std::string& parent_joint_name);
   ~RobotLink() override;
 
   virtual void setRobotAlpha(float a);
@@ -167,6 +163,11 @@ public:
 
   // expand all sub properties
   void expandDetails(bool expand);
+
+  void init(const urdf::LinkConstSharedPtr& link, bool visual, bool collision);
+
+Q_SIGNALS:
+  void meshLoadingFailed(const QString& name, const QString& details);
 
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.

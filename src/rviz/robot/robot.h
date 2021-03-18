@@ -242,6 +242,8 @@ public:
 
   // set joint checkboxes and All Links Enabled checkbox based on current link enables.
   void calculateJointCheckboxes();
+Q_SIGNALS:
+  void linkMeshLoadingFailed(const QString& linkName, const QString& details);
 
 private Q_SLOTS:
   void changedLinkTreeStyle();

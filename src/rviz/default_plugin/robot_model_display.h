@@ -81,6 +81,7 @@ private Q_SLOTS:
   void updateTfPrefix();
   void updateAlpha();
   void updateRobotDescription();
+  void onLinkMeshLoadingFailed(const QString& linkName, const QString& details);
 
 protected:
   /** @brief Loads a URDF from the ros-param named by our
