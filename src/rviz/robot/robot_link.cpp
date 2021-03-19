@@ -602,7 +602,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     {
       if (loadMeshFromResource(model_name).isNull())
       {
-        Q_EMIT meshLoadingFailed(QString(name_.c_str()),
+        Q_EMIT meshLoadingFailed(QString(name_.c_str()) + " - mesh",
                                  QString("Failed loading mesh '%1'").arg(model_name.c_str()));
         return;
       }
@@ -612,17 +612,18 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     {
       ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might be an empty mesh: %s",
                 model_name.c_str(), link->name.c_str(), e.what());
-      Q_EMIT meshLoadingFailed(QString(name_.c_str()), QString("Could not convert mesh resource '%1'. "
-                                                               "It might be an empty mesh: %2")
-                                                           .arg(model_name.c_str())
-                                                           .arg(e.what()));
+      Q_EMIT meshLoadingFailed(QString(name_.c_str()) + " - mesh",
+                               QString("Could not convert mesh resource '%1'. "
+                                       "It might be an empty mesh: %2")
+                                   .arg(model_name.c_str())
+                                   .arg(e.what()));
     }
     catch (Ogre::Exception& e)
     {
       ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link->name.c_str(),
                 e.what());
       Q_EMIT meshLoadingFailed(
-          QString(name_.c_str()),
+          QString(name_.c_str()) + " - mesh",
           QString("Could not load model '%1': %2").arg(model_name.c_str()).arg(e.what()));
     }
     break;
