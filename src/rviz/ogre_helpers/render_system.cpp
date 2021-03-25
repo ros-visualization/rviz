@@ -186,7 +186,8 @@ void RenderSystem::detectGlVersion()
     gl_version_ = major * 100 + minor * 10;
 
     std::string gl_version_string = (const char*)glGetString(GL_VERSION);
-    mesa_workaround = gl_version_string.find("Mesa 20.") != std::string::npos && gl_version_ >= 320;
+    // The "Mesa 2" string is intended to match "Mesa 20.", "Mesa 21." and so on
+    mesa_workaround = gl_version_string.find("Mesa 2") != std::string::npos && gl_version_ >= 320;
   }
 
   switch (gl_version_)
