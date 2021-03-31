@@ -1,0 +1,48 @@
+name: test
+channels:
+  - robostack
+  - conda-forge
+dependencies:
+  # build deps
+  - compilers
+  - ninja
+  - cmake
+  - catkin_pkg
+  # Other deps
+  - assimp
+  - eigen
+  - ogre 1.10.*
+  - python 3.8.*
+  - qt 5.12.*
+  - ros-distro-mutex 0.1 noetic
+  - ros-noetic-catkin
+  - ros-noetic-cmake-modules
+  - ros-noetic-geometry-msgs
+  - ros-noetic-image-transport
+  - ros-noetic-interactive-markers
+  - ros-noetic-laser-geometry
+  - ros-noetic-map-msgs
+  - ros-noetic-message-filters
+  - ros-noetic-message-generation
+  - ros-noetic-nav-msgs
+  - ros-noetic-pluginlib
+  - ros-noetic-python-qt-binding
+  - ros-noetic-resource-retriever
+  - ros-noetic-rosbag
+  - ros-noetic-rosconsole
+  - ros-noetic-roscpp
+  - ros-noetic-roslib
+  - ros-noetic-rospy
+  - ros-noetic-rostest
+  - ros-noetic-rosunit
+  - ros-noetic-sensor-msgs
+  - ros-noetic-std-msgs
+  - ros-noetic-std-srvs
+  - ros-noetic-tf2-geometry-msgs
+  - ros-noetic-tf2-ros
+  - ros-noetic-urdf
+  - ros-noetic-visualization-msgs
+  - tinyxml2
+  - urdfdom 1.0.*
+  - urdfdom_headers 1.0.*
+  - yaml-cpp

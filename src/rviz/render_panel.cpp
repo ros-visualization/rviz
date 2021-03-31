@@ -35,6 +35,7 @@
 
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
+#include <OgreRenderWindow.h>
 
 #include <rviz/display.h>
 #include <rviz/view_controller.h>
@@ -98,6 +99,12 @@ void RenderPanel::leaveEvent(QEvent* /*event*/)
   {
     context_->setStatus("");
   }
+}
+
+void RenderPanel::resizeEvent(QResizeEvent* event)
+{
+  QWidget::resizeEvent(event);
+  render_window_->windowMovedOrResized();
 }
 
 void RenderPanel::onRenderWindowMouseEvents(QMouseEvent* event)

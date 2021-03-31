@@ -118,6 +118,8 @@ protected:
   /// Called when any mouse event happens inside the render window
   void onRenderWindowMouseEvents(QMouseEvent* event);
 
+  void resizeEvent(QResizeEvent* event) override;
+
   // QWidget mouse events all get sent to onRenderWindowMouseEvents().
   // QMouseEvent.type() distinguishes them later.
   void mouseMoveEvent(QMouseEvent* event) override
