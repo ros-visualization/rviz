@@ -104,7 +104,7 @@ void ColorEditor::onButtonClick()
   ColorProperty* prop = property_;
   QColor original_color = prop->getColor();
 
-  QColorDialog dialog(color_, parentWidget());
+  QColorDialog dialog(color_, window());
 
   connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), property_, SLOT(setColor(const QColor&)));
 
