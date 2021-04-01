@@ -177,8 +177,8 @@ bool VisualizerApp::init(int argc, char** argv)
 
     if (!ros::master::check())
     {
-      WaitForMasterDialog* dialog = new WaitForMasterDialog;
-      if (dialog->exec() != QDialog::Accepted)
+      WaitForMasterDialog dialog;
+      if (dialog.exec() != QDialog::Accepted)
       {
         return false;
       }
