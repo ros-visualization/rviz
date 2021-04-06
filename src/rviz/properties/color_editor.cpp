@@ -78,13 +78,18 @@ void ColorEditor::resizeEvent(QResizeEvent* event)
 
 void ColorEditor::parseText()
 {
-  QColor new_color = parseColor(text());
+  const QString t = text();
+  QColor new_color = parseColor(t);
   if (new_color.isValid())
   {
     color_ = new_color;
     if (property_)
     {
+      auto pos = cursorPosition();
       property_->setColor(new_color);
+      // setColor() normalizes the text display and thus looses cursor pos
+      setText(t);             // thus: restore original, unnormalized text
+      setCursorPosition(pos); // as well as cursor position
     }
   }
 }
