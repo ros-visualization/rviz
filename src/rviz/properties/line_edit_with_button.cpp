@@ -71,19 +71,4 @@ void LineEditWithButton::resizeEvent(QResizeEvent* event)
   button_->setGeometry(width() - button_width - padding, padding, button_width, button_height);
 }
 
-void LineEditWithButton::simulateReturnPressed()
-{
-  // I couldn't find a way to directly tell the editor that I was
-  // done with it here.  "Q_EMIT returnPressed()", "Q_EMIT
-  // editingFinished()" etc did nothing.  So instead, here I
-  // simulate the user pressing and releasing the "Return" key,
-  // which does indeed make it act like I want: when you select a
-  // topic from the dialog and the dialog closes, the property's
-  // Setter is called and this editor closes.
-  QKeyEvent* event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-  QApplication::postEvent(this, event);
-  event = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
-  QApplication::postEvent(this, event);
-}
-
 } // end namespace rviz
