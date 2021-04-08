@@ -1,0 +1,83 @@
+# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
+# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
+
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  default:
+    strategy:
+      matrix:
+        distro: [melodic]
+        include:
+          - distro: melodic
+            env:
+              CLANG_TIDY: pedantic
+
+    env:
+      CXXFLAGS: "-Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
+      ROS_DISTRO: ${{ matrix.distro }}
+      ROS_REPO: ${{ matrix.repo || 'ros' }}
+      CATKIN_LINT: true
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      BASEDIR: /home/runner/work
+      DOCKER_COMMIT: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
+      CACHE_PREFIX: ${{ matrix.distro }}
+      CLANG_TIDY_BASE_REF: auto
+
+    name: "${{ matrix.distro }}${{ matrix.repo != 'ros' && format(' {0}', matrix.repo) || '' }}"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # The target directory cache doesn't include the source directory because
+      # that comes from the checkout. See "prepare target_ws for cache" task below
+      - name: Cache target_ws
+        uses: pat-s/always-upload-cache@v2.1.3
+        with:
+          path: ${{ env.BASEDIR }}/target_ws
+          key: target_ws-${{ env.CACHE_PREFIX }}-${{ hashFiles('**/CMakeLists.txt', '**/package.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            target_ws-${{ env.CACHE_PREFIX }}-${{ hashFiles('**/CMakeLists.txt', '**/package.xml') }}
+      - name: Cache ccache
+        uses: pat-s/always-upload-cache@v2.1.3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME || github.actor }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Fetch cached docker image
+        if: ${{ env.DOCKER_COMMIT && ! env.DOCKER_IMAGE }}
+        run: |
+          if docker pull ${{ env.DOCKER_COMMIT }} ; then
+            echo "DOCKER_IMAGE=$DOCKER_COMMIT" >> $GITHUB_ENV
+          fi
+
+      - name: industrial_ci
+        uses: rhaschke/industrial_ci@master
+        env: ${{ matrix.env || env }}
+
+      - name: Upload docker image as cache
+        if: ${{ always() && env.DOCKER_COMMIT }}
+        run: |
+          docker push ${{ env.DOCKER_COMMIT }} || true
+      - name: Upload test artifacts (on failure)
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-results
+          path: ${{ env.BASEDIR }}/target_ws/**/test_results/**/*.xml
+      - name: Prepare target_ws for cache
+        if: ${{ always() && ! matrix.env.CCOV }}
+        run: |
+          sudo find ${{ env.BASEDIR }}/target_ws -wholename '*/test_results/*' -delete
+          sudo rm -rf ${{ env.BASEDIR }}/target_ws/src
