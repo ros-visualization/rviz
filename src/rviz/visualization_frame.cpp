@@ -1417,10 +1417,11 @@ VisualizationFrame::addPane(const QString& name, QWidget* panel, Qt::DockWidgetA
 {
   PanelDockWidget* dock;
   dock = new PanelDockWidget(name);
+  addDockWidget(area, dock);
+  
   dock->setContentWidget(panel);
   dock->setFloating(floating);
   dock->setObjectName(name); // QMainWindow::saveState() needs objectName to be set.
-  addDockWidget(area, dock);
 
   // we want to know when that panel becomes visible
   connect(dock, SIGNAL(visibilityChanged(bool)), this, SLOT(onDockPanelVisibilityChange(bool)));
