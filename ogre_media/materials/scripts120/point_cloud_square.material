@@ -1,37 +1,36 @@
 material rviz/PointCloudSquare {
 
   technique nogp {
-    pass { 
+    pass {
       alpha_rejection greater_equal 1
       vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/smooth_square.frag {}
     }
   }
-  
-  technique nogp_depth { 
+
+  technique nogp_depth {
     scheme Depth
-    pass { 
+    pass {
       alpha_rejection greater_equal 1
       vertex_program_ref   rviz/glsl120/nogp/billboard.vert(with_depth) {}
       fragment_program_ref rviz/glsl120/depth.frag {}
     }
   }
-  
-  technique nogp_selection_first_pass { 
+
+  technique nogp_selection_first_pass {
     scheme Pick
-    pass { 
+    pass {
       vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
-  
+
   technique nogp_selection_second_pass {
     scheme Pick1
-    pass { 
+    pass {
       alpha_rejection greater_equal 1
       vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/pass_color.frag {}
     }
   }
 }
-

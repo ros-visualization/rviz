@@ -10,7 +10,7 @@ material rviz/DefaultPickAndDepth
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
-  
+
   technique BlackCull
   {
     pass
@@ -43,7 +43,7 @@ material rviz/DefaultPickAndDepth
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
-  
+
   technique Black
   {
     pass

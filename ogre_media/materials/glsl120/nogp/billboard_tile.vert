@@ -18,13 +18,13 @@ void passDepth( vec4 pos );
 void main()
 {
   vec3 right = cross(up.xyz, normal.xyz);
-  
+
   vec4 s = gl_MultiTexCoord0 * size;
   vec3 r = s.xxx * right;
   vec3 u = s.yyy * up.xyz;
-  
+
   vec4 pos = gl_Vertex + vec4( r + u, 0.0 );
-  
+
   gl_Position = worldviewproj_matrix * pos;
   gl_TexCoord[0] = gl_MultiTexCoord0 + vec4(0.5,0.5,0.0,0.0);
   gl_FrontColor = gl_Color;

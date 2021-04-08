@@ -1,6 +1,6 @@
 // These shaders are work-arounds in case geometry shaders
 // are not supported, so vertices can't be created on the graphics card.
-// Multiple vertices are passed in for each primitive, 
+// Multiple vertices are passed in for each primitive,
 // and each one is offset according to its texture coords.
 
 //includes:

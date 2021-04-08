@@ -1,10 +1,10 @@
 material rviz/PointCloudBox
-{ 
+{
   /* This material should only be used with glsl < 1.50 */
-  
-  // the 'gp' techniques need one input vertex per box 
+
+  // the 'gp' techniques need one input vertex per box
   // and use geometry shaders to create the geometry
-  
+
   technique gp
   {
     pass
@@ -14,7 +14,7 @@ material rviz/PointCloudBox
       fragment_program_ref rviz/glsl120/smooth_square.frag {}
     }
   }
-  
+
   technique gp_depth
   {
     scheme Depth
@@ -25,7 +25,7 @@ material rviz/PointCloudBox
       fragment_program_ref rviz/glsl120/depth.frag {}
     }
   }
-  
+
   technique gp_selection_first_pass
   {
     scheme Pick
@@ -36,7 +36,7 @@ material rviz/PointCloudBox
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
-  
+
   technique gp_selection_second_pass
   {
     scheme Pick1

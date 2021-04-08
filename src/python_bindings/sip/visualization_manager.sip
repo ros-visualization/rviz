@@ -74,7 +74,7 @@ public:
    * @param frame The name of the frame -- must match the frame name broadcast to libTF
    * @sa getFixedFrame() */
   void setFixedFrame( const QString& frame );
-  
+
   /**
    * @brief Convenience function: returns getFrameManager()->getTFClient().
    */

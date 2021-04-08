@@ -1,9 +1,9 @@
 material rviz/PointCloudBox
-{ 
+{
   /* This material should only be used with glsl < 1.50 */
 
   /* the 'nogp' techniques require the full box geometry as input */
-  
+
   technique nogp
   {
     pass
@@ -11,8 +11,8 @@ material rviz/PointCloudBox
       vertex_program_ref rviz/glsl120/nogp/box.vert {}
       fragment_program_ref rviz/glsl120/nogp/box.frag {}
     }
-  } 
-  
+  }
+
   technique nogp_depth
   {
     scheme Depth
@@ -21,8 +21,8 @@ material rviz/PointCloudBox
       vertex_program_ref rviz/glsl120/nogp/box.vert(with_depth) {}
       fragment_program_ref rviz/glsl120/depth.frag {}
     }
-  } 
-  
+  }
+
   technique nogp_selection_first_pass
   {
     scheme Pick
@@ -32,7 +32,7 @@ material rviz/PointCloudBox
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
-  
+
   technique nogp_selection_second_pass
   {
     scheme Pick1

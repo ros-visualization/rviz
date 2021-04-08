@@ -1,6 +1,6 @@
 #version 120
 
-// Draws a circle with the packed depth value 
+// Draws a circle with the packed depth value
 
 // includes
 vec4 packDepth( );

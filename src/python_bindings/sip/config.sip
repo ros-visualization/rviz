@@ -51,7 +51,7 @@ public:
 
     /** @brief Return true if there is a next entry, false if not. */
     bool isValid();
-  
+
     /** @brief Resets the iterator to the start of the map. */
     void start();
 

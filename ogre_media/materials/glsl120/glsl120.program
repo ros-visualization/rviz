@@ -163,4 +163,3 @@ fragment_program rviz/glsl120/smooth_square.frag glsl
     param_named_auto alpha custom 1
   }
 }
-

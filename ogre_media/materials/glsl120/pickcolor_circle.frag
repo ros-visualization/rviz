@@ -1,6 +1,6 @@
 #version 120
 
-// Draws a circle in the pick color 
+// Draws a circle in the pick color
 
 //includes:
 void circleImpl( vec4 color, float ax, float ay );

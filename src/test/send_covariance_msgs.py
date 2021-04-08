@@ -108,4 +108,3 @@ while not rospy.is_shutdown():
     # p = angle
     # y = angle
     rate.sleep()
-

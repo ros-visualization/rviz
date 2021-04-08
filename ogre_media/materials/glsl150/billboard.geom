@@ -39,7 +39,7 @@ void emitVertex( vec3 pos_rel, vec3 tex )
   EmitVertex();
 }
 
-void main() 
+void main()
 {
   // if auto_size == 1, then size_factor == size.x*gl_Vertex.z
   // if auto_size == 0, then size_factor == size.x
@@ -54,6 +54,6 @@ void main()
   emitVertex( vec3( size_factor,-size_factor, 0.0), vec3(1.0, 0.0, 0.0) );
   emitVertex( vec3(-size_factor, size_factor, 0.0), vec3(0.0, 1.0, 0.0) );
   emitVertex( vec3( size_factor, size_factor, 0.0), vec3(1.0, 1.0, 0.0) );
-  
+
   EndPrimitive();
 }

@@ -1,6 +1,6 @@
 #version 150 compatibility
 
-// this merely passes over position and color, 
+// this merely passes over position and color,
 // as needed by box.geom
 
 out gl_PerVertex {
