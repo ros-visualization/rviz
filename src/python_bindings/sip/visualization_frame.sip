@@ -35,7 +35,7 @@ public:
   virtual rviz::PanelDockWidget* addPane( const QString& name,
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                bool floating = true );
+                                bool floating = false );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
@@ -60,7 +60,7 @@ public:
   QString getErrorMessage() const;
 
   /** @brief Load the properties of all subsystems from the given Config.
-   * 
+   *
    * This is called by loadDisplayConfig().
    *
    * @param config Must have type Config::Map.
