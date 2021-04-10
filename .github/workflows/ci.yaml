@@ -20,6 +20,7 @@ jobs:
 
     env:
       CXXFLAGS: "-Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
+      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
       CATKIN_LINT: true
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: /home/runner/work
