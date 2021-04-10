@@ -2,6 +2,17 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.17 (2021-04-10)
+--------------------
+* [maint] Switch to GHA: pre-commit + industrial_ci
+* [fix]   Fix spurious resizing issue for ImageDisplay panel (`#1611 <https://github.com/ros-visualization/rviz/issues/1611>`_)
+* [fix]   ColorEditor: maintain edited text + cursor pos (`#1609 <https://github.com/ros-visualization/rviz/issues/1609>`_)
+* [fix]   Keep ColorDialog on top of main window (`#1604 <https://github.com/ros-visualization/rviz/issues/1604>`_)
+* [fix]   Fix memory leaks in dialog handling
+* [fix]   Enable Mesa workaround also on Mesa 21 (`#1598 <https://github.com/ros-visualization/rviz/issues/1598>`_)
+* [fix]   Avoid shifting of text in EditableEnumProperty's lineedit
+* Contributors: Martin Pecka, Robert Haschke, jeffryHo
+
 1.13.16 (2021-03-04)
 --------------------
 * [fix]     Enforce GLSL 1.4 on more Mesa systems (`#1588 <https://github.com/ros-visualization/rviz/issues/1588>`_)
