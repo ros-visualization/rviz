@@ -40,7 +40,7 @@ from geometry_msgs.msg import Point32
 pub1 = rospy.Publisher("cloud1", PointCloud)
 pub2 = rospy.Publisher("cloud2", PointCloud)
 
-rospy.init_node('send_two_clouds')
+rospy.init_node("send_two_clouds")
 
 cloud = PointCloud()
 while not rospy.is_shutdown():
@@ -49,19 +49,19 @@ while not rospy.is_shutdown():
     cloud.header.stamp = rospy.Time.now()
 
     cloud.points = [
-        Point32( 0, 0, 0 ),
-        Point32( .1, 0, 0 ),
-        Point32( 0, .1, 0 ),
-        Point32( .1, .1, 0 )
+        Point32(0, 0, 0),
+        Point32(0.1, 0, 0),
+        Point32(0, 0.1, 0),
+        Point32(0.1, 0.1, 0),
     ]
-    pub1.publish( cloud )
+    pub1.publish(cloud)
 
     cloud.points = [
-        Point32( .5, 0, 0 ),
-        Point32( .6, 0, 0 ),
-        Point32( .5, .1, 0 ),
-        Point32( .6, .1, 0 )
+        Point32(0.5, 0, 0),
+        Point32(0.6, 0, 0),
+        Point32(0.5, 0.1, 0),
+        Point32(0.6, 0.1, 0),
     ]
-    pub2.publish( cloud )
+    pub2.publish(cloud)
 
-    rospy.sleep(.5)
+    rospy.sleep(0.5)

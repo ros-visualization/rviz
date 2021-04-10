@@ -32,25 +32,29 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import rospy
 import math
 
 import tf
 
-if __name__ == '__main__':
-    rospy.init_node('send_tf')
+if __name__ == "__main__":
+    rospy.init_node("send_tf")
 
     br = tf.TransformBroadcaster()
     rate = rospy.Rate(10)
     radius = 5
     t = 0
     while not rospy.is_shutdown():
-        print "sending..."
-        for m in range(1,10):
-            br.sendTransform((radius * math.cos(t), radius * math.sin(t), 0),
-                             tf.transformations.quaternion_from_euler(0, 0, t),
-                             rospy.Time.now(),
-                             "base_link",
-                             "map")
-        t += .01
+        print("sending...")
+        for m in range(1, 10):
+            br.sendTransform(
+                (radius * math.cos(t), radius * math.sin(t), 0),
+                tf.transformations.quaternion_from_euler(0, 0, t),
+                rospy.Time.now(),
+                "base_link",
+                "map",
+            )
+        t += 0.01
         rate.sleep()

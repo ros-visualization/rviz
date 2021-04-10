@@ -37,24 +37,28 @@ import math
 
 import tf
 
-if __name__ == '__main__':
-    rospy.init_node('send_tf')
+if __name__ == "__main__":
+    rospy.init_node("send_tf")
 
     br = tf.TransformBroadcaster()
     r = rospy.Rate(10)
     t = 0
     while not rospy.is_shutdown():
-        for m in range(1,20):
-            br.sendTransform((0, 0, 0),
-                             tf.transformations.quaternion_from_euler(0, .8*m, 0),
-                             rospy.Time.now(),
-                             "frame0_{0}".format(m),
-                             "base_link")
-            for n in range(1,20):
-                br.sendTransform((.2*math.sin(t*10+n), 0, .2),
-                                 tf.transformations.quaternion_from_euler(0, .6 * math.sin(t), .2),
-                                 rospy.Time.now(),
-                                 "frame{0}_{1}".format(n, m),
-                                 "frame{0}_{1}".format(n-1, m))
-        t += .01
+        for m in range(1, 20):
+            br.sendTransform(
+                (0, 0, 0),
+                tf.transformations.quaternion_from_euler(0, 0.8 * m, 0),
+                rospy.Time.now(),
+                "frame0_{0}".format(m),
+                "base_link",
+            )
+            for n in range(1, 20):
+                br.sendTransform(
+                    (0.2 * math.sin(t * 10 + n), 0, 0.2),
+                    tf.transformations.quaternion_from_euler(0, 0.6 * math.sin(t), 0.2),
+                    rospy.Time.now(),
+                    "frame{0}_{1}".format(n, m),
+                    "frame{0}_{1}".format(n - 1, m),
+                )
+        t += 0.01
         r.sleep()
