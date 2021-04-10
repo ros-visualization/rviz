@@ -1,6 +1,5 @@
 ---
-Checks:          '-*,
-                  llvm-namespace-comment,
+Checks:          'llvm-namespace-comment,
                   modernize-redundant-void-arg,
                   modernize-use-nullptr,
                   modernize-use-default,
