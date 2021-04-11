@@ -9,8 +9,8 @@ ImageRenderPanel::mousePressEvent(QMouseEvent* event)
 {
   QWidget::mousePressEvent(event);
 }
-ImageRenderPanel::mouseMoveEvent(QMouseEvent* event)
+ImageRenderPanel::mouseReleaseEvent(QMouseEvent* event)
 {
-  QWidget::mouseMoveEvent(event);
+  QWidget::mouseReleaseEvent(event);
 }
 }
