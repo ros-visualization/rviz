@@ -122,6 +122,7 @@ add_library(${PROJECT_NAME}
   tool_properties_panel.cpp
   yaml_config_reader.cpp
   yaml_config_writer.cpp
+  image_render_panel.cpp
 
   ${ENV_CONFIG_FILE}
 )
