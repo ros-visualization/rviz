@@ -5,7 +5,7 @@
       <author>WakiMudi</author>
       <authoring_tool>OpenCOLLADA2009 x64</authoring_tool>
       <comments>
-			ColladaMaya export options: 
+			ColladaMaya export options:
 			bakeTransforms=0;relativePaths=0;copyTextures=0;exportTriangles=0;exportCgfxFileReferences=1;
 			isSampling=0;curveConstrainSampling=0;removeStaticCurves=1;exportPolygonMeshes=1;exportLights=1;
 			exportCameras=1;exportJointsAndSkin=1;exportAnimations=1;exportInvisibleNodes=0;exportDefaultCameras=0;

@@ -1,6 +1,6 @@
 #version 120
 
-// Passes the fragment color unchanged 
+// Passes the fragment color unchanged
 
 void main()
 {

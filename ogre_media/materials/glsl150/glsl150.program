@@ -78,4 +78,3 @@ vertex_program rviz/glsl150/pass_pos_color.vert glsl
 {
   source pass_pos_color.vert
 }
-

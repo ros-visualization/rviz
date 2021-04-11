@@ -15,7 +15,7 @@ Describe your issue here and explain how to reproduce it.
 
 ### Your environment
 * OS Version: e.g. Ubuntu 18.04
-* ROS Distro: [Kinetic | Melodic]
+* ROS Distro: [Kinetic | Melodic | Noetic]
 * RViz, Qt, OGRE, OpenGl version as printed by rviz:
     ```
     paste your console output here

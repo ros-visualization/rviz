@@ -28,6 +28,7 @@
  */
 
 #include <fstream>
+#include <memory>
 
 #include <QAction>
 #include <QShortcut>
@@ -621,9 +622,9 @@ void VisualizationFrame::onDockPanelVisibilityChange(bool visible)
 void VisualizationFrame::openPreferencesDialog()
 {
   Preferences temp_preferences(*preferences_);
-  PreferencesDialog* dialog = new PreferencesDialog(panel_factory_, &temp_preferences, this);
+  PreferencesDialog dialog(panel_factory_, &temp_preferences, this);
   manager_->stopUpdate();
-  if (dialog->exec() == QDialog::Accepted)
+  if (dialog.exec() == QDialog::Accepted)
   {
     // Apply preferences.
     preferences_ = boost::make_shared<Preferences>(temp_preferences);
@@ -754,12 +755,12 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path)
   setWindowModified(false);
   loading_ = true;
 
-  LoadingDialog* dialog = nullptr;
+  std::unique_ptr<LoadingDialog> dialog;
   if (initialized_)
   {
-    dialog = new LoadingDialog(this);
+    dialog.reset(new LoadingDialog(this));
     dialog->show();
-    connect(this, SIGNAL(statusUpdate(const QString&)), dialog, SLOT(showMessage(const QString&)));
+    connect(this, SIGNAL(statusUpdate(const QString&)), dialog.get(), SLOT(showMessage(const QString&)));
   }
 
   YamlConfigReader reader;
@@ -775,8 +776,6 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path)
   setDisplayConfigFile(full_path);
 
   last_config_dir_ = fs::path(full_path).parent_path().string();
-
-  delete dialog;
 
   post_load_timer_->start(1000);
 
@@ -1407,10 +1406,11 @@ VisualizationFrame::addPane(const QString& name, QWidget* panel, Qt::DockWidgetA
 {
   PanelDockWidget* dock;
   dock = new PanelDockWidget(name);
+  addDockWidget(area, dock);
+
   dock->setContentWidget(panel);
   dock->setFloating(floating);
   dock->setObjectName(name); // QMainWindow::saveState() needs objectName to be set.
-  addDockWidget(area, dock);
 
   // we want to know when that panel becomes visible
   connect(dock, SIGNAL(visibilityChanged(bool)), this, SLOT(onDockPanelVisibilityChange(bool)));

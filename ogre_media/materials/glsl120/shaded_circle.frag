@@ -17,6 +17,6 @@ void main()
   vec3 col = mix(vec3(0.8, 0.8, 0.8) * gl_Color.xyz, gl_Color.xyz, a);
 
   col = col + col * highlight.xyz;
-  
+
   gl_FragColor = vec4(col, alpha * ceil(a) * gl_Color.a);
 }

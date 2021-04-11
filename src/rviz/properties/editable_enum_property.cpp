@@ -28,9 +28,8 @@
  */
 
 #include <QCompleter>
-
+#include <QLineEdit>
 #include <rviz/properties/editable_combo_box.h>
-
 #include <rviz/properties/editable_enum_property.h>
 
 namespace rviz
@@ -61,6 +60,8 @@ QWidget* EditableEnumProperty::createEditor(QWidget* parent, const QStyleOptionV
   Q_EMIT requestOptions(this);
 
   EditableComboBox* cb = new EditableComboBox(parent);
+  // avoid shifting of text when line edit becomes active (#1599)
+  cb->lineEdit()->setTextMargins(0, -1, 0, 0);
   // avoid larger comboxbox than column width of PropertyWidget
   cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
   cb->addItems(strings_);

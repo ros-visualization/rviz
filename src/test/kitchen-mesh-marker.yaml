@@ -3,7 +3,7 @@ ns: chunk
 id: 0
 type: 10
 action: 0
-pose: 
+pose:
   position: { x: 0, y: 0, z: 0 }
   orientation: { x: 0, y: 0, z: 0, w: 1 }
 color: { r: 1, g: 1, b: 1, a: 1 }

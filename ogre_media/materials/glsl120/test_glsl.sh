@@ -8,4 +8,3 @@ else
   echo "Unknown shader type!"
   exit 1
 fi
-

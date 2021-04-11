@@ -11,7 +11,7 @@ material rviz/PointCloudPoint
       fragment_program_ref rviz/glsl120/flat_color_circle.frag {}
     }
   }
-  
+
   technique depth
   {
     scheme Depth
@@ -22,7 +22,7 @@ material rviz/PointCloudPoint
       fragment_program_ref rviz/glsl120/depth_circle.frag {}
     }
   }
-  
+
   technique selection_first_pass
   {
     scheme Pick
@@ -33,7 +33,7 @@ material rviz/PointCloudPoint
       fragment_program_ref rviz/glsl120/pickcolor_circle.frag {}
     }
   }
-  
+
   technique selection_second_pass
   {
     scheme Pick1

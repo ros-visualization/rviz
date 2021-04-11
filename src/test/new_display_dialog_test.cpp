@@ -49,9 +49,9 @@ int main(int argc, char** argv)
   current_names << "Chub"
                 << "Town";
   QStringList empty;
-  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog(factory, QString("Display"), current_names,
-                                                            empty, &lookup_name, &display_name, nullptr);
-  if (dialog->exec() == QDialog::Accepted)
+  rviz::NewObjectDialog dialog(factory, QString("Display"), current_names, empty, &lookup_name,
+                               &display_name, nullptr);
+  if (dialog.exec() == QDialog::Accepted)
   {
     printf("lookup_name='%s', display_name='%s'\n", lookup_name.toStdString().c_str(),
            display_name.toStdString().c_str());

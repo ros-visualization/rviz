@@ -114,12 +114,12 @@ public:
   PanelDockWidget* addPane(const QString& name,
                            QWidget* panel,
                            Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                           bool floating = true) override;
+                           bool floating = false) override;
 
   QDockWidget* addPanelByName(const QString& name,
                               const QString& class_lookup_name,
                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                              bool floating = true);
+                              bool floating = false);
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.

@@ -23,7 +23,7 @@ def publishPC2(count):
     header = Header()
     header.frame_id = "map"
     header.stamp = rospy.Time.now()
-    
+
     x, y = np.meshgrid(np.linspace(-2,2,width), np.linspace(-2,2,height))
     z = 0.5 * np.sin(2*x - count/10.0) * np.sin(2*y)
     points = np.array([x,y,z,z]).reshape(4,-1).T

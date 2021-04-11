@@ -1,13 +1,13 @@
 ---
-BasedOnStyle:  Google
-ColumnLimit:    105
+BasedOnStyle: Google
+ColumnLimit: 105
 MaxEmptyLinesToKeep: 2
 SortIncludes: false
 
-Standard:        Auto
-IndentWidth:     2
-TabWidth:        2
-UseTab:          Never
+Standard: Auto
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 2
 NamespaceIndentation: None
@@ -46,7 +46,7 @@ PenaltyReturnTypeOnItsOwnLine: 50
 
 SpacesBeforeTrailingComments: 1
 SpacesInParentheses: false
-SpacesInAngles:  false
+SpacesInAngles: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpaceAfterCStyleCast: false
@@ -60,7 +60,6 @@ BreakBeforeBraces: Custom
 BraceWrapping:
     AfterCaseLabel: true
     AfterClass: true
-    AfterCaseLabel: true
     AfterControlStatement: true
     AfterEnum: true
     AfterFunction: true
@@ -70,4 +69,3 @@ BraceWrapping:
     BeforeCatch: true
     BeforeElse: true
     IndentBraces: false
-...

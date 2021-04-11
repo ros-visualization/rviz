@@ -78,13 +78,18 @@ void ColorEditor::resizeEvent(QResizeEvent* event)
 
 void ColorEditor::parseText()
 {
-  QColor new_color = parseColor(text());
+  const QString t = text();
+  QColor new_color = parseColor(t);
   if (new_color.isValid())
   {
     color_ = new_color;
     if (property_)
     {
+      auto pos = cursorPosition();
       property_->setColor(new_color);
+      // setColor() normalizes the text display and thus looses cursor pos
+      setText(t);             // thus: restore original, unnormalized text
+      setCursorPosition(pos); // as well as cursor position
     }
   }
 }
@@ -104,14 +109,14 @@ void ColorEditor::onButtonClick()
   ColorProperty* prop = property_;
   QColor original_color = prop->getColor();
 
-  QColorDialog* dialog = new QColorDialog(color_, parentWidget());
+  QColorDialog dialog(color_, window());
 
-  connect(dialog, SIGNAL(currentColorChanged(const QColor&)), property_, SLOT(setColor(const QColor&)));
+  connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), property_, SLOT(setColor(const QColor&)));
 
   // Without this connection the PropertyTreeWidget does not update
   // the color info "live" when it changes in the dialog and the 3D
   // view.
-  connect(dialog, SIGNAL(currentColorChanged(const QColor&)), parentWidget(), SLOT(update()));
+  connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), parentWidget(), SLOT(update()));
 
   // On the TWM window manager under linux, and on OSX, this
   // ColorEditor object is destroyed when (or soon after) the dialog
@@ -123,7 +128,7 @@ void ColorEditor::onButtonClick()
   // deleteLater() will take effect and "this" will be destroyed.
   // Therefore, everything we do in this function after dialog->exec()
   // should only use variables on the stack, not member variables.
-  if (dialog->exec() != QDialog::Accepted)
+  if (dialog.exec() != QDialog::Accepted)
   {
     prop->setColor(original_color);
   }

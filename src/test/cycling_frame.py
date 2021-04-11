@@ -1,4 +1,4 @@
-#!/usr/bin/env python  
+#!/usr/bin/env python
 # Test script to publish a "cycling_frame" that rotates about the origin
 
 import math
