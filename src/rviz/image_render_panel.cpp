@@ -1,6 +1,7 @@
 #include "image_render_panel.h"
+
 namespace  rviz {
-ImageRenderPanel::ImageRenderPanel(QWidget* parent):RenderPanel(parent) {}
+ImageRenderPanel::ImageRenderPanel(QWidget* parent) : RenderPanel(parent) {}
 
 ImageRenderPanel::~ImageRenderPanel()
 {
