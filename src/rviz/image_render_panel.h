@@ -4,7 +4,7 @@
 #include "rviz/render_panel.h"
 namespace rviz
 {
-class ImageRenderPanel ：public RenderPanel
+class ImageRenderPanel : public RenderPanel
 {
 public:
   ImageRenderPanel(QWidget* parent = nullptr);
