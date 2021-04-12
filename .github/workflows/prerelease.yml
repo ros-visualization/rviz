@@ -3,9 +3,7 @@
 
 name: pre-release
 
-on:
-  workflow_dispatch:
-  push:
+on: [workflow_dispatch]
 
 jobs:
   default:
@@ -20,7 +18,6 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CACHE_PREFIX: "${{ matrix.env.IMAGE }}${{ matrix.env.CCOV && '-ccov' || '' }}"
 
-    if: github.event_name == 'workflow_dispatch'  # only allow manual triggering
     name: "${{ matrix.distro }}"
     runs-on: ubuntu-latest
     steps:
