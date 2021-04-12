@@ -1,7 +1,10 @@
 #include "image_render_panel.h"
 
-namespace  rviz {
-ImageRenderPanel::ImageRenderPanel(QWidget* parent) : RenderPanel(parent) {}
+namespace rviz
+{
+ImageRenderPanel::ImageRenderPanel(QWidget* parent) : RenderPanel(parent)
+{
+}
 
 ImageRenderPanel::~ImageRenderPanel()
 {
@@ -21,4 +24,4 @@ void ImageRenderPanel::mouseReleaseEvent(QMouseEvent* event)
 {
   QWidget::mouseReleaseEvent(event);
 }
-}
+} // namespace rviz
