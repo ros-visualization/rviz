@@ -1,0 +1,56 @@
+# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
+# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
+
+name: ABI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  default:
+    strategy:
+      matrix:
+        distro: [melodic]
+
+    env:
+      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      BASEDIR: /home/runner/work
+      DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
+      CACHE_PREFIX: ${{ matrix.distro }}
+      ABICHECK_URL: github:ros-visualization/rviz#1.13.17
+
+    name: "check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache ccache
+        uses: pat-s/always-upload-cache@v2.1.3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+
+      - name: Cache ABI workspace
+        uses: pat-s/always-upload-cache@v2.1.3
+        with:
+          path: ${{ env.BASEDIR }}/base_ws
+          key: base_ws-${{ env.CACHE_PREFIX }}-${{ env.ABICHECK_URL }}
+          restore-keys: |
+            base_ws-${{ env.CACHE_PREFIX }}
+
+      - name: industrial_ci
+        uses: rhaschke/industrial_ci@master
+        env: ${{ matrix.env || env }}
+
+      - name: Upload test results (on failure)
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: abi-check
+          path: ${{ env.BASEDIR }}/abicheck/**
