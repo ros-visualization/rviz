@@ -133,8 +133,8 @@ void DisplaysPanel::onDuplicateDisplay()
 
   QList<Display*> duplicated_displays;
 
-  QProgressDialog progressDialog("Duplicating displays...", "Cancel", 0,
-                                 displays_to_duplicate.size(), this);
+  QProgressDialog progressDialog("Duplicating displays...", "Cancel", 0, displays_to_duplicate.size(),
+                                 this);
 
   progressDialog.setWindowModality(Qt::WindowModal);
   progressDialog.show();
@@ -152,7 +152,8 @@ void DisplaysPanel::onDuplicateDisplay()
     duplicated_displays.push_back(disp);
 
     progressDialog.setValue(i);
-    if (progressDialog.wasCanceled()) {
+    if (progressDialog.wasCanceled())
+    {
         break;
     }
   }
