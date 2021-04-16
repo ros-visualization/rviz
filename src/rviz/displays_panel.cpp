@@ -157,7 +157,6 @@ void DisplaysPanel::onDuplicateDisplay()
       break;
     }
   }
-  
   progressDialog.setValue(displays_to_duplicate.size());
   // make sure the newly duplicated displays are selected.
   if (!duplicated_displays.empty())
