@@ -154,7 +154,7 @@ void DisplaysPanel::onDuplicateDisplay()
     progressDialog.setValue(i);
     if (progressDialog.wasCanceled())
     {
-        break;
+      break;
     }
   }
   
