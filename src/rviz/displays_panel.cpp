@@ -138,7 +138,6 @@ void DisplaysPanel::onDuplicateDisplay()
   progressDialog.setWindowModality(Qt::WindowModal);
   progressDialog.show();
   
-  
   for (int i = 0; i < displays_to_duplicate.size(); i++)
   {
     // initialize display
@@ -152,7 +151,6 @@ void DisplaysPanel::onDuplicateDisplay()
     duplicated_displays.push_back(disp);
     // push cancel to stop duplicate
     progressDialog.setValue(i);
-    
     if (progressDialog.wasCanceled()) 
     {
       break;
