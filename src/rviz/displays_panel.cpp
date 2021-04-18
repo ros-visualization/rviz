@@ -151,7 +151,8 @@ void DisplaysPanel::onDuplicateDisplay()
     duplicated_displays.push_back(disp);
     // push cancel to stop duplicate
     progressDialog.setValue(i);
-    if (progressDialog.wasCanceled()) 
+    
+    if (progressDialog.wasCanceled())
     {
       break;
     }
