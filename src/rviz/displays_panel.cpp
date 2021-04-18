@@ -149,9 +149,8 @@ void DisplaysPanel::onDuplicateDisplay()
     displays_to_duplicate[i]->save(config);
     disp->load(config);
     duplicated_displays.push_back(disp);
-    // push cancel to stop duplicate
     progressDialog.setValue(i);
-    
+    // push cancel to stop duplicate
     if (progressDialog.wasCanceled())
     {
       break;
