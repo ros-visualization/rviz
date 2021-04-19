@@ -130,13 +130,12 @@ void DisplaysPanel::onNewDisplay()
 void DisplaysPanel::onDuplicateDisplay()
 {
   QList<Display*> displays_to_duplicate = property_grid_->getSelectedObjects<Display>();
-
   QList<Display*> duplicated_displays;
+  QProgressDialog progress_dlg("Duplicating displays...", "Cancel", 0, displays_to_duplicate.size(),
+                               this);
+  progress_dlg.setWindowModality(Qt::WindowModal);
+  progress_dlg.show();
 
-  QProgressDialog progressDialog("Duplicatiing displays..", "Cancel", 0, displays_to_duplicate.size(),
-                                 this);
-  progressDialog.setWindowModality(Qt::WindowModal);
-  progressDialog.show();
   // duplicate all selected displays
   for (int i = 0; i < displays_to_duplicate.size(); i++)
   {
@@ -149,14 +148,11 @@ void DisplaysPanel::onDuplicateDisplay()
     displays_to_duplicate[i]->save(config);
     disp->load(config);
     duplicated_displays.push_back(disp);
-    progressDialog.setValue(i);
+    progress_dlg.setValue(i + 1);
     // push cancel to stop duplicate
-    if (progressDialog.wasCanceled())
-    {
+    if (progress_dlg.wasCanceled())
       break;
-    }
   }
-  progressDialog.setValue(displays_to_duplicate.size());
   // make sure the newly duplicated displays are selected.
   if (!duplicated_displays.empty())
   {
