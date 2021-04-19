@@ -135,10 +135,9 @@ void DisplaysPanel::onDuplicateDisplay()
 
   QProgressDialog progressDialog("Duplicatiing displays..", "Cancel", 0, displays_to_duplicate.size(),
                                  this);
-  
   progressDialog.setWindowModality(Qt::WindowModal);
   progressDialog.show();
-  
+  // duplicate all selected displays
   for (int i = 0; i < displays_to_duplicate.size(); i++)
   {
     // initialize display
