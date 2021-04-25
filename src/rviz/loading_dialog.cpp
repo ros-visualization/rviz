@@ -37,10 +37,12 @@ namespace rviz
 {
 LoadingDialog::LoadingDialog(QWidget* parent) : QDialog(parent)
 {
-  setModal(true);
+  setWindowModality(Qt::WindowModal);
+  setWindowTitle("Loading Config");
 
-  label_ = new QLabel;
-  QVBoxLayout* layout = new QVBoxLayout;
+  label_ = new QLabel(this);
+  label_->setMinimumWidth(100);
+  QVBoxLayout* layout = new QVBoxLayout(this);
   layout->addWidget(label_);
   setLayout(layout);
 }

@@ -135,6 +135,7 @@ void DisplaysPanel::onDuplicateDisplay()
                                this);
   progress_dlg.setWindowModality(Qt::WindowModal);
   progress_dlg.show();
+  QApplication::processEvents(); // explicitly progress events for update
 
   // duplicate all selected displays
   for (int i = 0; i < displays_to_duplicate.size(); i++)
@@ -149,6 +150,7 @@ void DisplaysPanel::onDuplicateDisplay()
     disp->load(config);
     duplicated_displays.push_back(disp);
     progress_dlg.setValue(i + 1);
+    QApplication::processEvents(); // explicitly progress events for update
     // push cancel to stop duplicate
     if (progress_dlg.wasCanceled())
       break;
