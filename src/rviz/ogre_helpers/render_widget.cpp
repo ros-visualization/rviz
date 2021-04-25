@@ -74,12 +74,6 @@ RenderWidget::RenderWidget(RenderSystem* render_system, QWidget* parent)
 #else
   rviz::RenderSystem::WindowIDType win_id = this->winId();
 #endif
-  QApplication::flush();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  QApplication::syncX();
-#else
-  QApplication::sync();
-#endif
 
   render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixelRatio());
 }
