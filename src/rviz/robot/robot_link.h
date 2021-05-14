@@ -128,6 +128,7 @@ public:
   {
     return robot_;
   }
+  const std::string& getGeometryErrors() const;
 
   // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav
   // unparented.
@@ -189,6 +190,7 @@ private:
                                       const urdf::Pose& origin,
                                       Ogre::SceneNode* scene_node,
                                       Ogre::Entity*& entity);
+  void addError(const char* format, ...);
 
   void createVisual(const urdf::LinkConstSharedPtr& link);
   void createCollision(const urdf::LinkConstSharedPtr& link);
