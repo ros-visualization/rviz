@@ -716,8 +716,8 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
       if (collision_mesh)
       {
         collision_meshes_.push_back(collision_mesh);
-        valid_collision_found = true;
       }
+      valid_collision_found |= collision == link->collision; // don't consider the same geometry twice
     }
   }
 #endif
@@ -776,8 +776,8 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link)
       if (visual_mesh)
       {
         visual_meshes_.push_back(visual_mesh);
-        valid_visual_found = true;
       }
+      valid_visual_found |= visual == link->visual; // don't consider the same geometry again
     }
   }
 #endif
