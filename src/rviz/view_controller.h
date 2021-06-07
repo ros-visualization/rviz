@@ -184,6 +184,8 @@ Q_SIGNALS:
 private Q_SLOTS:
 
   void updateNearClipDistance();
+  void updateFarClipDistance();
+  void updateVerticalFOV();
   void updateStereoProperties();
   void updateInvertZAxis();
 
@@ -233,6 +235,8 @@ protected:
   QCursor cursor_;
 
   FloatProperty* near_clip_property_;
+  FloatProperty* far_clip_property_;
+  FloatProperty* fov_property_;
   BoolProperty* stereo_enable_;
   BoolProperty* stereo_eye_swap_;
   FloatProperty* stereo_eye_separation_;
