@@ -36,7 +36,7 @@
 #include <utility>
 
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 #include <rviz/properties/property.h>
 #include <rviz/rviz_export.h>

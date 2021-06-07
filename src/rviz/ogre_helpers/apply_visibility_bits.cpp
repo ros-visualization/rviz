@@ -29,8 +29,8 @@
 
 #include <stdint.h>
 
-#include <OgreMovableObject.h>
-#include <OgreSceneNode.h>
+#include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreSceneNode.h>
 
 namespace rviz
 {

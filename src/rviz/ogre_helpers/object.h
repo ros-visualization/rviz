@@ -31,7 +31,7 @@
 #define OGRE_TOOLS_OBJECT_H
 
 #include <rviz/rviz_export.h>
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace Ogre
 {

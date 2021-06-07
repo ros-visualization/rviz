@@ -35,13 +35,13 @@
 #include <string>
 #include <map>
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreAny.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreAny.h>
 
 #include <urdf/model.h> // can be replaced later by urdf_model/types.h
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace Ogre
 {

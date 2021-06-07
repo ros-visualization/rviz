@@ -32,9 +32,9 @@
 
 #include <sensor_msgs/Image.h>
 
-#include <OgreTexture.h>
-#include <OgreImage.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreImage.h>
+#include <OGRE/OgreSharedPtr.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>

@@ -31,7 +31,7 @@
 #include <rviz/robot/robot_link.h>
 #include <rviz/robot/robot.h>
 
-#include <OgreSceneNode.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/vector_property.h>

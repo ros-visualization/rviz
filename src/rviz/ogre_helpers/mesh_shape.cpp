@@ -29,13 +29,13 @@
 
 #include "mesh_shape.h"
 
-#include <OgreMesh.h>
-#include <OgreMeshManager.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreEntity.h>
-#include <OgreMaterialManager.h>
-#include <OgreManualObject.h>
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreManualObject.h>
 
 #include <ros/console.h>
 #include <boost/lexical_cast.hpp>

@@ -29,16 +29,16 @@
 
 #include <boost/filesystem.hpp>
 
-#include <OgreEntity.h>
-#include <OgreMaterial.h>
-#include <OgreMaterialManager.h>
-#include <OgreRibbonTrail.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreSubEntity.h>
-#include <OgreTextureManager.h>
-#include <OgreSharedPtr.h>
-#include <OgreTechnique.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreRibbonTrail.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSubEntity.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreSharedPtr.h>
+#include <OGRE/OgreTechnique.h>
 
 #include <ros/console.h>
 

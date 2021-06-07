@@ -37,12 +37,12 @@
 #include <rviz/display_context.h>
 #include <rviz/mesh_loader.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreTextureManager.h>
-#include <OgreTechnique.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreTechnique.h>
 
 namespace rviz
 {

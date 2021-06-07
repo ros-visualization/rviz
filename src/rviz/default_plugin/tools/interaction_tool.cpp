@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreCamera.h>
-#include <OgrePlane.h>
-#include <OgreRay.h>
-#include <OgreSceneNode.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreViewport.h>
 
 #include <rviz/render_panel.h>
 #include <rviz/selection/selection_handler.h>

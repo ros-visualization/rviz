@@ -1,6 +1,6 @@
-#include <OgreVector3.h>
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <rviz/ogre_helpers/shape.h>
 
