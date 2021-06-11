@@ -47,7 +47,7 @@ public:
   ~STLLoader();
 
   bool load(const std::string& path);
-  bool load(uint8_t* buffer, const size_t num_bytes, const std::string& origin);
+  bool load(uint8_t * buffer, const size_t num_bytes, const std::string& origin);
 
   Ogre::MeshPtr toMesh(const std::string& name);
 
@@ -62,7 +62,7 @@ public:
 
 protected:
   //! Load a binary STL file
-  bool load_binary(uint8_t* buffer);
+  bool load_binary(uint8_t * buffer);
 };
 
 } // namespace ogre_tools
