@@ -1,5 +1,5 @@
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <rviz/visualization_manager.h>
 #include <rviz/properties/color_property.h>

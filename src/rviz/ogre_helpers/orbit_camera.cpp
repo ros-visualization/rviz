@@ -30,12 +30,12 @@
 #include "orbit_camera.h"
 #include "shape.h"
 
-#include <OgreCamera.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreViewport.h>
 
 #include <stdint.h>
 #include <sstream>

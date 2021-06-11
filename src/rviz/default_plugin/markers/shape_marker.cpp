@@ -36,8 +36,8 @@
 
 #include <rviz/ogre_helpers/shape.h>
 
-#include <OgreSceneNode.h>
-#include <OgreMatrix3.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreMatrix3.h>
 
 namespace rviz
 {

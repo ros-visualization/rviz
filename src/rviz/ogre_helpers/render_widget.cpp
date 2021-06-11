@@ -30,7 +30,7 @@
 #include "ogre_helpers/render_widget.h"
 #include "ogre_helpers/render_system.h"
 
-#include <OgreRenderWindow.h>
+#include <OGRE/OgreRenderWindow.h>
 
 #include <QtGlobal>
 #include <QApplication>

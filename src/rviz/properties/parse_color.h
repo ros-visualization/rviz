@@ -32,7 +32,7 @@
 #include <QColor>
 #include <QString>
 
-#include <OgreColourValue.h>
+#include <OGRE/OgreColourValue.h>
 
 namespace rviz
 {

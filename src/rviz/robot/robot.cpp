@@ -41,12 +41,12 @@
 
 #include <urdf_model/model.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreEntity.h>
-#include <OgreMaterialManager.h>
-#include <OgreMaterial.h>
-#include <OgreResourceGroupManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreResourceGroupManager.h>
 
 #include <ros/console.h>
 #include <ros/assert.h>

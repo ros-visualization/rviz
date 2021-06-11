@@ -31,23 +31,23 @@
 
 #include <QTimer>
 
-#include <OgreCamera.h>
-#include <OgreEntity.h>
-#include <OgreHardwarePixelBuffer.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreRenderSystem.h>
-#include <OgreRenderTexture.h>
-#include <OgreRoot.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreSubEntity.h>
-#include <OgreTextureManager.h>
-#include <OgreViewport.h>
-#include <OgreWireBoundingBox.h>
-#include <OgreSharedPtr.h>
-#include <OgreTechnique.h>
-#include <OgreRectangle2D.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreHardwarePixelBuffer.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreRenderSystem.h>
+#include <OGRE/OgreRenderTexture.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSubEntity.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreWireBoundingBox.h>
+#include <OGRE/OgreSharedPtr.h>
+#include <OGRE/OgreTechnique.h>
+#include <OGRE/OgreRectangle2D.h>
 
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>

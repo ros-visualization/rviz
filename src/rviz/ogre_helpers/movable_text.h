@@ -42,11 +42,11 @@
 #ifndef OGRE_TOOLS_MOVABLE_TEXT_H
 #define OGRE_TOOLS_MOVABLE_TEXT_H
 
-#include <OgreMovableObject.h>
-#include <OgreRenderable.h>
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreRenderable.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSharedPtr.h>
 
 
 namespace Ogre

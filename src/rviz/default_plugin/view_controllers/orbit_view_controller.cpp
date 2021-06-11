@@ -29,12 +29,12 @@
 
 #include <stdint.h>
 
-#include <OgreCamera.h>
-#include <OgreQuaternion.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreVector3.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreViewport.h>
 
 #include "rviz/display_context.h"
 #include "rviz/geometry.h"

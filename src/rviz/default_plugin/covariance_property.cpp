@@ -36,8 +36,8 @@
 
 #include <QColor>
 
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 
 namespace rviz
 {

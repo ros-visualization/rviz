@@ -30,7 +30,7 @@
 #ifndef RVIZ_ORBIT_VIEW_CONTROLLER_H
 #define RVIZ_ORBIT_VIEW_CONTROLLER_H
 
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
 
 #include <QCursor>
 

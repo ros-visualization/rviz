@@ -35,7 +35,7 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/foreach.hpp>
 
-#include <OgreTextureManager.h>
+#include <OGRE/OgreTextureManager.h>
 
 #include <sensor_msgs/image_encodings.h>
 

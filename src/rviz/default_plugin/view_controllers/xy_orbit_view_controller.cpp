@@ -31,13 +31,13 @@
 
 #include <ros/ros.h>
 
-#include <OgreCamera.h>
-#include <OgrePlane.h>
-#include <OgreQuaternion.h>
-#include <OgreRay.h>
-#include <OgreSceneNode.h>
-#include <OgreVector3.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreViewport.h>
 
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/shape.h"

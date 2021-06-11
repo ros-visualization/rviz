@@ -27,12 +27,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreViewport.h>
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreCamera.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreCamera.h>
 
 #include "rviz/uniform_string_stream.h"
 #include "rviz/display_context.h"

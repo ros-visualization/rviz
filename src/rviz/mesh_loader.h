@@ -30,7 +30,7 @@
 #ifndef RVIZ_MESH_LOADER_H
 #define RVIZ_MESH_LOADER_H
 
-#include <OgreMesh.h>
+#include <OGRE/OgreMesh.h>
 
 namespace rviz
 {

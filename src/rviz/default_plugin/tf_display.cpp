@@ -29,8 +29,8 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <tf/transform_listener.h>
 

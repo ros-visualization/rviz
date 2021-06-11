@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreRay.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreVector3.h>
 
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/load_resource.h"

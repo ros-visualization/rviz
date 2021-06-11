@@ -33,10 +33,10 @@
 #ifndef Q_MOC_RUN
 #include <boost/thread/thread.hpp>
 
-#include <OgreTexture.h>
-#include <OgreMaterial.h>
-#include <OgreVector3.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSharedPtr.h>
 #endif
 
 #include <nav_msgs/MapMetaData.h>

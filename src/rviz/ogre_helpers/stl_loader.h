@@ -30,8 +30,8 @@
 #ifndef OGRE_TOOLS_STL_LOADER_H
 #define OGRE_TOOLS_STL_LOADER_H
 
-#include <OgreVector3.h>
-#include <OgreMesh.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreMesh.h>
 
 #include <vector>
 #include <stdint.h>
@@ -47,7 +47,7 @@ public:
   ~STLLoader();
 
   bool load(const std::string& path);
-  bool load(uint8_t * buffer, const size_t num_bytes, const std::string& origin);
+  bool load(uint8_t* buffer, const size_t num_bytes, const std::string& origin);
 
   Ogre::MeshPtr toMesh(const std::string& name);
 
@@ -62,7 +62,7 @@ public:
 
 protected:
   //! Load a binary STL file
-  bool load_binary(uint8_t * buffer);
+  bool load_binary(uint8_t* buffer);
 };
 
 } // namespace ogre_tools

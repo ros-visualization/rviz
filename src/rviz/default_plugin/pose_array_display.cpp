@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreManualObject.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"

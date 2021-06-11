@@ -30,8 +30,8 @@
 #ifndef RVIZ_FRAME_POSITION_TRACKING_VIEW_CONTROLLER_H
 #define RVIZ_FRAME_POSITION_TRACKING_VIEW_CONTROLLER_H
 
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
 
 #include "rviz/view_controller.h"
 #include "rviz/rviz_export.h"

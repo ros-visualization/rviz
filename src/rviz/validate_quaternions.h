@@ -31,7 +31,7 @@
 #define RVIZ_VALIDATE_QUATERNIONS_H
 
 #include <geometry_msgs/PoseStamped.h>
-#include <OgreQuaternion.h>
+#include <OGRE/OgreQuaternion.h>
 #include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
 

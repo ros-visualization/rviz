@@ -41,7 +41,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/load_resource.h"
 
-#include <OgreSceneNode.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include <sstream>
 

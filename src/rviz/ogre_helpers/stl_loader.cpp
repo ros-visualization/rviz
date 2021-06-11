@@ -30,7 +30,7 @@
 #include "stl_loader.h"
 #include <ros/console.h>
 
-#include <OgreManualObject.h>
+#include <OGRE/OgreManualObject.h>
 
 namespace ogre_tools
 {

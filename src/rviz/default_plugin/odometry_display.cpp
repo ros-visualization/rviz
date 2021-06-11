@@ -36,8 +36,8 @@
 #include "rviz/validate_floats.h"
 #include "rviz/validate_quaternions.h"
 
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include "odometry_display.h"
 #include "covariance_property.h"

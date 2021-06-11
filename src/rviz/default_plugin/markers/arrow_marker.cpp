@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreEntity.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
 
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/default_plugin/markers/marker_selection_handler.h"

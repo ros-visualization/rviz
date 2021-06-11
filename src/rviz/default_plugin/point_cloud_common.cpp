@@ -29,9 +29,9 @@
 
 #include <QColor>
 
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreWireBoundingBox.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreWireBoundingBox.h>
 
 #include <ros/time.h>
 

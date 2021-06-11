@@ -44,10 +44,10 @@
 #include "rviz/ogre_helpers/billboard_line.h"
 #include "rviz/ogre_helpers/render_system.h"
 
-#include <OgreRoot.h>
-#include <OgreSceneManager.h>
-#include <OgreViewport.h>
-#include <OgreLight.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreLight.h>
 
 #include <ros/time.h>
 #endif
