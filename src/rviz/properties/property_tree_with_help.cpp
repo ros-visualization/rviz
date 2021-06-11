@@ -66,6 +66,7 @@ void PropertyTreeWithHelp::showHelpForProperty(const Property* property)
   {
     QString body_text = property->getDescription();
     QString heading = property->getName();
+    body_text.replace("\n", "<br>");
     QString html = "<html><body><strong>" + heading + "</strong><br>" + body_text + "</body></html>";
     help_->setHtml(html);
   }
