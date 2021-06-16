@@ -72,6 +72,7 @@ ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
                       this, SLOT(updateNormalizeOptions()));
 
   got_float_image_ = false;
+  has_run_once_ = false;
 }
 
 void ImageDisplay::onInitialize()
@@ -114,12 +115,13 @@ void ImageDisplay::onInitialize()
     screen_rect_->setBoundingBox(aabInf);
     setMaterial(*screen_rect_, material_);
     img_scene_node_->attachObject(screen_rect_);
+    img_scene_node_->setVisible(false);
   }
 
   render_panel_ = new RenderPanel();
+  render_panel_->getRenderWindow()->addListener(this);
   render_panel_->getRenderWindow()->setAutoUpdated(false);
   render_panel_->getRenderWindow()->setActive(false);
-
   render_panel_->resize(640, 480);
   render_panel_->initialize(img_scene_manager_, context_);
 
@@ -136,10 +138,30 @@ ImageDisplay::~ImageDisplay()
 {
   if (initialized())
   {
+    render_panel_->getRenderWindow()->removeListener(this);
+
     delete render_panel_;
     delete screen_rect_;
     removeAndDestroyChildNode(img_scene_node_->getParentSceneNode(), img_scene_node_);
   }
+}
+
+void ImageDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& /*evt*/)
+{
+  if (has_run_once_)
+  {
+    img_scene_node_->setVisible(true);
+  }
+  else
+  {
+    has_run_once_ = true;
+    img_scene_node_->setVisible(false);
+  }
+}
+
+void ImageDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& /*evt*/)
+{
+  img_scene_node_->setVisible(false);
 }
 
 void ImageDisplay::onEnable()
