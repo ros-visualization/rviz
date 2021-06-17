@@ -40,6 +40,10 @@
 #include <GL/glx.h>
 #endif
 
+#if defined(Q_OS_MAC)
+#include <OpenGL/gl.h>
+#endif
+
 // X.h #defines CursorShape to be "0".  Qt uses CursorShape in normal
 // C++ way.  This wasn't an issue until ogre_logging.h (below)
 // introduced a #include of <QString>.
@@ -183,9 +187,13 @@ void RenderSystem::detectGlVersion()
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
 
+#ifdef __linux__
     std::string gl_version_string = (const char*)glGetString(GL_VERSION);
     // The "Mesa 2" string is intended to match "Mesa 20.", "Mesa 21." and so on
     mesa_workaround = gl_version_string.find("Mesa 2") != std::string::npos && gl_version_ >= 320;
+#else
+    mesa_workaround = false;
+#endif
   }
 
   switch (gl_version_)
