@@ -223,7 +223,7 @@ catkin_package(
 
 #catkin_lint: ignore_once external_directory
 include_directories(src ${EXPORT_HEADER_DIR})
-include_directories(
+include_directories(SYSTEM
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
