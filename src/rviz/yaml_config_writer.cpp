@@ -152,7 +152,9 @@ void YamlConfigWriter::writeConfigNode(const Config& config, YAML::Emitter& emit
     break;
   }
   default:
+#ifndef _WIN32
     emitter << YAML::Null;
+#endif
     break;
   }
 }
