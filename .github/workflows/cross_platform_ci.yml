@@ -46,11 +46,11 @@ jobs:
                                 libselinux$CDT libxdamage$CDT libxxf86vm$CDT \
                                 libxext$CDT libxfixes$CDT -c conda-forge
         fi
-      
+
         export CTEST_OUTPUT_ON_FAILURE=1
         mkdir build
         cd build
-        
+
         cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
                  -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
                  -DCMAKE_BUILD_TYPE=Release \
@@ -59,7 +59,7 @@ jobs:
 
         ninja
         ninja run_tests
-        
+
     - name: Set up rviz Dependencies on Windows
       if: runner.os == 'Windows'
       shell: cmd
