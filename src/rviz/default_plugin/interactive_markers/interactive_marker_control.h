@@ -30,6 +30,10 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
+#ifdef _WIN32
+#undef ERROR
+#undef DELETE
+#endif
 
 #ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
