@@ -489,6 +489,7 @@ void VisualizationFrame::initMenus()
 
   QAction* file_menu_quit_action =
       file_menu_->addAction("&Quit", this, SLOT(close()), QKeySequence("Ctrl+Q"));
+  file_menu_quit_action->setObjectName("actQuit");
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu("&Panels");
