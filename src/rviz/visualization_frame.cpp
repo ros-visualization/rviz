@@ -829,6 +829,7 @@ void VisualizationFrame::setDisplayConfigFile(const std::string& path)
     title = fs::path(path).BOOST_FILENAME_STRING() + "[*] - RViz";
   }
   setWindowTitle(QString::fromStdString(title));
+  Q_EMIT displayConfigFileChanged(QString::fromStdString(path));
 }
 
 bool VisualizationFrame::saveDisplayConfig(const QString& path)
