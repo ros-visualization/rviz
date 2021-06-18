@@ -52,10 +52,6 @@ FluidPressureDisplay::FluidPressureDisplay() : point_cloud_common_(new PointClou
       " Increasing this is useful if your incoming TF data is delayed significantly "
       "from your FluidPressure data, but it can greatly increase memory usage if the messages are big.",
       this, SLOT(updateQueueSize()));
-
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 FluidPressureDisplay::~FluidPressureDisplay()
@@ -65,6 +61,9 @@ FluidPressureDisplay::~FluidPressureDisplay()
 
 void FluidPressureDisplay::onInitialize()
 {
+  // Use the threaded queue for processing of incoming messages
+  update_nh_.setCallbackQueue(context_->getThreadedQueue());
+
   MFDClass::onInitialize();
   point_cloud_common_->initialize(context_, scene_node_);
 

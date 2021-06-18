@@ -133,6 +133,7 @@ void DisplaysPanel::onDuplicateDisplay()
   QList<Display*> duplicated_displays;
   QProgressDialog progress_dlg("Duplicating displays...", "Cancel", 0, displays_to_duplicate.size(),
                                this);
+  vis_manager_->stopUpdate();
   progress_dlg.setWindowModality(Qt::WindowModal);
   progress_dlg.show();
   QApplication::processEvents(); // explicitly progress events for update

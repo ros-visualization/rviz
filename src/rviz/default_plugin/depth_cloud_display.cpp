@@ -159,10 +159,6 @@ void DepthCloudDisplay::onInitialize()
   updateUseAutoSize();
   updateUseOcclusionCompensation();
 
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  threaded_nh_.setCallbackQueue(pointcloud_common_->getCallbackQueue());
-
   // Scan for available transport plugins
   scanForTransportSubscriberPlugins();
 

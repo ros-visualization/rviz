@@ -50,10 +50,6 @@ PointCloudDisplay::PointCloudDisplay() : point_cloud_common_(new PointCloudCommo
       " Increasing this is useful if your incoming TF data is delayed significantly "
       "from your PointCloud data, but it can greatly increase memory usage if the messages are big.",
       this, SLOT(updateQueueSize()));
-
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 PointCloudDisplay::~PointCloudDisplay()
@@ -63,6 +59,9 @@ PointCloudDisplay::~PointCloudDisplay()
 
 void PointCloudDisplay::onInitialize()
 {
+  // Use the threaded queue for processing of incoming messages
+  update_nh_.setCallbackQueue(context_->getThreadedQueue());
+
   MFDClass::onInitialize();
   point_cloud_common_->initialize(context_, scene_node_);
 }

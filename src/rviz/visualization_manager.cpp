@@ -222,6 +222,9 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
 
   selection_manager_ = new SelectionManager(this);
 
+  update_timer_ = new QTimer;
+  connect(update_timer_, SIGNAL(timeout()), this, SLOT(onUpdate()));
+
   private_->threaded_queue_threads_.create_thread(
       boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
@@ -229,17 +232,15 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
 
   ogre_render_queue_clearer_ = new OgreRenderQueueClearer();
   Ogre::Root::getSingletonPtr()->addFrameListener(ogre_render_queue_clearer_);
-
-  update_timer_ = new QTimer;
-  connect(update_timer_, SIGNAL(timeout()), this, SLOT(onUpdate()));
 }
 
 VisualizationManager::~VisualizationManager()
 {
-  delete update_timer_;
-
+  update_timer_->stop();
   shutting_down_ = true;
   private_->threaded_queue_threads_.join_all();
+
+  delete update_timer_;
 
   if (selection_manager_)
   {
@@ -630,9 +631,13 @@ void VisualizationManager::handleChar(QKeyEvent* event, RenderPanel* panel)
 
 void VisualizationManager::threadedQueueThreadFunc()
 {
+  ros::WallDuration timeout(0.1);
   while (!shutting_down_)
   {
-    private_->threaded_queue_.callOne(ros::WallDuration(0.1));
+    if (update_timer_->isActive())
+      private_->threaded_queue_.callOne(timeout);
+    else
+      timeout.sleep();
   }
 }
 
