@@ -2,6 +2,25 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.8 (2021-06-19)
+-------------------
+* [feature] Continue processing messages while displaying dialogues (`#1639 <https://github.com/ros-visualization/rviz/issues/1639>`_)
+* Merge `#1635 <https://github.com/ros-visualization/rviz/issues/1635>`_: Fix asynchronous message processing
+  - Use threaded callback queue for PointCloud displays
+  - Pause asynchronous ROS updates with synchronous ones
+* Merge `#1629 <https://github.com/ros-visualization/rviz/issues/1629>`_: Report mesh loading issues for Robot
+* [featrue] PropertryTree help: Consider line breaks in string
+* [feature] Update QProgressDialog / LoadingDialog during long running functions
+* [feature] Show ProgressDialog when duplicating displays
+* [maint]   Name quit action allowing rqt_rviz finding the action easily by name
+* [maint]   Emit signal VisualizationFrame::displayConfigFileChanged to allow rqt_rviz notice config file changes
+* [maint]   Cleanup quickfix since https://github.com/ros/geometry2/pull/402 is released
+* [maint]   More explicit OGRE includes
+* [maint]   Fix resizeEvent for OGRE 1.10 (`#1632 <https://github.com/ros-visualization/rviz/issues/1632>`_)
+* [maint]   Remove uses of QApplication::sync() + QApplication::flush()
+* [maint]   Fixup github actions
+* Contributors: Robert Haschke, Simon Schmeisser, Tobias Fischer, sunzbllbz
+
 1.14.7 (2021-04-10)
 -------------------
 * [maint] Switch to GHA: pre-commit + industrial_ci
