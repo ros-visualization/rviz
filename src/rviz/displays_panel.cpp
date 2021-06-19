@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QInputDialog>
 #include <QApplication>
+#include <QProgressDialog>
 
 #include <boost/bind.hpp>
 
@@ -129,9 +130,15 @@ void DisplaysPanel::onNewDisplay()
 void DisplaysPanel::onDuplicateDisplay()
 {
   QList<Display*> displays_to_duplicate = property_grid_->getSelectedObjects<Display>();
-
   QList<Display*> duplicated_displays;
+  QProgressDialog progress_dlg("Duplicating displays...", "Cancel", 0, displays_to_duplicate.size(),
+                               this);
+  vis_manager_->stopUpdate();
+  progress_dlg.setWindowModality(Qt::WindowModal);
+  progress_dlg.show();
+  QApplication::processEvents(); // explicitly progress events for update
 
+  // duplicate all selected displays
   for (int i = 0; i < displays_to_duplicate.size(); i++)
   {
     // initialize display
@@ -143,6 +150,11 @@ void DisplaysPanel::onDuplicateDisplay()
     displays_to_duplicate[i]->save(config);
     disp->load(config);
     duplicated_displays.push_back(disp);
+    progress_dlg.setValue(i + 1);
+    QApplication::processEvents(); // explicitly progress events for update
+    // push cancel to stop duplicate
+    if (progress_dlg.wasCanceled())
+      break;
   }
   // make sure the newly duplicated displays are selected.
   if (!duplicated_displays.empty())

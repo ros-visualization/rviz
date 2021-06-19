@@ -51,9 +51,9 @@
 #include <ros/console.h>
 
 #include <rviz/ogre_helpers/version_check.h>
-#include <OgreRenderWindow.h>
-#include <OgreSceneManager.h>
-#include <OgreOverlaySystem.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/Overlay/OgreOverlaySystem.h>
 
 #include <rviz/env_config.h>
 #include <rviz/ogre_helpers/ogre_logging.h>

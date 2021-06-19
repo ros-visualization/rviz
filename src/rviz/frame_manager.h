@@ -38,8 +38,8 @@
 #include <tf2_ros/buffer.h>
 #include <geometry_msgs/Pose.h>
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
 
 #include <boost/thread/mutex.hpp>
 

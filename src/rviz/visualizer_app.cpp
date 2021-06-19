@@ -33,9 +33,9 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include <OgreMaterialManager.h>
-#include <OgreGpuProgramManager.h>
-#include <OgreHighLevelGpuProgramManager.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreGpuProgramManager.h>
+#include <OGRE/OgreHighLevelGpuProgramManager.h>
 #include <std_srvs/Empty.h>
 
 #ifdef Q_OS_MAC
@@ -135,20 +135,24 @@ bool VisualizerApp::init(int argc, char** argv)
     int force_gl_version = 0;
 
     po::options_description options;
-    options.add_options()("help,h", "Produce this help message")(
-        "splash-screen,s", po::value<std::string>(&splash_path),
-        "A custom splash-screen image to display")("help-file", po::value<std::string>(&help_path),
-                                                   "A custom html file to show as the help screen")(
-        "display-config,d", po::value<std::string>(&display_config),
-        "A display config file (.rviz) to load")("fullscreen", "Trigger fullscreen display")(
-        "fixed-frame,f", po::value<std::string>(&fixed_frame), "Set the fixed frame")(
-        "ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")(
-        "in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")(
-        "opengl", po::value<int>(&force_gl_version),
-        "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")(
-        "disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")(
-        "no-stereo", "Disable the use of stereo rendering.")("verbose,v", "Enable debug visualizations")(
-        "log-level-debug", "Sets the ROS logger level to debug.");
+    options.add_options() // clang-format off
+      ("help,h", "Produce this help message")
+      ("splash-screen,s", po::value<std::string>(&splash_path),
+       "A custom splash-screen image to display")
+      ("help-file", po::value<std::string>(&help_path),
+       "A custom html file to show as the help screen")
+      ("display-config,d", po::value<std::string>(&display_config),
+       "A display config file (.rviz) to load")
+      ("fullscreen", "Trigger fullscreen display")
+      ("fixed-frame,f", po::value<std::string>(&fixed_frame), "Set the fixed frame")
+      ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
+      ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
+      ("opengl", po::value<int>(&force_gl_version),
+        "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
+      ("disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")
+      ("no-stereo", "Disable the use of stereo rendering.")("verbose,v", "Enable debug visualizations")
+      ("log-level-debug", "Sets the ROS logger level to debug.");
+    // clang-format on
     po::variables_map vm;
     try
     {

@@ -29,7 +29,7 @@
 
 #include "orthographic.h"
 
-#include <OgreMatrix4.h>
+#include <OGRE/OgreMatrix4.h>
 
 namespace rviz
 {

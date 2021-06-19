@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <ros/time.h>
 
@@ -46,9 +46,6 @@ namespace rviz
 {
 FluidPressureDisplay::FluidPressureDisplay() : point_cloud_common_(new PointCloudCommon(this))
 {
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 FluidPressureDisplay::~FluidPressureDisplay()
@@ -58,6 +55,9 @@ FluidPressureDisplay::~FluidPressureDisplay()
 
 void FluidPressureDisplay::onInitialize()
 {
+  // Use the threaded queue for processing of incoming messages
+  update_nh_.setCallbackQueue(context_->getThreadedQueue());
+
   MFDClass::onInitialize();
   point_cloud_common_->initialize(context_, scene_node_);
 

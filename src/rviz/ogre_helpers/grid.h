@@ -34,9 +34,9 @@
 
 #include <vector>
 
-#include <OgreColourValue.h>
-#include <OgreMaterial.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreSharedPtr.h>
 
 namespace Ogre
 {

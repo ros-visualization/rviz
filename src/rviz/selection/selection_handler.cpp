@@ -34,12 +34,12 @@
 
 #include <ros/assert.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreManualObject.h>
-#include <OgreWireBoundingBox.h>
-#include <OgreEntity.h>
-#include <OgreSubEntity.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreWireBoundingBox.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSubEntity.h>
 
 #include <rviz/selection/selection_manager.h>
 #include <rviz/ogre_helpers/compatibility.h>

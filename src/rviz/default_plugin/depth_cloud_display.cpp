@@ -46,8 +46,8 @@
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <image_transport/camera_common.h>
 #include <image_transport/subscriber_plugin.h>
@@ -158,10 +158,6 @@ void DepthCloudDisplay::onInitialize()
 
   updateUseAutoSize();
   updateUseOcclusionCompensation();
-
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  threaded_nh_.setCallbackQueue(pointcloud_common_->getCallbackQueue());
 
   // Scan for available transport plugins
   scanForTransportSubscriberPlugins();

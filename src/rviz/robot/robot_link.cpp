@@ -29,16 +29,16 @@
 
 #include <boost/filesystem.hpp>
 
-#include <OgreEntity.h>
-#include <OgreMaterial.h>
-#include <OgreMaterialManager.h>
-#include <OgreRibbonTrail.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreSubEntity.h>
-#include <OgreTextureManager.h>
-#include <OgreSharedPtr.h>
-#include <OgreTechnique.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreRibbonTrail.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSubEntity.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreSharedPtr.h>
+#include <OGRE/OgreTechnique.h>
 
 #include <ros/console.h>
 
@@ -147,6 +147,7 @@ void RobotLinkSelectionHandler::postRenderPass(uint32_t /*pass*/)
   }
 }
 
+static std::map<const RobotLink*, std::string> errors;
 
 RobotLink::RobotLink(Robot* robot,
                      const urdf::LinkConstSharedPtr& link,
@@ -314,6 +315,26 @@ RobotLink::~RobotLink()
   delete axes_;
   delete details_;
   delete link_property_;
+  errors.erase(this);
+}
+
+void RobotLink::addError(const char* format, ...)
+{
+  char buffer[256];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+
+  std::string& err = const_cast<std::string&>(getGeometryErrors());
+  if (!err.empty())
+    err.append("\n");
+  err.append(buffer);
+}
+
+const std::string& RobotLink::getGeometryErrors() const
+{
+  return errors[this];
 }
 
 bool RobotLink::hasGeometry() const
@@ -591,22 +612,22 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 
     scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 
-    std::string model_name = mesh.filename;
+    const std::string& model_name = mesh.filename;
 
     try
     {
-      loadMeshFromResource(model_name);
-      entity = scene_manager_->createEntity(ss.str(), model_name);
+      if (loadMeshFromResource(model_name).isNull())
+        addError("Could not load mesh resource '%s'", model_name.c_str());
+      else
+        entity = scene_manager_->createEntity(ss.str(), model_name);
     }
     catch (Ogre::InvalidParametersException& e)
     {
-      ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might be an empty mesh: %s",
-                model_name.c_str(), link->name.c_str(), e.what());
+      addError("Could not convert mesh resource '%s': %s", model_name.c_str(), e.what());
     }
     catch (Ogre::Exception& e)
     {
-      ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link->name.c_str(),
-                e.what());
+      addError("Could not load model '%s': %s", model_name.c_str(), e.what());
     }
     break;
   }
@@ -691,8 +712,8 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
       if (collision_mesh)
       {
         collision_meshes_.push_back(collision_mesh);
-        valid_collision_found = true;
       }
+      valid_collision_found |= collision == link->collision; // don't consider the same geometry twice
     }
   }
 #endif
@@ -751,8 +772,8 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link)
       if (visual_mesh)
       {
         visual_meshes_.push_back(visual_mesh);
-        valid_visual_found = true;
       }
+      valid_visual_found |= visual == link->visual; // don't consider the same geometry again
     }
   }
 #endif

@@ -29,8 +29,8 @@
 
 #include "ogre_render_queue_clearer.h"
 
-#include <OgreRoot.h>
-#include <OgrePass.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgrePass.h>
 
 namespace rviz
 {

@@ -196,6 +196,9 @@ Q_SIGNALS:
   /** @brief Emitted when the interface enters or leaves full screen mode. */
   void fullScreenChange(bool hidden);
 
+  /** @brief Emitted when the config file has changed */
+  void displayConfigFileChanged(const QString& fullpath);
+
 protected Q_SLOTS:
   void onOpen();
   void onSave();

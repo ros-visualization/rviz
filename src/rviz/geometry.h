@@ -30,7 +30,7 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace rviz
 {

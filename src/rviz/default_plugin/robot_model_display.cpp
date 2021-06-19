@@ -27,14 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 #include <QTimer>
 
 #include <urdf/model.h>
 
 #include <rviz/display_context.h>
 #include <rviz/robot/robot.h>
+#include <rviz/robot/robot_link.h>
 #include <rviz/robot/tf_link_updater.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/property.h>
@@ -192,6 +193,17 @@ void RobotModelDisplay::load()
 
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
   robot_->load(descr);
+  std::stringstream ss;
+  for (const auto& name_link_pair : robot_->getLinks())
+  {
+    const std::string& err = name_link_pair.second->getGeometryErrors();
+    if (!err.empty())
+      ss << "\n• for link '" << name_link_pair.first << "':\n" << err;
+  }
+  if (ss.tellp())
+    setStatus(StatusProperty::Error, "URDF",
+              QString("Errors loading geometries:").append(ss.str().c_str()));
+
   robot_->update(TFLinkUpdater(context_->getFrameManager(),
                                boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this),
                                tf_prefix_property_->getStdString()));

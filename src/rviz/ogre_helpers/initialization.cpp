@@ -1,7 +1,7 @@
 #include "initialization.h"
 
-#include <OgreRoot.h>
-#include <OgreRenderSystem.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreRenderSystem.h>
 
 #include <exception>
 #include <stdexcept>

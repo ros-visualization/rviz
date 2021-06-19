@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <ros/time.h>
 
@@ -48,9 +48,6 @@ namespace rviz
 LaserScanDisplay::LaserScanDisplay()
   : point_cloud_common_(new PointCloudCommon(this)), projector_(new laser_geometry::LaserProjection())
 {
-  // PointCloudCommon sets up a callback queue with a thread for each
-  // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 LaserScanDisplay::~LaserScanDisplay()
@@ -61,6 +58,9 @@ LaserScanDisplay::~LaserScanDisplay()
 
 void LaserScanDisplay::onInitialize()
 {
+  // Use the threaded queue for processing of incoming messages
+  update_nh_.setCallbackQueue(context_->getThreadedQueue());
+
   MFDClass::onInitialize();
   point_cloud_common_->initialize(context_, scene_node_);
 }
