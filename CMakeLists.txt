@@ -26,10 +26,14 @@ find_package(Boost REQUIRED
 find_package(urdfdom_headers REQUIRED)
 
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # required due to a bug in assimp 5.0
-find_package(ASSIMP REQUIRED)
-if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
-  # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
-  set(ASSIMP_LIBRARIES assimp::assimp)
+find_package(ASSIMP)
+if(ASSIMP_FOUND)
+  if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
+    # ASSIMP >= 5.0 no longer defines ASSIMP_LIBRARIES
+    set(ASSIMP_LIBRARIES assimp::assimp)
+  endif()
+else()
+  find_package(assimp REQUIRED)
 endif()
 
 find_package(OGRE QUIET COMPONENTS Overlay)
@@ -239,8 +243,8 @@ include_directories(SYSTEM
 
 add_subdirectory(src)
 
-if(OGRE_VERSION VERSION_LESS "1.10")
-  set(EXCLUDE_PATTERN "ogre1.10.*")
+if(OGRE_VERSION VERSION_LESS "1.12")
+  set(EXCLUDE_PATTERN "ogre1.12.*")
 else()
   set(EXCLUDE_PATTERN "ogre1.9.*")
 endif()
