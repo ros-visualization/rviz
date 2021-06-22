@@ -275,7 +275,7 @@ CovarianceVisual::CovarianceVisual(Ogre::SceneManager* scene_manager,
   // x-axis (roll)
   orientation_offset_node_[kRoll]->setPosition(Ogre::Vector3::UNIT_X);
   orientation_offset_node_[kRoll]->setOrientation(
-      Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X) *
+      Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X) *
       Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Z));
   // y-axis (pitch)
   orientation_offset_node_[kPitch]->setPosition(Ogre::Vector3(Ogre::Vector3::UNIT_Y));
@@ -284,7 +284,8 @@ CovarianceVisual::CovarianceVisual(Ogre::SceneManager* scene_manager,
   // z-axis (yaw)
   orientation_offset_node_[kYaw]->setPosition(Ogre::Vector3(Ogre::Vector3::UNIT_Z));
   orientation_offset_node_[kYaw]->setOrientation(
-      Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X));
+      Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Z) *
+      Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X));
   // z-axis (yaw 2D)
   // NOTE: rviz use a cone defined by the file rviz/ogre_media/models/rviz_cone.mesh, and it's
   //       origin is not at the top of the cone. Since we want the top to be at the origin of
