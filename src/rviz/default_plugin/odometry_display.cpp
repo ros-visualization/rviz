@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <tf2_eigen/tf2_eigen.h>
+
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/axes.h>
 #include <rviz/properties/enum_property.h>
@@ -282,21 +284,15 @@ void OdometryDisplay::processMessage(const nav_msgs::Odometry::ConstPtr& message
 
   if (last_used_message_)
   {
-    Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x,
-                                last_used_message_->pose.pose.position.y,
-                                last_used_message_->pose.pose.position.z);
-    Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y,
-                                   message->pose.pose.position.z);
-    Eigen::Quaternionf last_orientation(last_used_message_->pose.pose.orientation.w,
-                                        last_used_message_->pose.pose.orientation.x,
-                                        last_used_message_->pose.pose.orientation.y,
-                                        last_used_message_->pose.pose.orientation.z);
-    Eigen::Quaternionf current_orientation(message->pose.pose.orientation.w,
-                                           message->pose.pose.orientation.x,
-                                           message->pose.pose.orientation.y,
-                                           message->pose.pose.orientation.z);
+    Eigen::Vector3d last_position, current_position;
+    Eigen::Quaterniond last_orientation, current_orientation;
 
-    if ((last_position - current_position).length() < position_tolerance_property_->getFloat() &&
+    tf2::fromMsg(message->pose.pose.position, current_position);
+    tf2::fromMsg(message->pose.pose.orientation, current_orientation);
+    tf2::fromMsg(last_used_message_->pose.pose.position, last_position);
+    tf2::fromMsg(last_used_message_->pose.pose.orientation, last_orientation);
+
+    if ((last_position - current_position).norm() < position_tolerance_property_->getFloat() &&
         last_orientation.angularDistance(current_orientation) < angle_tolerance_property_->getFloat())
     {
       return;
