@@ -363,16 +363,12 @@ void DepthCloudDisplay::unsubscribe()
 
 void DepthCloudDisplay::clear()
 {
-  boost::mutex::scoped_lock lock(mutex_);
-
   pointcloud_common_->reset();
 }
 
 
 void DepthCloudDisplay::update(float wall_dt, float ros_dt)
 {
-  boost::mutex::scoped_lock lock(mutex_);
-
   pointcloud_common_->update(wall_dt, ros_dt);
 }
 
