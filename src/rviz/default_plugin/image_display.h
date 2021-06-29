@@ -39,7 +39,7 @@
 
 #include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"
-#include "rviz/render_panel.h"
+#include "rviz/image_render_panel.h"
 
 #include "rviz/properties/bool_property.h"
 #include "rviz/properties/float_property.h"
@@ -86,7 +86,7 @@ protected:
 
   ROSImageTexture texture_;
 
-  RenderPanel* render_panel_;
+  ImageRenderPanel* render_panel_;
 
 private:
   void clear();

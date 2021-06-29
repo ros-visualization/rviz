@@ -44,7 +44,7 @@
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
-#include "rviz/render_panel.h"
+#include "rviz/image_render_panel.h"
 #include "rviz/validate_floats.h"
 
 #include <sensor_msgs/image_encodings.h>
@@ -115,7 +115,7 @@ void ImageDisplay::onInitialize()
     img_scene_node_->attachObject(screen_rect_);
   }
 
-  render_panel_ = new RenderPanel();
+  render_panel_ = new ImageRenderPanel();
   render_panel_->getRenderWindow()->setAutoUpdated(false);
   render_panel_->getRenderWindow()->setActive(false);
 
