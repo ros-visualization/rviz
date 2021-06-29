@@ -319,11 +319,6 @@ void MarkerDisplay::processAdd(const visualization_msgs::Marker::ConstPtr& messa
     }
   }
 
-  if (!ns_it.value()->isEnabled())
-  {
-    return;
-  }
-
   bool create = true;
   MarkerBasePtr marker;
 
@@ -354,6 +349,8 @@ void MarkerDisplay::processAdd(const visualization_msgs::Marker::ConstPtr& messa
   if (marker)
   {
     marker->setMessage(message);
+
+    marker->setVisible(ns_it.value()->isEnabled());
 
     if (message->lifetime.toSec() > 0.0001f)
     {
@@ -445,6 +442,17 @@ void MarkerDisplay::setTopic(const QString& topic, const QString& /*datatype*/)
   marker_topic_property_->setString(topic);
 }
 
+void MarkerDisplay::setVisibilityForNamespace(const std::string& ns, bool visible)
+{
+  for (auto const &marker_it : markers_)
+  {
+    if (marker_it.first.first == ns)
+    {
+      marker_it.second->setVisible(visible);
+    }
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // MarkerNamespace
 
@@ -462,7 +470,11 @@ void MarkerNamespace::onEnableChanged()
 {
   if (!isEnabled())
   {
-    owner_->deleteMarkersInNamespace(getName().toStdString());
+    owner_->setVisibilityForNamespace(getName().toStdString(), false);
+  }
+  else
+  {
+    owner_->setVisibilityForNamespace(getName().toStdString(), true);
   }
 
   // Update the configuration that stores the enabled state of all markers

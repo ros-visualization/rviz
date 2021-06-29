@@ -91,6 +91,8 @@ public:
 
   void setTopic(const QString& topic, const QString& datatype) override;
 
+  void setVisibilityForNamespace(const std::string& ns, bool visible);
+
 protected:
   void deleteMarkerInternal(const MarkerID& id);
 
