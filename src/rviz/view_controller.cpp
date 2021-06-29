@@ -62,6 +62,20 @@ ViewController::ViewController()
   near_clip_property_->setMin(0.001);
   near_clip_property_->setMax(10000);
 
+  far_clip_property_ =
+      new FloatProperty("Far Clip Distance", 100.0f,
+                        "Anything farer to the camera than this threshold will not get rendered.", this,
+                        SLOT(updateFarClipDistance()));
+  far_clip_property_->setMin(0.001);
+  far_clip_property_->setMax(100000);
+
+  fov_property_ =
+      new FloatProperty("Vertical FOV", 45.0f, "Vertical Filed Of View (FOV) of camera (degrees).", this,
+                        SLOT(updateVerticalFOV()));
+  fov_property_->setMin(1);
+  fov_property_->setMax(90);
+
+
   stereo_enable_ = new BoolProperty("Enable Stereo Rendering", true,
                                     "Render the main view in stereo if supported."
                                     "  On Linux this requires a recent version of Ogre and"
@@ -108,6 +122,8 @@ void ViewController::initialize(DisplayContext* context)
   standard_cursors_[Crosshair] = makeIconCursor("package://rviz/icons/crosshair.svg");
 
   updateNearClipDistance();
+  updateFarClipDistance();
+  updateVerticalFOV();
   updateStereoProperties();
 
   if (!RenderSystem::get()->isStereoSupported())
@@ -243,6 +259,18 @@ void ViewController::updateNearClipDistance()
 {
   float n = near_clip_property_->getFloat();
   camera_->setNearClipDistance(n);
+}
+
+void ViewController::updateFarClipDistance()
+{
+  float n = far_clip_property_->getFloat();
+  camera_->setFarClipDistance(n);
+}
+
+void ViewController::updateVerticalFOV()
+{
+  float n = fov_property_->getFloat();
+  camera_->setFOVy(Ogre::Radian(n / 180 * M_PI));
 }
 
 void ViewController::updateStereoProperties()
