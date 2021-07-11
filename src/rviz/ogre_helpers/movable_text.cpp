@@ -50,7 +50,7 @@
 #include <OGRE/OgreHardwareBufferManager.h>
 #include <OGRE/Overlay/OgreFontManager.h>
 #include <OGRE/Overlay/OgreFont.h>
-#include <OGRE/OgreUTFString.h>
+#include <OgreUTFString.h>
 
 #include <sstream>
 
