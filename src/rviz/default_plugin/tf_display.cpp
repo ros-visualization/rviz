@@ -382,12 +382,8 @@ void TFDisplay::updateFrames()
   S_FrameInfo current_frames;
 
   {
-    V_string::iterator it = frames.begin();
-    V_string::iterator end = frames.end();
-    for (; it != end; ++it)
+    for (const std::string& frame : frames)
     {
-      const std::string& frame = *it;
-
       if (frame.empty())
       {
         continue;
@@ -610,26 +606,21 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     if (!frame->tree_property_ || old_parent != frame->parent_)
     {
       // Look up the new parent.
-      M_FrameInfo::iterator parent_it = frames_.find(frame->parent_);
-      if (parent_it != frames_.end())
+      FrameInfo* parent = getFrameInfo(frame->parent_);
+      if (parent && parent->tree_property_)
       {
-        FrameInfo* parent = parent_it->second;
-
         // If the parent has a tree property, make a new tree property for this frame.
-        if (parent->tree_property_)
+        if (!frame->tree_property_)
         {
-          if (!frame->tree_property_)
-          {
-            frame->tree_property_ = new Property(QString::fromStdString(frame->name_), QVariant(), "",
-                                                 parent->tree_property_);
-          }
-          else
-          {
-            frame->tree_property_->setParent(parent->tree_property_);
-            frame->tree_property_->setName(QString::fromStdString(frame->name_));
-            frame->tree_property_->setValue(QVariant());
-            frame->tree_property_->setDescription("");
-          }
+          frame->tree_property_ =
+              new Property(QString::fromStdString(frame->name_), QVariant(), "", parent->tree_property_);
+        }
+        else
+        {
+          frame->tree_property_->setParent(parent->tree_property_);
+          frame->tree_property_->setName(QString::fromStdString(frame->name_));
+          frame->tree_property_->setValue(QVariant());
+          frame->tree_property_->setDescription("");
         }
       }
     }
