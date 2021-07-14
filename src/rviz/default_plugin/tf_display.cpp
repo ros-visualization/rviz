@@ -602,33 +602,6 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   bool has_parent = tf->getParent(frame->name_, ros::Time(), frame->parent_);
   if (has_parent)
   {
-    // If this frame has no tree property or the parent has changed,
-    if (!frame->tree_property_ || old_parent != frame->parent_)
-    {
-      // Look up the new parent.
-      FrameInfo* parent = getFrameInfo(frame->parent_);
-      if (parent && parent->tree_property_)
-      {
-        // If the parent has a tree property, make a new tree property for this frame.
-        if (!frame->tree_property_)
-        {
-          frame->tree_property_ =
-              new Property(QString::fromStdString(frame->name_), QVariant(), "", parent->tree_property_);
-        }
-        else
-        {
-          // re-parent the tree property
-          frame->tree_property_->getParent()->takeChild(frame->tree_property_);
-          parent->tree_property_->addChild(frame->tree_property_);
-          frame->tree_property_->setName(QString::fromStdString(frame->name_));
-          frame->tree_property_->setValue(QVariant());
-          frame->tree_property_->setDescription("");
-        }
-      }
-      else // otherwise reset parent_ to enter this branch again if the parent property was created
-        frame->parent_ = old_parent;
-    }
-
     tf::StampedTransform transform;
     try
     {
@@ -703,23 +676,35 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   }
   else
   {
-    if (!frame->tree_property_ || old_parent != frame->parent_)
-    {
-      if (!frame->tree_property_)
-      {
-        frame->tree_property_ =
-            new Property(QString::fromStdString(frame->name_), QVariant(), "", tree_category_);
-      }
-      else
-      {
-        frame->tree_property_->setName(QString::fromStdString(frame->name_));
-        frame->tree_property_->setValue(QVariant());
-        frame->tree_property_->setDescription("");
-        frame->tree_property_->setParent(tree_category_);
-      }
-    }
-
     frame->parent_arrow_->getSceneNode()->setVisible(false);
+  }
+
+  // If this frame has no tree property or the parent has changed,
+  if (!frame->tree_property_ || old_parent != frame->parent_)
+  {
+    // Look up the new parent.
+    FrameInfo* parent = has_parent ? getFrameInfo(frame->parent_) : nullptr;
+    // Retrieve tree property to add the new child at
+    rviz::Property* parent_tree_property = has_parent ? nullptr : tree_category_;
+    if (parent && parent->tree_property_)
+      parent_tree_property = parent->tree_property_;
+    else if (has_parent) // otherwise reset parent_ to retry if the parent property was created
+      frame->parent_ = old_parent;
+
+    // If the parent has a tree property, make a new tree property for this frame.
+    if (!parent_tree_property)
+      ;                              // nothing more to do
+    else if (!frame->tree_property_) // create new property
+    {
+      frame->tree_property_ =
+          new Property(QString::fromStdString(frame->name_), QVariant(), "", parent_tree_property);
+    }
+    else // update property
+    {
+      // re-parent the tree property
+      frame->tree_property_->getParent()->takeChild(frame->tree_property_);
+      parent_tree_property->addChild(frame->tree_property_);
+    }
   }
 
   frame->parent_property_->setStdString(frame->parent_);
