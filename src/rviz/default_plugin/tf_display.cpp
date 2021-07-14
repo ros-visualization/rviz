@@ -617,12 +617,16 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         }
         else
         {
-          frame->tree_property_->setParent(parent->tree_property_);
+          // re-parent the tree property
+          frame->tree_property_->getParent()->takeChild(frame->tree_property_);
+          parent->tree_property_->addChild(frame->tree_property_);
           frame->tree_property_->setName(QString::fromStdString(frame->name_));
           frame->tree_property_->setValue(QVariant());
           frame->tree_property_->setDescription("");
         }
       }
+      else // otherwise reset parent_ to enter this branch again if the parent property was created
+        frame->parent_ = old_parent;
     }
 
     tf::StampedTransform transform;
