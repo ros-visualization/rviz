@@ -818,12 +818,9 @@ Ogre::Real PointCloudRenderable::getBoundingRadius() const
 
 Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) const
 {
-  Ogre::Vector3 vMin, vMax, vMid, vDist;
-  vMin = mBox.getMinimum();
-  vMax = mBox.getMaximum();
-  vMid = ((vMax - vMin) * 0.5) + vMin;
-  vDist = cam->getDerivedPosition() - vMid;
-
+  const Ogre::Vector3 vWorldCenter =
+      _getParentNodeFullTransform().transformAffine(getBoundingBox().getCenter());
+  const Ogre::Vector3 vDist = cam->getDerivedPosition() - vWorldCenter;
   return vDist.squaredLength();
 }
 
