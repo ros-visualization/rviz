@@ -481,7 +481,6 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   Ogre::AxisAlignedBox aabb;
   aabb.setNull();
   uint32_t current_vertex_count = 0;
-  bounding_radius_ = 0.0f;
   uint32_t vertex_size = 0;
   uint32_t buffer_size = 0;
   for (uint32_t current_point = 0; current_point < num_points; ++current_point)
@@ -540,7 +539,6 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
 
     aabb.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
 
     float x = p.position.x;
     float y = p.position.y;
@@ -571,6 +569,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
   bounding_box_.merge(aabb);
+  bounding_radius_ = bounding_box_.getHalfSize().length();
   ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <=
              rend->getBuffer()->getNumVertices());
 
@@ -620,13 +619,12 @@ void PointCloud::popPoints(uint32_t num_points)
 
   // reset bounds
   bounding_box_.setNull();
-  bounding_radius_ = 0.0f;
   for (uint32_t i = 0; i < point_count_; ++i)
   {
     Point& p = points_[i];
     bounding_box_.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
   }
+  bounding_radius_ = bounding_box_.getHalfSize().length();
 
   shrinkRenderables();
 
