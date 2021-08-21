@@ -96,8 +96,7 @@ typedef std::vector<PointCloudRenderablePtr> V_PointCloudRenderable;
  * \brief A visual representation of a set of points.
  *
  * Displays a set of points using any number of Ogre BillboardSets.  PointCloud is optimized for sets of
- * points that change
- * rapidly, rather than for large clouds that never change.
+ * points that change rapidly, rather than for large clouds that never change.
  *
  * Most of the functions in PointCloud are not safe to call from any thread but the render thread.
  * Exceptions are clear() and addPoints(), which
