@@ -637,6 +637,23 @@ void PointCloudCommon::update(float /*wall_dt*/, float /*ros_dt*/)
     new_color_transformer_ = false;
   }
 
+  for (CloudInfoPtr& cloud_info : cloud_infos_)
+  {
+    if (!context_->getFrameManager()->getTransform(cloud_info->message_->header.frame_id, ros::Time(),
+                                                   cloud_info->position_, cloud_info->orientation_))
+    {
+      std::stringstream ss;
+      ss << "Failed to transform from frame [" << cloud_info->message_->header.frame_id << "] to frame ["
+         << context_->getFrameManager()->getFixedFrame() << "]";
+      display_->setStatusStd(StatusProperty::Error, "Message", ss.str());
+    }
+    else
+    {
+      cloud_info->scene_node_->setPosition(cloud_info->position_);
+      cloud_info->scene_node_->setOrientation(cloud_info->orientation_);
+    }
+  }
+
   updateStatus();
 }
 

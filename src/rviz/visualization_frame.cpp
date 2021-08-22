@@ -534,7 +534,7 @@ void VisualizationFrame::initToolbars()
   toolbar_->addWidget(remove_tool_button);
   connect(remove_tool_menu_, SIGNAL(triggered(QAction*)), this, SLOT(onToolbarRemoveTool(QAction*)));
 
-  QMenu* button_style_menu = new QMenu();
+  QMenu* button_style_menu = new QMenu(toolbar_);
   QAction* action_tool_button_icon_only = new QAction("Icon only", toolbar_actions_);
   action_tool_button_icon_only->setData(Qt::ToolButtonIconOnly);
   button_style_menu->addAction(action_tool_button_icon_only);
