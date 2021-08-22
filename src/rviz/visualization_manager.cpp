@@ -447,6 +447,8 @@ void VisualizationManager::emitStatusUpdate(const QString& message)
 
 void VisualizationManager::load(const Config& config)
 {
+  stopUpdate();
+
   emitStatusUpdate("Creating displays");
   root_display_group_->load(config);
 
@@ -455,6 +457,8 @@ void VisualizationManager::load(const Config& config)
 
   emitStatusUpdate("Creating views");
   view_manager_->load(config.mapGetChild("Views"));
+
+  startUpdate();
 }
 
 void VisualizationManager::save(Config config) const
@@ -504,6 +508,10 @@ void VisualizationManager::updateBackgroundColor()
 
 void VisualizationManager::updateFps()
 {
+  if (update_timer_->isActive())
+  {
+    startUpdate();
+  }
 }
 
 void VisualizationManager::updateDefaultLightVisible()
