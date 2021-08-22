@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.19 (2021-08-22)
+--------------------
+* IntensityPCTransformer: make min/max values read-only if auto-compute is off
+* Smoothly move PCL given a moving frame_id (`#1655 <https://github.com/ros-visualization/rviz/issues/1655>`_)
+* Smoothly move an Odometry's path given a moving frame_id (`#1631 <https://github.com/ros-visualization/rviz/issues/1631>`_)
+* TF display: Correctly reparent root frame property (`#1647 <https://github.com/ros-visualization/rviz/issues/1647>`_)
+* Fix memory leak
+* Contributors: Robert Haschke, anre
+
 1.13.18 (2021-06-19)
 --------------------
 * Merge `#1635 <https://github.com/ros-visualization/rviz/issues/1635>`_: Fix asynchronous message processing
