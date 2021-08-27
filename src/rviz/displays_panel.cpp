@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QAction>
 #include <QTimer>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -89,6 +90,21 @@ DisplaysPanel::DisplaysPanel(QWidget* parent) : Panel(parent)
   connect(remove_button_, SIGNAL(clicked(bool)), this, SLOT(onDeleteDisplay()));
   connect(rename_button_, SIGNAL(clicked(bool)), this, SLOT(onRenameDisplay()));
   connect(property_grid_, SIGNAL(selectionHasChanged()), this, SLOT(onSelectionChanged()));
+
+  // additionally to buttons, allow shortcuts F2 / Del to rename / remove displays
+  rename_action_ = new QAction("Rename", this);
+  rename_action_->setShortcut(QKeySequence("F2"));
+  rename_action_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  rename_action_->setEnabled(false);
+  tree_with_help_->addAction(rename_action_);
+  remove_action_ = new QAction("Remove", this);
+  remove_action_->setShortcut(QKeySequence("Del"));
+  remove_action_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  remove_action_->setEnabled(false);
+  tree_with_help_->addAction(remove_action_);
+
+  connect(rename_action_, SIGNAL(triggered(bool)), this, SLOT(onRenameDisplay()));
+  connect(remove_action_, SIGNAL(triggered(bool)), this, SLOT(onDeleteDisplay()));
 }
 
 DisplaysPanel::~DisplaysPanel()
@@ -206,6 +222,9 @@ void DisplaysPanel::onSelectionChanged()
   duplicate_button_->setEnabled(num_displays_selected > 0);
   remove_button_->setEnabled(num_displays_selected > 0);
   rename_button_->setEnabled(num_displays_selected == 1);
+
+  remove_action_->setEnabled(num_displays_selected > 0);
+  rename_action_->setEnabled(num_displays_selected == 1);
 }
 
 void DisplaysPanel::onRenameDisplay()
@@ -216,11 +235,6 @@ void DisplaysPanel::onRenameDisplay()
     return;
   }
   Display* display_to_rename = displays[0];
-
-  if (!display_to_rename)
-  {
-    return;
-  }
 
   QString old_name = display_to_rename->getName();
   QString new_name =
