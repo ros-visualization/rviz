@@ -154,7 +154,14 @@ bool PropertyTreeModel::setData(const QModelIndex& index, const QVariant& value,
     return false;
   }
 
-  return property->setValue(value);
+  if (index.column() != 0)
+    return property->setValue(value);
+  else if (value.type() == QVariant::String)
+  {
+    property->setName(value.toString());
+    return true;
+  }
+  return false;
 }
 
 /** @brief Override from QAbstractItemModel.  Returns a
