@@ -28,11 +28,15 @@
  */
 
 #include "mesh_loader.h"
+#include <OGRE/OgrePrerequisites.h>
 #include <resource_retriever/retriever.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <OGRE/OgreSkeleton.h>
+#include <OGRE/OgreSkeletonManager.h>
+#include <OGRE/OgreSkeletonSerializer.h>
 #include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreMaterialManager.h>
@@ -56,6 +60,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/IOStream.hpp>
 #include <assimp/IOSystem.hpp>
+#include <boost/filesystem/operations.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -699,6 +704,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
       {
         return Ogre::MeshPtr();
       }
+      loadSkeletonFromResource(resource_path); // load skeleton to the resource manager
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
@@ -727,6 +733,48 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
   }
 
   return Ogre::MeshPtr();
+}
+
+Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path)
+{
+  std::string skeleton_resource_path = resource_path.substr(0, resource_path.length() - 4);
+  skeleton_resource_path.append("skeleton");
+
+  if (Ogre::SkeletonManager::getSingleton().resourceExists(skeleton_resource_path))
+  {
+    return Ogre::SkeletonManager::getSingleton().getByName(skeleton_resource_path);
+  }
+  else
+  {
+    resource_retriever::Retriever retriever;
+    resource_retriever::MemoryResource res;
+    try
+    {
+      res = retriever.get(skeleton_resource_path);
+    }
+    catch (resource_retriever::Exception& e)
+    {
+      ROS_ERROR("%s", e.what());
+      return Ogre::SkeletonPtr();
+    }
+
+    if (res.size == 0)
+    {
+      return Ogre::SkeletonPtr();
+    }
+
+    fs::path skeleton_path(skeleton_resource_path);
+
+    Ogre::SkeletonSerializer ser;
+    Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
+    Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().create(
+        skeleton_path.filename().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+    ser.importSkeleton(stream, skeleton.get());
+
+    return skeleton;
+  }
+
+  return Ogre::SkeletonPtr();
 }
 
 } // namespace rviz
