@@ -704,7 +704,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
       {
         return Ogre::MeshPtr();
       }
-      Ogre::SkeletonPtr skeleton = loadSkeletonFromResource(resource_path);
+      loadSkeletonFromResource(resource_path);  // load skeleton to the resource manager
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
