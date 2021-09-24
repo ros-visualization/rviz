@@ -134,6 +134,7 @@ void ImageDisplayBase::reset()
   if (tf_filter_)
   {
     tf_filter_->clear();
+    update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_.get());
   }
 
   messages_received_ = 0;
@@ -206,6 +207,10 @@ void ImageDisplayBase::subscribe()
 
 void ImageDisplayBase::unsubscribe()
 {
+  // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
+  if (tf_filter_)
+    update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_.get());
+
   tf_filter_.reset();
   sub_.reset();
 }
