@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.20 (2021-09-24)
+--------------------
+* Revert "Smoothly move PCL given a moving frame_id (`#1655 <https://github.com/ros-visualization/rviz/issues/1655>`_)"
+* Revert "Smoothly move an Odometry's path given a moving frame_id (`#1631 <https://github.com/ros-visualization/rviz/issues/1631>`_)"
+* Restore workaround for https://github.com/ros/geometry2/pull/402
+* BillboardLine: Fix handling of many points (> 16384) (`#1662 <https://github.com/ros-visualization/rviz/issues/1662>`_)
+* DisplayPanel: Simplify selection of current item after Remove (`#1661 <https://github.com/ros-visualization/rviz/issues/1661>`_), fixes `#1658 <https://github.com/ros-visualization/rviz/issues/1658>`_
+* Contributors: Robert Haschke
+
 1.13.19 (2021-08-22)
 --------------------
 * IntensityPCTransformer: make min/max values read-only if auto-compute is off
