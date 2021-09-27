@@ -50,7 +50,11 @@
 #include <OGRE/OgreHardwareBufferManager.h>
 #include <OGRE/Overlay/OgreFontManager.h>
 #include <OGRE/Overlay/OgreFont.h>
+#if OGRE_VERSION < 0x010c00
 #include <OGRE/OgreUTFString.h>
+#else
+#include <OGRE/Overlay/OgreUTFString.h>
+#endif
 
 #include <sstream>
 
