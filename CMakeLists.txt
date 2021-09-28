@@ -136,7 +136,6 @@ find_package(catkin REQUIRED
   pluginlib
   python_qt_binding
   resource_retriever
-  rosbag
   rosconsole
   roscpp
   roslib
