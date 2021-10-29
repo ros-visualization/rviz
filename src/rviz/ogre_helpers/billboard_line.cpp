@@ -225,7 +225,7 @@ void BillboardLine::addPoint(const Ogre::Vector3& point, const Ogre::ColourValue
   ++num_elements_[current_line_];
   ++total_elements_;
 
-  ROS_ASSERT(num_elements_[current_line_] < max_points_per_line_);
+  ROS_ASSERT(num_elements_[current_line_] <= max_points_per_line_);
 
   Ogre::BillboardChain::Element e;
   e.position = point;
