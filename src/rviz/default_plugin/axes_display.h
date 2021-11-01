@@ -32,6 +32,8 @@
 
 #include <rviz/display.h>
 
+#include <OGRE/OgreRibbonTrail.h>
+
 namespace rviz
 {
 class Axes;
@@ -67,11 +69,15 @@ private Q_SLOTS:
   /** @brief Update the length and radius of the axes object from property values. */
   void updateShape();
 
+  void updateTrail();
+
 private:
   Axes* axes_; ///< Handles actually drawing the axes
+  Ogre::RibbonTrail* trail_;
 
   FloatProperty* length_property_;
   FloatProperty* radius_property_;
+  Property* trail_property_;
   FloatProperty* alpha_property_;
   TfFrameProperty* frame_property_;
 };
