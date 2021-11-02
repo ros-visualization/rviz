@@ -30,11 +30,6 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
-#ifdef _WIN32
-#undef ERROR
-#undef DELETE
-#endif
-
 #ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -49,6 +44,7 @@
 
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
+#include <rviz/windows_compat.h>
 #include <rviz/default_plugin/markers/marker_base.h>
 #include <rviz/selection/forwards.h>
 #include <rviz/viewport_mouse_event.h>
