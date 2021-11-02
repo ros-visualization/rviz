@@ -44,10 +44,8 @@
 #include <rviz/properties/status_list.h>
 #include <rviz/validate_quaternions.h>
 #include <rviz/validate_floats.h>
+#include <rviz/windows_compat.h>
 
-#ifdef DELETE
-#undef DELETE
-#endif
 
 namespace rviz
 {
