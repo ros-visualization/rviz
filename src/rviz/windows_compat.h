@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Willow Garage, Inc.
+ * Copyright (c) 2021, Tobias Fischer, Queensland University of Technology
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
