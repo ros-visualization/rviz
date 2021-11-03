@@ -152,7 +152,7 @@ void YamlConfigWriter::writeConfigNode(const Config& config, YAML::Emitter& emit
     break;
   }
   default:
-// Workaround as YAML::Null is missing from Windows DLLs; 
+// Workaround as YAML::Null is missing from Windows DLLs;
 // see https://github.com/jbeder/yaml-cpp/issues/950
 #ifndef _WIN32
     emitter << YAML::Null;
