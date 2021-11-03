@@ -1,4 +1,4 @@
-name: rviz cross-platform RoboStack build
+name: RoboStack
 
 on:
   workflow_dispatch:
