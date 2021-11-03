@@ -24,7 +24,7 @@ jobs:
       uses: mamba-org/provision-with-micromamba@v11
       with:
         environment-file: .github/robostack_env.yml
-        micromamba-version: latest
+        micromamba-version: "0.17.0"
 
     - name: Set up rviz Dependencies on Unix
       if: runner.os == 'Linux' || runner.os == 'macOS'
