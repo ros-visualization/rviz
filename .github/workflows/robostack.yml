@@ -23,7 +23,7 @@ jobs:
     - name: Set up Build Dependencies
       uses: mamba-org/provision-with-micromamba@v11
       with:
-        environment-file: .github/ci_cross_platform_env.yml
+        environment-file: .github/robostack_env.yml
         micromamba-version: latest
 
     - name: Set up rviz Dependencies on Unix
@@ -32,6 +32,14 @@ jobs:
       run: |
         micromamba activate test
         export PATH=$HOME/micromamba-bin:$PATH
+        
+        if [[ `uname -s` == "Linux" ]]; then
+          CDT="-cos6-x86_64"
+          micromamba install -y mesa-libgl-devel$CDT mesa-dri-drivers$CDT \
+                                libselinux$CDT libxdamage$CDT libxxf86vm$CDT \
+                                libxext$CDT libxfixes$CDT -c conda-forge
+        fi
+        
         rosdep init
         rosdep update
         rosdep install --from-paths . --ignore-src -r -y
@@ -40,13 +48,6 @@ jobs:
       if: runner.os == 'Linux' || runner.os == 'macOS'
       shell: bash -l -eo pipefail {0}
       run: |
-        if [[ `uname -s` == "Linux" ]]; then
-          CDT="-cos6-x86_64"
-          micromamba install -y mesa-libgl-devel$CDT mesa-dri-drivers$CDT \
-                                libselinux$CDT libxdamage$CDT libxxf86vm$CDT \
-                                libxext$CDT libxfixes$CDT -c conda-forge
-        fi
-
         export CTEST_OUTPUT_ON_FAILURE=1
         mkdir build
         cd build
