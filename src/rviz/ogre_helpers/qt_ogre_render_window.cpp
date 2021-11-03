@@ -31,13 +31,13 @@
 #include "render_system.h"
 #include <rviz/ogre_helpers/version_check.h>
 
-#include <OgreRoot.h>
-#include <OgreViewport.h>
-#include <OgreCamera.h>
-#include <OgreRenderWindow.h>
-#include <OgreStringConverter.h>
-#include <OgreGpuProgramManager.h>
-#include <OgreRenderTargetListener.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreStringConverter.h>
+#include <OGRE/OgreGpuProgramManager.h>
+#include <OGRE/OgreRenderTargetListener.h>
 
 #include <ros/console.h>
 #include <ros/assert.h>

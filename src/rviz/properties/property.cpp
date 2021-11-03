@@ -249,6 +249,7 @@ QVariant Property::getViewData(int column, int role) const
     switch (role)
     {
     case Qt::DisplayRole:
+    case Qt::EditRole:
       return getName();
     case Qt::DecorationRole:
       return icon_;

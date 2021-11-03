@@ -30,16 +30,16 @@
 #ifndef OGRE_TOOLS_OGRE_POINT_CLOUD_H
 #define OGRE_TOOLS_OGRE_POINT_CLOUD_H
 
-#include <OgreSimpleRenderable.h>
-#include <OgreMovableObject.h>
-#include <OgreString.h>
-#include <OgreAxisAlignedBox.h>
-#include <OgreVector3.h>
-#include <OgreMaterial.h>
-#include <OgreColourValue.h>
-#include <OgreRoot.h>
-#include <OgreHardwareBufferManager.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreSimpleRenderable.h>
+#include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreString.h>
+#include <OGRE/OgreAxisAlignedBox.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreHardwareBufferManager.h>
+#include <OGRE/OgreSharedPtr.h>
 
 #include <stdint.h>
 

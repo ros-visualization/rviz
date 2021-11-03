@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
 
 #include <rviz/default_plugin/interactive_markers/interactive_marker_control.h>
 #include <rviz/default_plugin/marker_display.h>

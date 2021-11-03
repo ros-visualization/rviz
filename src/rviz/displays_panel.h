@@ -39,6 +39,7 @@
 #include <rviz/config.h>
 #include <rviz/panel.h>
 
+class QAction;
 class QPushButton;
 
 namespace rviz
@@ -85,6 +86,8 @@ protected:
   QPushButton* duplicate_button_;
   QPushButton* remove_button_;
   QPushButton* rename_button_;
+  QAction* remove_action_;
+  QAction* rename_action_;
   PropertyTreeWithHelp* tree_with_help_;
 };
 

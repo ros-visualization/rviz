@@ -32,7 +32,7 @@
 
 #include <rviz/frame_position_tracking_view_controller.h>
 
-#include <OgreQuaternion.h>
+#include <OGRE/OgreQuaternion.h>
 
 namespace rviz
 {

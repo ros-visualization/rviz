@@ -1,7 +1,7 @@
 #ifndef EFFORT_VISUAL_H
 #define EFFORT_VISUAL_H
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace rviz
 {

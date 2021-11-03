@@ -181,8 +181,6 @@ protected:
 
   uint32_t messages_received_;
 
-  boost::mutex mutex_;
-
   // ROS image subscription & synchronization
   boost::scoped_ptr<image_transport::ImageTransport> depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter> depthmap_sub_;

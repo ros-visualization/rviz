@@ -61,9 +61,10 @@ QWidget* PropertyTreeDelegate::createEditor(QWidget* parent,
     return nullptr;
   }
 
-  if (QWidget* editor = prop->createEditor(parent, option))
+  if (index.column() != 0)
   {
-    return editor;
+    if (QWidget* editor = prop->createEditor(parent, option))
+      return editor;
   }
   return QStyledItemDelegate::createEditor(parent, option, index);
 }

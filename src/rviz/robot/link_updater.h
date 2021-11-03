@@ -33,7 +33,7 @@
 #include <string>
 #include <rviz/properties/status_property.h>
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace rviz
 {

@@ -30,7 +30,7 @@
 #ifndef OGRERENDERQUEUECLEARER_H_
 #define OGRERENDERQUEUECLEARER_H_
 
-#include <OgreFrameListener.h>
+#include <OGRE/OgreFrameListener.h>
 
 namespace rviz
 {

@@ -31,7 +31,7 @@
 #include <rviz/ogre_helpers/render_system.h>
 #include <rviz/ogre_helpers/version_check.h>
 
-#include <OgreRenderWindow.h>
+#include <OGRE/OgreRenderWindow.h>
 
 #include <QtGlobal>
 #include <QApplication>
@@ -50,8 +50,6 @@ RenderWidget::RenderWidget(RenderSystem* render_system, QWidget* parent)
   setAttribute(Qt::WA_PaintOnScreen, true);
 
   rviz::RenderSystem::WindowIDType win_id = this->winId();
-  QApplication::flush();
-  QApplication::sync();
   QWindow* window = windowHandle();
   pixel_ratio_ = window ? window->devicePixelRatio() : 1.0;
 

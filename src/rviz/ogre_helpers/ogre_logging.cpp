@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreLogManager.h>
-#include <OgreLog.h>
+#include <OGRE/OgreLogManager.h>
+#include <OGRE/OgreLog.h>
 
 #include <ros/ros.h>
 

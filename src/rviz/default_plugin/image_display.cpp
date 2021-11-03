@@ -29,18 +29,18 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreRectangle2D.h>
-#include <OgreRenderSystem.h>
-#include <OgreRenderWindow.h>
-#include <OgreRoot.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreTextureManager.h>
-#include <OgreViewport.h>
-#include <OgreTechnique.h>
-#include <OgreCamera.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreRectangle2D.h>
+#include <OGRE/OgreRenderSystem.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreTechnique.h>
+#include <OGRE/OgreCamera.h>
 
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>

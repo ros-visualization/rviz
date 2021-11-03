@@ -34,8 +34,8 @@
 #include <set>
 #include <map>
 #include <boost/unordered_map.hpp>
-#include <OgrePixelFormat.h>
-#include <OgreColourValue.h>
+#include <OGRE/OgrePixelFormat.h>
+#include <OGRE/OgreColourValue.h>
 
 #include <ros/console.h>
 

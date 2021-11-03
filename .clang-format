@@ -34,8 +34,8 @@ BreakConstructorInitializersBeforeComma: true
 
 BinPackParameters: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-DerivePointerBinding: false
-PointerBindsToType: true
+DerivePointerAlignment: false
+PointerAlignment: Left
 
 PenaltyExcessCharacter: 50
 PenaltyBreakBeforeFirstCallParameter: 30

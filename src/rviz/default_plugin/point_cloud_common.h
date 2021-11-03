@@ -42,9 +42,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
-#include <ros/spinner.h>
-#include <ros/callback_queue.h>
-
 #include <message_filters/time_sequencer.h>
 
 #include <pluginlib/class_loader.hpp>
@@ -130,11 +127,6 @@ public:
   void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
-  ros::CallbackQueueInterface* getCallbackQueue()
-  {
-    return &cbqueue_;
-  }
-
   Display* getDisplay()
   {
     return display_;
@@ -186,9 +178,6 @@ private:
   float getSelectionBoxSize();
   void setPropertiesHidden(const QList<Property*>& props, bool hide);
   void fillTransformerOptions(EnumProperty* prop, uint32_t mask);
-
-  ros::AsyncSpinner spinner_;
-  ros::CallbackQueue cbqueue_;
 
   D_CloudInfo cloud_infos_;
 

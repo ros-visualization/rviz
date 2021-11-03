@@ -31,7 +31,7 @@
 #define OGRE_TOOLS_ORBIT_CAMERA_H_
 
 #include "camera_base.h"
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
 
 namespace Ogre
 {

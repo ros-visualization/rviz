@@ -33,8 +33,8 @@
 
 #include "render_widget.h"
 
-#include <OgreColourValue.h>
-#include <OgreRenderTargetListener.h>
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreRenderTargetListener.h>
 
 namespace Ogre
 {

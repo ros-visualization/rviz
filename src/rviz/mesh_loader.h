@@ -30,12 +30,13 @@
 #ifndef RVIZ_MESH_LOADER_H
 #define RVIZ_MESH_LOADER_H
 
-#include <OgreMesh.h>
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreSkeleton.h>
 
 namespace rviz
 {
 Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path);
-
+Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path);
 } // namespace rviz
 
 #endif // RVIZ_MESH_LOADER_H

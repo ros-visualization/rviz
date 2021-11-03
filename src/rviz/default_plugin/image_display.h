@@ -33,9 +33,9 @@
 #ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include <QObject>
 
-#include <OgreMaterial.h>
-#include <OgreRenderTargetListener.h>
-#include <OgreSharedPtr.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreRenderTargetListener.h>
+#include <OGRE/OgreSharedPtr.h>
 
 #include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"

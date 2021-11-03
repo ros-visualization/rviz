@@ -38,8 +38,8 @@
 
 #include <vector>
 
-#include <OgrePrerequisites.h>
-#include <OgreColourValue.h>
+#include <OGRE/OgrePrerequisites.h>
+#include <OGRE/OgreColourValue.h>
 
 namespace Ogre
 {

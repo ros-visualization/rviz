@@ -60,8 +60,8 @@
 #include <ros/package.h>
 #include <ros/init.h>
 
-#include <OgreRenderWindow.h>
-#include <OgreMeshManager.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreMeshManager.h>
 
 #include <rviz/ogre_helpers/initialization.h>
 
@@ -478,6 +478,7 @@ void VisualizationFrame::initMenus()
 
   QAction* file_menu_quit_action =
       file_menu_->addAction("&Quit", this, SLOT(close()), QKeySequence("Ctrl+Q"));
+  file_menu_quit_action->setObjectName("actQuit");
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu("&Panels");
@@ -533,7 +534,7 @@ void VisualizationFrame::initToolbars()
   toolbar_->addWidget(remove_tool_button);
   connect(remove_tool_menu_, SIGNAL(triggered(QAction*)), this, SLOT(onToolbarRemoveTool(QAction*)));
 
-  QMenu* button_style_menu = new QMenu();
+  QMenu* button_style_menu = new QMenu(toolbar_);
   QAction* action_tool_button_icon_only = new QAction("Icon only", toolbar_actions_);
   action_tool_button_icon_only->setData(Qt::ToolButtonIconOnly);
   button_style_menu->addAction(action_tool_button_icon_only);
@@ -761,6 +762,7 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path)
     dialog.reset(new LoadingDialog(this));
     dialog->show();
     connect(this, SIGNAL(statusUpdate(const QString&)), dialog.get(), SLOT(showMessage(const QString&)));
+    app_->processEvents(); // make the window correctly appear although running a long-term function
   }
 
   YamlConfigReader reader;
@@ -817,6 +819,7 @@ void VisualizationFrame::setDisplayConfigFile(const std::string& path)
     title = fs::path(path).filename().string() + "[*] - RViz";
   }
   setWindowTitle(QString::fromStdString(title));
+  Q_EMIT displayConfigFileChanged(QString::fromStdString(path));
 }
 
 bool VisualizationFrame::saveDisplayConfig(const QString& path)

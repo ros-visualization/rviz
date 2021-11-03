@@ -32,9 +32,9 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/validate_quaternions.h>
 
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreQuaternion.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreQuaternion.h>
 
 #include <ros/console.h>
 

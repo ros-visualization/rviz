@@ -3,7 +3,7 @@
 
 #include <geometry_msgs/PointStamped.h>
 
-#include <OgrePrerequisites.h>
+#include <OGRE/OgrePrerequisites.h>
 
 namespace rviz
 {

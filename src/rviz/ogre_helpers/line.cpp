@@ -31,11 +31,11 @@
 
 #include <sstream>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreTechnique.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTechnique.h>
 
 namespace rviz
 {
