@@ -32,7 +32,10 @@
 
 #include <rviz/display.h>
 
-#include <OGRE/OgreRibbonTrail.h>
+namespace Ogre
+{
+class RibbonTrail;
+}
 
 namespace rviz
 {

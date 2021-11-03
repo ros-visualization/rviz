@@ -31,6 +31,7 @@
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreRibbonTrail.h>
 
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
