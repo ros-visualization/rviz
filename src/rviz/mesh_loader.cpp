@@ -768,7 +768,8 @@ Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path)
     Ogre::SkeletonSerializer ser;
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
     Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().create(
-        skeleton_path.filename().string().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+        skeleton_path.filename().string().c_str(),
+        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     ser.importSkeleton(stream, skeleton.get());
 
     return skeleton;
