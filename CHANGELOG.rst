@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.21 (2021-11-03)
+--------------------
+* Fix scaling of PointVisual's sphere (`#1678 <https://github.com/ros-visualization/rviz/issues/1678>`_)
+* Fix assertion in billboard_line.cpp (`#1674 <https://github.com/ros-visualization/rviz/issues/1674>`_)
+* Drop unused rosbag dependency
+* Contributors: Jochen Sprickerhof, Robert Haschke
+
 1.13.20 (2021-09-24)
 --------------------
 * Revert "Smoothly move PCL given a moving frame_id (`#1655 <https://github.com/ros-visualization/rviz/issues/1655>`_)"
