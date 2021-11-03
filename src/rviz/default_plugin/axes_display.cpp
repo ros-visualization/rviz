@@ -45,9 +45,9 @@ namespace rviz
 {
 AxesDisplay::AxesDisplay() : Display(), axes_(nullptr), trail_(nullptr)
 {
-  frame_property_ =
-      new TfFrameProperty("Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
-                          "The TF frame these axes will use for their origin.", this, nullptr, true);
+  frame_property_ = new TfFrameProperty("Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
+                                        "The TF frame these axes will use for their origin.", this,
+                                        nullptr, true, SLOT(resetTrail()));
 
   length_property_ =
       new FloatProperty("Length", 1.0, "Length of each axis, in meters.", this, SLOT(updateShape()));
@@ -84,6 +84,22 @@ void AxesDisplay::onInitialize()
   axes_ = new Axes(scene_manager_, nullptr, length_property_->getFloat(), radius_property_->getFloat(),
                    alpha_property_->getFloat());
   axes_->getSceneNode()->setVisible(isEnabled());
+}
+
+void AxesDisplay::reset()
+{
+  Display::reset();
+  resetTrail(false);
+}
+
+void AxesDisplay::resetTrail(bool update)
+{
+  if (!trail_)
+    return;
+  if (update)
+    this->update(0.0, 0.0);
+  trail_->nodeUpdated(axes_->getSceneNode());
+  trail_->clearAllChains();
 }
 
 void AxesDisplay::onEnable()
