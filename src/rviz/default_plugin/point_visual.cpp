@@ -40,7 +40,7 @@ PointStampedVisual::~PointStampedVisual()
 
 void PointStampedVisual::setMessage(const geometry_msgs::PointStamped::ConstPtr& msg)
 {
-  Ogre::Vector3 scale(radius_, radius_, radius_);
+  Ogre::Vector3 scale(2 * radius_, 2 * radius_, 2 * radius_);
   point_->setScale(scale);
 
   // Set the orientation of the arrow to match the direction of the
