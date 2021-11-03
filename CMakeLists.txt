@@ -239,8 +239,8 @@ include_directories(SYSTEM
 
 add_subdirectory(src)
 
-if(OGRE_VERSION VERSION_LESS "1.12")
-  set(EXCLUDE_PATTERN "ogre1.12.*")
+if(OGRE_VERSION VERSION_LESS "1.10")
+  set(EXCLUDE_PATTERN "ogre1.10.*")
 else()
   set(EXCLUDE_PATTERN "ogre1.9.*")
 endif()
