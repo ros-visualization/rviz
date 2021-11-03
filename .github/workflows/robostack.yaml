@@ -23,7 +23,7 @@ jobs:
     - name: Set up Build Dependencies
       uses: mamba-org/provision-with-micromamba@v11
       with:
-        environment-file: .github/robostack_env.yml
+        environment-file: .github/robostack_env.yaml
         micromamba-version: "0.17.0"
 
     - name: Set up rviz Dependencies on Unix
