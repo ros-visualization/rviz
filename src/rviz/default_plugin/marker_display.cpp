@@ -40,8 +40,10 @@
 #include <rviz/properties/property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/selection/selection_manager.h>
+#include <rviz/windows_compat.h>
 
 #include <rviz/default_plugin/marker_display.h>
+
 
 namespace rviz
 {
