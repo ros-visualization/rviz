@@ -2,6 +2,17 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-11-05)
+--------------------
+* AxisDisplay: allow ribbon trail (`#1677 <https://github.com/ros-visualization/rviz/issues/1677>`_)
+* Silent warning about .skeleton files not found (`#1679 <https://github.com/ros-visualization/rviz/issues/1679>`_)
+* Fix scaling of PointVisual's sphere (`#1678 <https://github.com/ros-visualization/rviz/issues/1678>`_)
+* Fix assertion in billboard_line.cpp (`#1674 <https://github.com/ros-visualization/rviz/issues/1674>`_)
+* Fix cross-platform compatibility (`#1636 <https://github.com/ros-visualization/rviz/issues/1636>`_)
+* Fix compilation with OGRE 1.12
+* Drop unused rosbag dependency
+* Contributors: Christian Rauch, Jochen Sprickerhof, Robert Haschke, Timo Röhling, Tobias Fischer
+
 1.14.10 (2021-09-24)
 --------------------
 * Allow renaming/removing of displays via F2/Del as well
