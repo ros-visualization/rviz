@@ -409,8 +409,8 @@ void Display::setName(const QString& name)
   if (associated_widget_panel_)
   {
     associated_widget_panel_->setWindowTitle(name);
-    associated_widget_panel_->setObjectName(
-        name); // QMainWindow::saveState() needs objectName to be set.
+    // QMainWindow::saveState() needs objectName to be set.
+    associated_widget_panel_->setObjectName(name);
   }
   else if (associated_widget_)
   {

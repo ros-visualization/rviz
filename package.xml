@@ -44,7 +44,6 @@
   <depend>pluginlib</depend>
   <depend>python_qt_binding</depend>
   <depend>resource_retriever</depend>
-  <depend>rosbag</depend>
   <depend>rosconsole</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
