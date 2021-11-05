@@ -735,6 +735,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
   return Ogre::MeshPtr();
 }
 
+// Try to load .skeleton file co-located with a .mesh file
 Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path)
 {
   std::string skeleton_resource_path = resource_path.substr(0, resource_path.length() - 4);
@@ -753,8 +754,8 @@ Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path)
       res = retriever.get(skeleton_resource_path);
     }
     catch (resource_retriever::Exception& e)
-    {
-      ROS_ERROR("%s", e.what());
+    { // often the .skeleton file will not exist -> debug msg only
+      ROS_DEBUG("%s", e.what());
       return Ogre::SkeletonPtr();
     }
 
