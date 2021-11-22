@@ -21,3 +21,4 @@ Describe your issue here and explain how to reproduce it.
     paste your console output here
     ```
 * If source build, which git commit?
+* System locale: e.g. `en_US.UTF-8` (get it by running `echo "$LANG $LC_NUMERIC"` on Linux; before reporting a rendering issue, try running RViz with `LANG=C rviz` and report whether the error is reproducible even in this case)
