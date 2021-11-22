@@ -21,3 +21,5 @@ Describe your issue here and explain how to reproduce it.
     paste your console output here
     ```
 * If source build, which git commit?
+* System locale, i.e. the output of `echo "$LANG $LC_NUMERIC"`:
+  Before reporting a rendering issue, try running RViz with `LANG=C rviz`!
