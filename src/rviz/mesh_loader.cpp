@@ -638,11 +638,15 @@ float getMeshUnitRescale(const std::string& resource_path)
           stream >> conversion_result;
           // Failing to convert leaves unit_scale as the default.
           if (stream.fail() || !stream.eof())
+          {
             ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert <unit> element 'meter' attribute to "
                             "determine scaling. <unit> element: "
                             << unitXml->GetText());
+          }
           else
+          {
             unit_scale = conversion_result;
+          }
         }
       }
     }
