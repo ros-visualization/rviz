@@ -630,11 +630,19 @@ float getMeshUnitRescale(const std::string& resource_path)
         tinyxml2::XMLElement* unitXml = assetXml->FirstChildElement("unit");
         if (unitXml && unitXml->Attribute("meter"))
         {
+          // Convert attribute meter to a float in a locale-independent manner
+          std::string unit_scale_str(unitXml->Attribute("meter"));
+          std::istringstream stream(unit_scale_str);
+          stream.imbue(std::locale::classic());
+          float conversion_result;
+          stream >> conversion_result;
           // Failing to convert leaves unit_scale as the default.
-          if (unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
-            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to "
-                            "determine scaling. unit element: "
+          if (stream.fail() || !stream.eof())
+            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert <unit> element 'meter' attribute to "
+                            "determine scaling. <unit> element: "
                             << unitXml->GetText());
+          else
+            unit_scale = conversion_result;
         }
       }
     }
