@@ -232,10 +232,6 @@ void buildMesh(const aiScene* scene,
     return;
 
   transform *= node->mTransformation;
-  aiMatrix3x3 rotation(transform);
-  aiMatrix3x3 inverse_transpose_rotation(rotation);
-  inverse_transpose_rotation.Inverse();
-  inverse_transpose_rotation.Transpose();
 
   for (uint32_t i = 0; i < node->mNumMeshes; i++)
   {
@@ -297,7 +293,7 @@ void buildMesh(const aiScene* scene,
 
       if (input_mesh->HasNormals())
       {
-        aiVector3D n = inverse_transpose_rotation * input_mesh->mNormals[j];
+        aiVector3D n = input_mesh->mNormals[j];
         n.Normalize();
         *vertices++ = n.x;
         *vertices++ = n.y;
