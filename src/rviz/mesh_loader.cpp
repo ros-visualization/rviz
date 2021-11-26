@@ -222,28 +222,16 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
  * already by loadMaterials(). */
 void buildMesh(const aiScene* scene,
                const aiNode* node,
+               aiMatrix4x4 transform,
                const Ogre::MeshPtr& mesh,
                Ogre::AxisAlignedBox& aabb,
                float& radius,
-               const float scale,
                std::vector<Ogre::MaterialPtr>& material_table)
 {
   if (!node)
-  {
     return;
-  }
 
-  aiMatrix4x4 transform = node->mTransformation;
-  aiNode* pnode = node->mParent;
-  while (pnode)
-  {
-    // Don't convert to y-up orientation, which is what the root node in
-    // Assimp does
-    if (pnode->mParent != nullptr)
-      transform = pnode->mTransformation * transform;
-    pnode = pnode->mParent;
-  }
-
+  transform *= node->mTransformation;
   aiMatrix3x3 rotation(transform);
   aiMatrix3x3 inverse_transpose_rotation(rotation);
   inverse_transpose_rotation.Inverse();
@@ -295,7 +283,6 @@ void buildMesh(const aiScene* scene,
     {
       aiVector3D p = input_mesh->mVertices[j];
       p *= transform;
-      p *= scale;
       *vertices++ = p.x;
       *vertices++ = p.y;
       *vertices++ = p.z;
@@ -388,7 +375,7 @@ void buildMesh(const aiScene* scene,
 
   for (uint32_t i = 0; i < node->mNumChildren; ++i)
   {
-    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale, material_table);
+    buildMesh(scene, node->mChildren[i], transform, mesh, aabb, radius, material_table);
   }
 }
 
@@ -593,7 +580,10 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
-  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, 1.0, material_table);
+  // Reverse conversion to y-up orientation, which is what the root node in assimp does
+  aiMatrix4x4 transform;
+  aiMatrix4x4::RotationX(M_PI_2, transform);
+  buildMesh(scene, scene->mRootNode, transform, mesh, aabb, radius, material_table);
 
   mesh->_setBounds(aabb);
   mesh->_setBoundingSphereRadius(radius);
