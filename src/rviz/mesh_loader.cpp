@@ -222,32 +222,16 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
  * already by loadMaterials(). */
 void buildMesh(const aiScene* scene,
                const aiNode* node,
+               aiMatrix4x4 transform,
                const Ogre::MeshPtr& mesh,
                Ogre::AxisAlignedBox& aabb,
                float& radius,
-               const float scale,
                std::vector<Ogre::MaterialPtr>& material_table)
 {
   if (!node)
-  {
     return;
-  }
 
-  aiMatrix4x4 transform = node->mTransformation;
-  aiNode* pnode = node->mParent;
-  while (pnode)
-  {
-    // Don't convert to y-up orientation, which is what the root node in
-    // Assimp does
-    if (pnode->mParent != nullptr)
-      transform = pnode->mTransformation * transform;
-    pnode = pnode->mParent;
-  }
-
-  aiMatrix3x3 rotation(transform);
-  aiMatrix3x3 inverse_transpose_rotation(rotation);
-  inverse_transpose_rotation.Inverse();
-  inverse_transpose_rotation.Transpose();
+  transform *= node->mTransformation;
 
   for (uint32_t i = 0; i < node->mNumMeshes; i++)
   {
@@ -295,7 +279,6 @@ void buildMesh(const aiScene* scene,
     {
       aiVector3D p = input_mesh->mVertices[j];
       p *= transform;
-      p *= scale;
       *vertices++ = p.x;
       *vertices++ = p.y;
       *vertices++ = p.z;
@@ -310,7 +293,7 @@ void buildMesh(const aiScene* scene,
 
       if (input_mesh->HasNormals())
       {
-        aiVector3D n = inverse_transpose_rotation * input_mesh->mNormals[j];
+        aiVector3D n = input_mesh->mNormals[j];
         n.Normalize();
         *vertices++ = n.x;
         *vertices++ = n.y;
@@ -388,7 +371,7 @@ void buildMesh(const aiScene* scene,
 
   for (uint32_t i = 0; i < node->mNumChildren; ++i)
   {
-    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale, material_table);
+    buildMesh(scene, node->mChildren[i], transform, mesh, aabb, radius, material_table);
   }
 }
 
@@ -578,73 +561,6 @@ void loadMaterials(const std::string& resource_path,
   }
 }
 
-
-/*@brief - Get the scaling from units used in this mesh file to meters.
-
-  This function applies only to Collada files. It is necessary because
-  ASSIMP does not currently expose an api to retrieve the scaling factor.
-
-  @Param[in] resource_path   -   The url of a resource containing a mesh.
-
-  @Returns The scaling factor that converts the mesh to meters. Returns 1.0
-  for meshes which do not explicitly encode such a scaling.
-
-*/
-
-float getMeshUnitRescale(const std::string& resource_path)
-{
-  float unit_scale(1.0);
-
-  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats.
-  tinyxml2::XMLDocument xmlDoc;
-  resource_retriever::Retriever retriever;
-  resource_retriever::MemoryResource res;
-  try
-  {
-    res = retriever.get(resource_path);
-  }
-  catch (resource_retriever::Exception& e)
-  {
-    ROS_ERROR("%s", e.what());
-    return unit_scale;
-  }
-
-  if (res.size == 0)
-  {
-    return unit_scale;
-  }
-
-
-  // Use the resource retriever to get the data.
-  const char* data = reinterpret_cast<const char*>(res.data.get());
-  // As the data pointer provided by resource retriever is not null-terminated, also pass res.size
-  xmlDoc.Parse(data, res.size);
-
-  // Find the appropriate element if it exists
-  if (!xmlDoc.Error())
-  {
-    tinyxml2::XMLElement* colladaXml = xmlDoc.FirstChildElement("COLLADA");
-    if (colladaXml)
-    {
-      tinyxml2::XMLElement* assetXml = colladaXml->FirstChildElement("asset");
-      if (assetXml)
-      {
-        tinyxml2::XMLElement* unitXml = assetXml->FirstChildElement("unit");
-        if (unitXml && unitXml->Attribute("meter"))
-        {
-          // Failing to convert leaves unit_scale as the default.
-          if (unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
-            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to "
-                            "determine scaling. unit element: "
-                            << unitXml->GetText());
-        }
-      }
-    }
-  }
-  return unit_scale;
-}
-
-
 Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 {
   if (!scene->HasMeshes())
@@ -660,8 +576,10 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
-  float scale = getMeshUnitRescale(name);
-  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, scale, material_table);
+  // Reverse conversion to y-up orientation, which is what the root node in assimp does
+  aiMatrix4x4 transform;
+  aiMatrix4x4::RotationX(M_PI_2, transform);
+  buildMesh(scene, scene->mRootNode, transform, mesh, aabb, radius, material_table);
 
   mesh->_setBounds(aabb);
   mesh->_setBoundingSphereRadius(radius);
