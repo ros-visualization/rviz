@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.12 (2021-12-13)
+--------------------
+* Drop proprietary COLLADA scaling (`#1685 <https://github.com/ros-visualization/rviz/issues/1685>`_)
+* Contributors: Martin Pecka, Robert Haschke
+
 1.14.11 (2021-11-05)
 --------------------
 * AxisDisplay: allow ribbon trail (`#1677 <https://github.com/ros-visualization/rviz/issues/1677>`_)

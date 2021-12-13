@@ -1,6 +1,6 @@
 <package format="2">
   <name>rviz</name>
-  <version>1.14.11</version>
+  <version>1.14.12</version>
   <description>
      3D visualization tool for ROS.
   </description>
