@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.22 (2021-12-13)
+--------------------
+* Drop proprietary COLLADA scaling (`#1685 <https://github.com/ros-visualization/rviz/issues/1685>`_)
+* Contributors: Martin Pecka, Robert Haschke
+
 1.13.21 (2021-11-03)
 --------------------
 * Fix scaling of PointVisual's sphere (`#1678 <https://github.com/ros-visualization/rviz/issues/1678>`_)
