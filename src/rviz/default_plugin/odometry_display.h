@@ -103,6 +103,7 @@ private:
   D_Axes axes_;
 
   nav_msgs::Odometry::ConstPtr last_used_message_;
+  geometry_msgs::Pose::Ptr ref_pose_;
 
   rviz::BoolProperty* continuous_transform_property_;
 
