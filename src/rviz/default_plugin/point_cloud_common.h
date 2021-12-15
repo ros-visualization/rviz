@@ -134,6 +134,7 @@ public:
 
   bool auto_size_;
 
+  BoolProperty* continuous_transform_property_;
   BoolProperty* selectable_property_;
   FloatProperty* point_world_size_property_;
   FloatProperty* point_pixel_size_property_;
