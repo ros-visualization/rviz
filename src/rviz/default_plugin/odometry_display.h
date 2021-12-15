@@ -51,6 +51,7 @@ class ColorProperty;
 class FloatProperty;
 class IntProperty;
 class EnumProperty;
+class BoolProperty;
 
 class CovarianceProperty;
 
@@ -102,6 +103,8 @@ private:
   D_Axes axes_;
 
   nav_msgs::Odometry::ConstPtr last_used_message_;
+
+  rviz::BoolProperty* continuous_transform_property_;
 
   rviz::EnumProperty* shape_property_;
 
