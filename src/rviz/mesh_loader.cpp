@@ -222,16 +222,28 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
  * already by loadMaterials(). */
 void buildMesh(const aiScene* scene,
                const aiNode* node,
-               aiMatrix4x4 transform,
                const Ogre::MeshPtr& mesh,
                Ogre::AxisAlignedBox& aabb,
                float& radius,
-               std::vector<Ogre::MaterialPtr>& material_table)
+               std::vector<Ogre::MaterialPtr>& material_table,
+               aiMatrix4x4 transform = aiMatrix4x4())
 {
   if (!node)
     return;
 
-  transform *= node->mTransformation;
+  if (node->mParent == nullptr)
+  {
+    // Use root node's transform
+    transform = node->mTransformation;
+    // but don't rotate to y-up orientation, which is *sometimes* done in assimp's root node
+    aiVector3D scaling, axis, pos;
+    float angle;
+    transform.Decompose(scaling, axis, angle, pos);
+    // drop rotation, but keep scaling and position
+    transform = aiMatrix4x4(scaling, aiQuaternion(), pos);
+  }
+  else
+    transform *= node->mTransformation;
 
   for (uint32_t i = 0; i < node->mNumMeshes; i++)
   {
@@ -371,7 +383,7 @@ void buildMesh(const aiScene* scene,
 
   for (uint32_t i = 0; i < node->mNumChildren; ++i)
   {
-    buildMesh(scene, node->mChildren[i], transform, mesh, aabb, radius, material_table);
+    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, material_table, transform);
   }
 }
 
@@ -576,10 +588,7 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
-  // Reverse conversion to y-up orientation, which is what the root node in assimp does
-  aiMatrix4x4 transform;
-  aiMatrix4x4::RotationX(M_PI_2, transform);
-  buildMesh(scene, scene->mRootNode, transform, mesh, aabb, radius, material_table);
+  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, material_table);
 
   mesh->_setBounds(aabb);
   mesh->_setBoundingSphereRadius(radius);
