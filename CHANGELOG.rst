@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.23 (2021-12-16)
+--------------------
+* Destroy panels before destroying the RenderPanels and its SceneManager (Fixes `#1683 <https://github.com/ros-visualization/rviz/issues/1683>`_)
+* Fix regression in assimp mesh loading (Fixes `#1688 <https://github.com/ros-visualization/rviz/pull/1689>`_)
+* Contributors: Robert Haschke
+
 1.13.22 (2021-12-13)
 --------------------
 * Drop proprietary COLLADA scaling (`#1685 <https://github.com/ros-visualization/rviz/issues/1685>`_)
