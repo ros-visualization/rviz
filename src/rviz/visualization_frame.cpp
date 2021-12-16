@@ -165,15 +165,14 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
 
 VisualizationFrame::~VisualizationFrame()
 {
-  delete render_panel_;
-  delete manager_;
-
   for (int i = 0; i < custom_panels_.size(); i++)
   {
     delete custom_panels_[i].dock;
   }
 
   delete panel_factory_;
+  delete render_panel_;
+  delete manager_;
 }
 
 void VisualizationFrame::setApp(QApplication* app)
