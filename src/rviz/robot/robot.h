@@ -199,6 +199,8 @@ public:
 
     virtual RobotLink* createLink(Robot* robot,
                                   const urdf::LinkConstSharedPtr& link,
+                                  Ogre::SceneNode* parent_visual_node,
+                                  Ogre::SceneNode* parent_collision_node,
                                   const std::string& parent_joint_name,
                                   bool visual,
                                   bool collision);
