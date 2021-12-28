@@ -40,7 +40,8 @@ namespace rviz
 class LinkUpdater
 {
 public:
-  virtual bool getLinkTransforms(const std::string& link_name,
+  virtual bool getLinkTransforms(const std::string& parent_link_name,
+                                 const std::string& link_name,
                                  Ogre::Vector3& visual_position,
                                  Ogre::Quaternion& visual_orientation,
                                  Ogre::Vector3& collision_position,

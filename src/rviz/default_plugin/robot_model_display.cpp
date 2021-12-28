@@ -229,6 +229,25 @@ void RobotModelDisplay::update(float wall_dt, float /*ros_dt*/)
 
   if (has_new_transforms_ || update)
   {
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if (context_->getFrameManager()->getTransform(robot_->getRootLink()->getName(), ros::Time(),
+                                                  position, orientation))
+    {
+      robot_->setPosition(position);
+      robot_->setOrientation(orientation);
+      linkUpdaterStatusFunction(StatusProperty::Ok, robot_->getRootLink()->getName(), "Transform OK",
+                                this);
+    }
+    else
+    {
+      std::stringstream ss;
+      ss << "No transform from [" << robot_->getRootLink()->getName() << "] to ["
+         << fixed_frame_.toStdString() << "]";
+      linkUpdaterStatusFunction(StatusProperty::Error, robot_->getRootLink()->getName(), ss.str(), this);
+    }
+
+
     robot_->update(TFLinkUpdater(context_->getFrameManager(),
                                  boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this),
                                  tf_prefix_property_->getStdString()));
