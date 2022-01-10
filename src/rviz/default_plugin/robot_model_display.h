@@ -49,6 +49,7 @@ class Axes;
 
 namespace rviz
 {
+class EnumProperty;
 class FloatProperty;
 class Property;
 class Robot;
@@ -104,6 +105,7 @@ protected:
   Property* visual_enabled_property_;
   Property* collision_enabled_property_;
   FloatProperty* update_rate_property_;
+  EnumProperty* description_source_property_;
   StringProperty* robot_description_property_;
   FloatProperty* alpha_property_;
   StringProperty* tf_prefix_property_;

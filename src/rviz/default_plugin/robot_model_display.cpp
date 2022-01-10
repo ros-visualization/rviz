@@ -37,6 +37,7 @@
 #include <rviz/robot/robot.h>
 #include <rviz/robot/robot_link.h>
 #include <rviz/robot/tf_link_updater.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/property.h>
 #include <rviz/properties/string_property.h>
@@ -52,6 +53,11 @@ void linkUpdaterStatusFunction(StatusProperty::Level level,
 {
   display->setStatus(level, QString::fromStdString(link_name), QString::fromStdString(text));
 }
+
+enum DescriptionSource
+{
+  PARAMETER, TOPIC
+};
 
 RobotModelDisplay::RobotModelDisplay()
   : Display(), has_new_transforms_(false), time_since_last_transform_(0.0f)
@@ -76,10 +82,11 @@ RobotModelDisplay::RobotModelDisplay()
   alpha_property_->setMin(0.0);
   alpha_property_->setMax(1.0);
 
-  robot_description_property_ =
-      new StringProperty("Robot Description", "robot_description",
-                         "Name of the parameter to search for to load the robot description.", this,
-                         SLOT(updateRobotDescription()));
+  description_source_property_ = new EnumProperty(
+    "Description Source", "Parameter",
+    "Source to get the robot description from.", this);
+  description_source_property_->addOption("Parameter", DescriptionSource::PARAMETER);
+  description_source_property_->addOption("Topic", DescriptionSource::TOPIC);
 
   tf_prefix_property_ = new StringProperty(
       "TF Prefix", "",
