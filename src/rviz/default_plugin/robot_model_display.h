@@ -34,6 +34,8 @@
 
 #include <OGRE/OgreVector3.h>
 
+#include <std_msgs/String.h>
+
 #include <map>
 
 namespace Ogre
@@ -53,6 +55,7 @@ class EnumProperty;
 class FloatProperty;
 class Property;
 class Robot;
+class RosTopicProperty;
 class StringProperty;
 
 /**
@@ -81,7 +84,9 @@ private Q_SLOTS:
   void updateCollisionVisible();
   void updateTfPrefix();
   void updateAlpha();
+  void updatePropertyVisibility();
   void updateRobotDescription();
+  void updateTopic();
 
 protected:
   /** @brief Loads a URDF from the ros-param named by our
@@ -93,6 +98,10 @@ protected:
   void onEnable() override;
   void onDisable() override;
 
+  void subscribe();
+  void unsubscribe();
+  void processMessage(const std_msgs::String::ConstPtr msg);
+
   Robot* robot_; ///< Handles actually drawing the robot
 
   bool has_new_transforms_; ///< Callback sets this to tell our update function it needs to update the
@@ -102,11 +111,14 @@ protected:
 
   std::string robot_description_;
 
+  ros::Subscriber description_subscriber_;
+
   Property* visual_enabled_property_;
   Property* collision_enabled_property_;
   FloatProperty* update_rate_property_;
   EnumProperty* description_source_property_;
-  StringProperty* robot_description_property_;
+  StringProperty* description_param_property_;
+  RosTopicProperty* description_topic_property_;
   FloatProperty* alpha_property_;
   StringProperty* tf_prefix_property_;
 };

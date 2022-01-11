@@ -40,6 +40,7 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/property.h>
+#include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/string_property.h>
 
 #include "robot_model_display.h"
@@ -84,15 +85,27 @@ RobotModelDisplay::RobotModelDisplay()
 
   description_source_property_ = new EnumProperty(
     "Description Source", "Parameter",
-    "Source to get the robot description from.", this);
+    "Source to get the robot description from.", this, SLOT(updatePropertyVisibility()));
   description_source_property_->addOption("Parameter", DescriptionSource::PARAMETER);
   description_source_property_->addOption("Topic", DescriptionSource::TOPIC);
+
+  description_param_property_ =
+      new StringProperty("Description Parameter", "robot_description",
+                         "Name of the parameter to search for to load the robot description.", this,
+                         SLOT(updateRobotDescription()));
+
+  description_topic_property_ = new RosTopicProperty(
+      "Description Topic", "/robot_description",
+      QString::fromStdString(ros::message_traits::datatype<std_msgs::String>()),
+      "robot_description topic to subscribe to.", this, SLOT(updateTopic()));
 
   tf_prefix_property_ = new StringProperty(
       "TF Prefix", "",
       "Robot Model normally assumes the link name is the same as the tf frame name. "
       " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
       this, SLOT(updateTfPrefix()));
+
+  updatePropertyVisibility();
 }
 
 RobotModelDisplay::~RobotModelDisplay()
@@ -116,6 +129,20 @@ void RobotModelDisplay::updateAlpha()
 {
   robot_->setAlpha(alpha_property_->getFloat());
   context_->queueRender();
+}
+
+void RobotModelDisplay::updatePropertyVisibility()
+{
+  if (description_source_property_->getOptionInt() == DescriptionSource::PARAMETER) {
+    description_param_property_->setHidden(false);
+    description_topic_property_->setHidden(true);
+    unsubscribe();
+  } else if (description_source_property_->getOptionInt() == DescriptionSource::TOPIC) {
+    description_param_property_->setHidden(true);
+    description_topic_property_->setHidden(false);
+    subscribe();
+  }
+  updateRobotDescription();
 }
 
 void RobotModelDisplay::updateRobotDescription()
@@ -147,48 +174,53 @@ void RobotModelDisplay::load()
   clearStatuses();
   context_->queueRender();
 
-  std::string content;
-  try
+  if (description_source_property_->getOptionInt() == DescriptionSource::PARAMETER)
   {
-    if (!update_nh_.getParam(robot_description_property_->getStdString(), content))
+    std::string content;
+    try
     {
-      std::string loc;
-      if (update_nh_.searchParam(robot_description_property_->getStdString(), loc))
-        update_nh_.getParam(loc, content);
-      else
+      if (!update_nh_.getParam(description_param_property_->getStdString(), content))
       {
-        clear();
-        setStatus(StatusProperty::Error, "URDF",
-                  QString("Parameter [%1] does not exist, and was not found by searchParam()")
-                      .arg(robot_description_property_->getString()));
-        // try again in a second
-        QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
-        return;
+        std::string loc;
+        if (update_nh_.searchParam(description_param_property_->getStdString(), loc))
+          update_nh_.getParam(loc, content);
+        else
+        {
+          clear();
+          setStatus(StatusProperty::Error, "URDF",
+                    QString("Parameter [%1] does not exist, and was not found by searchParam()")
+                        .arg(description_param_property_->getString()));
+          // try again in a second
+          QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+          return;
+        }
       }
     }
-  }
-  catch (const ros::InvalidNameException& e)
-  {
-    clear();
-    setStatus(StatusProperty::Error, "URDF",
-              QString("Invalid parameter name: %1.\n%2")
-                  .arg(robot_description_property_->getString(), e.what()));
-    return;
-  }
+    catch (const ros::InvalidNameException& e)
+    {
+      clear();
+      setStatus(StatusProperty::Error, "URDF",
+                QString("Invalid parameter name: %1.\n%2")
+                    .arg(description_param_property_->getString(), e.what()));
+      return;
+    }
 
-  if (content.empty())
-  {
-    clear();
-    setStatus(StatusProperty::Error, "URDF", "URDF is empty");
-    return;
-  }
+    if (content.empty())
+    {
+      clear();
+      setStatus(StatusProperty::Error, "URDF", "URDF is empty");
+      return;
+    }
 
-  if (content == robot_description_)
-  {
-    return;
-  }
+    ROS_WARN("URDF: %s", content.c_str());
 
-  robot_description_ = content;
+    if (content == robot_description_)
+    {
+      return;
+    }
+
+    robot_description_ = content;
+  }
 
   urdf::Model descr;
   if (!descr.initString(robot_description_))
@@ -262,6 +294,42 @@ void RobotModelDisplay::reset()
 {
   Display::reset();
   has_new_transforms_ = true;
+}
+
+void RobotModelDisplay::subscribe()
+{
+  if (!isEnabled()) {
+    return;
+  }
+
+  if (!description_topic_property_->getTopicStd().empty()) {
+    try {
+      description_subscriber_ = update_nh_.subscribe(
+        description_topic_property_->getTopicStd(), 1, &RobotModelDisplay::processMessage, this);
+      setStatus(rviz::StatusProperty::Ok, "Description Topic", "OK");
+    } catch (ros::Exception& e) {
+      setStatus(rviz::StatusProperty::Error, "Description Topic", QString("Error subscribing: ") + e.what());
+    }
+  }
+}
+
+void RobotModelDisplay::unsubscribe()
+{
+  description_subscriber_.shutdown();
+}
+
+void RobotModelDisplay::updateTopic()
+{
+  unsubscribe();
+  reset();
+  subscribe();
+}
+
+void RobotModelDisplay::processMessage(std_msgs::String::ConstPtr msg)
+{
+  robot_description_ = msg->data;
+  ROS_DEBUG("Received new robot_description via topic");
+  load();
 }
 
 } // namespace rviz
