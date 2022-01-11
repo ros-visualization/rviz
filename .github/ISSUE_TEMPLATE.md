@@ -6,7 +6,7 @@ For rendering issues, please provide:
 Use [gist.github.com](gist.github.com) to copy-paste the console output or segfault backtrace using gdb.
 
 Note: Due to the lack of active maintainers, currently we can only provide limited support.
-Particularly, we focus on the latest release, Melodic, only.
+Particularly, we focus on the latest releases, Noetic and Melodic, only.
 If you can track the issue down yourself and provide a pull request, that would be a great help.
 Thanks for considering this.
 -->
