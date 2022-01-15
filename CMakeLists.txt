@@ -8,10 +8,6 @@ if (POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # Define global caktin_lint suppressions
 #catkin_lint: ignore uninstalled_script missing_install_target
 
