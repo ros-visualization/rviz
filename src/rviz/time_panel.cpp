@@ -246,15 +246,9 @@ void TimePanel::experimentalToggled(bool checked)
   if (vis_manager_ && vis_manager_->getFrameManager())
   {
     if (!checked)
-    {
       pauseToggled(false);
-      syncModeSelected(0);
-    }
     else
-    {
       pauseToggled(pause_button_->isChecked());
-      syncModeSelected(sync_mode_selector_->currentIndex());
-    }
   }
 }
 
