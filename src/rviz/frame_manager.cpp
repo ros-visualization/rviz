@@ -59,14 +59,12 @@ FrameManager::~FrameManager()
 
 void FrameManager::update()
 {
-  boost::mutex::scoped_lock lock(cache_mutex_);
-  if (!pause_)
+  if (pause_)
+    return;
+  else
   {
+    boost::mutex::scoped_lock lock(cache_mutex_);
     cache_.clear();
-  }
-
-  if (!pause_)
-  {
     switch (sync_mode_)
     {
     case SyncOff:
