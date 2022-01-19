@@ -68,6 +68,7 @@ public:
   enum SyncMode
   {
     SyncOff = 0,
+    SyncFrame, // synchronize frame lookups to start of update() loop
     SyncExact,
     SyncApprox
   };

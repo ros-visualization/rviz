@@ -67,10 +67,12 @@ void FrameManager::update()
     cache_.clear();
     switch (sync_mode_)
     {
-    case SyncOff:
+    case SyncOff:   // always use latest time
+    case SyncFrame: // sync to current time
       sync_time_ = ros::Time::now();
       break;
-    case SyncExact:
+    case SyncExact: // sync to external source
+      // sync_time_ set via syncTime()
       break;
     case SyncApprox:
       // adjust current time offset to sync source
@@ -126,6 +128,7 @@ void FrameManager::syncTime(ros::Time time)
   switch (sync_mode_)
   {
   case SyncOff:
+  case SyncFrame:
     break;
   case SyncExact:
     sync_time_ = time;
@@ -161,6 +164,7 @@ bool FrameManager::adjustTime(const std::string& frame, ros::Time& time)
   {
   case SyncOff:
     break;
+  case SyncFrame:
   case SyncExact:
     time = sync_time_;
     break;

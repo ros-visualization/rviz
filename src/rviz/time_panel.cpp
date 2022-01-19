@@ -62,7 +62,11 @@ TimePanel::TimePanel(QWidget* parent) : Panel(parent)
 
   sync_mode_selector_ = new QComboBox(this);
   sync_mode_selector_->addItem("Off");
+  sync_mode_selector_->addItem("Frame");
+  sync_mode_selector_->setItemData(1, "Synchronize TF lookups within a frame", Qt::ToolTipRole);
   sync_mode_selector_->addItem("Exact");
+  sync_mode_selector_->setItemData(1, "Synchronize TF lookups to an external (Display) source",
+                                   Qt::ToolTipRole);
   sync_mode_selector_->addItem("Approximate");
   sync_mode_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
   sync_mode_selector_->setToolTip(
@@ -264,7 +268,7 @@ void TimePanel::syncSourceSelected(int /*index*/)
 void TimePanel::syncModeSelected(int mode)
 {
   vis_manager_->getFrameManager()->setSyncMode((FrameManager::SyncMode)mode);
-  sync_source_selector_->setEnabled(mode != FrameManager::SyncOff);
+  sync_source_selector_->setEnabled(mode > FrameManager::SyncFrame);
   vis_manager_->notifyConfigChanged();
 }
 
