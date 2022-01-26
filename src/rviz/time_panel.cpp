@@ -53,10 +53,7 @@ TimePanel::TimePanel(QWidget* parent) : Panel(parent)
   ros_time_label_ = makeTimeLabel();
   ros_elapsed_label_ = makeTimeLabel();
 
-  experimental_cb_ = new QCheckBox("Experimental");
-  experimental_cb_->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
-
-  pause_button_ = new QPushButton("Pause");
+  pause_button_ = new QPushButton(QIcon::fromTheme("media-playback-pause"), "Pause");
   pause_button_->setToolTip("Freeze ROS time.");
   pause_button_->setCheckable(true);
 
@@ -77,41 +74,27 @@ TimePanel::TimePanel(QWidget* parent) : Panel(parent)
   sync_source_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
   sync_source_selector_->setToolTip("Time source to use for synchronization.");
 
-  experimental_widget_ = new QWidget(this);
-  QHBoxLayout* experimental_layout = new QHBoxLayout(this);
-  experimental_layout->addWidget(pause_button_);
-  experimental_layout->addWidget(new QLabel("Synchronization:"));
-  experimental_layout->addWidget(sync_mode_selector_);
-  experimental_layout->addWidget(new QLabel("Source:"));
-  experimental_layout->addWidget(sync_source_selector_);
-  experimental_layout->addSpacing(20);
-  experimental_layout->setContentsMargins(0, 0, 20, 0);
-  experimental_widget_->setLayout(experimental_layout);
-
-  old_widget_ = new QWidget(this);
-  QHBoxLayout* old_layout = new QHBoxLayout(this);
-  old_layout->addWidget(new QLabel("ROS Elapsed:"));
-  old_layout->addWidget(ros_elapsed_label_);
-  old_layout->addWidget(new QLabel("Wall Time:"));
-  old_layout->addWidget(wall_time_label_);
-  old_layout->addWidget(new QLabel("Wall Elapsed:"));
-  old_layout->addWidget(wall_elapsed_label_);
-  old_layout->setContentsMargins(0, 0, 20, 0);
-  old_widget_->setLayout(old_layout);
-
   QHBoxLayout* layout = new QHBoxLayout(this);
+  layout->addWidget(pause_button_);
+  layout->addSpacing(10);
 
-  layout->addWidget(experimental_widget_);
+  layout->addWidget(new QLabel("Synchronization:"));
+  layout->addWidget(sync_mode_selector_);
+  layout->addWidget(sync_source_selector_);
+  layout->addSpacing(10);
+
   layout->addWidget(new QLabel("ROS Time:"));
   layout->addWidget(ros_time_label_);
-  layout->addWidget(old_widget_);
-  layout->addStretch(100);
-  layout->addWidget(experimental_cb_);
+  layout->addWidget(new QLabel("ROS Elapsed:"));
+  layout->addWidget(ros_elapsed_label_);
+  layout->addWidget(new QLabel("Wall Time:"));
+  layout->addWidget(wall_time_label_);
+  layout->addWidget(new QLabel("Wall Elapsed:"));
+  layout->addWidget(wall_elapsed_label_);
 
-  layout->addStretch();
   layout->setContentsMargins(11, 5, 11, 5);
+  this->setLayout(layout);
 
-  connect(experimental_cb_, SIGNAL(toggled(bool)), this, SLOT(experimentalToggled(bool)));
   connect(pause_button_, SIGNAL(toggled(bool)), this, SLOT(pauseToggled(bool)));
   connect(sync_mode_selector_, SIGNAL(activated(int)), this, SLOT(syncModeSelected(int)));
   connect(sync_source_selector_, SIGNAL(activated(int)), this, SLOT(syncSourceSelected(int)));
@@ -138,10 +121,6 @@ void TimePanel::load(const Config& config)
     syncModeSelected(sync_mode);
   }
   config.mapGetString("SyncSource", &config_sync_source_);
-  bool experimental = false;
-  config.mapGetBool("Experimental", &experimental);
-  experimental_cb_->setChecked(experimental);
-  experimentalToggled(experimental);
 }
 
 void TimePanel::save(Config config) const
@@ -149,7 +128,6 @@ void TimePanel::save(Config config) const
   Panel::save(config);
   config.mapSetValue("SyncMode", sync_mode_selector_->currentIndex());
   config.mapSetValue("SyncSource", sync_source_selector_->currentText());
-  config.mapSetValue("Experimental", experimental_cb_->checkState() == Qt::Checked);
 }
 
 void TimePanel::onDisplayAdded(Display* display)
@@ -239,19 +217,6 @@ void TimePanel::pauseToggled(bool checked)
   vis_manager_->getFrameManager()->setPause(checked);
 }
 
-void TimePanel::experimentalToggled(bool checked)
-{
-  old_widget_->setVisible(!checked);
-  experimental_widget_->setVisible(checked);
-  if (vis_manager_ && vis_manager_->getFrameManager())
-  {
-    if (!checked)
-      pauseToggled(false);
-    else
-      pauseToggled(pause_button_->isChecked());
-  }
-}
-
 void TimePanel::syncSourceSelected(int /*index*/)
 {
   // clear whatever was loaded from the config
@@ -262,7 +227,7 @@ void TimePanel::syncSourceSelected(int /*index*/)
 void TimePanel::syncModeSelected(int mode)
 {
   vis_manager_->getFrameManager()->setSyncMode((FrameManager::SyncMode)mode);
-  sync_source_selector_->setEnabled(mode > FrameManager::SyncFrame);
+  sync_source_selector_->setVisible(mode > FrameManager::SyncFrame);
   vis_manager_->notifyConfigChanged();
 }
 
