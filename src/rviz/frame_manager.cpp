@@ -67,8 +67,7 @@ void FrameManager::update()
     cache_.clear();
     switch (sync_mode_)
     {
-    case SyncOff:   // always use latest time
-    case SyncFrame: // sync to current time
+    case SyncOff: // always use latest time
       sync_time_ = ros::Time::now();
       break;
     case SyncExact: // sync to external source
@@ -78,6 +77,10 @@ void FrameManager::update()
       // sync_delta is a sliding average of current_delta_, i.e.
       // approximating the average delay of incoming sync messages w.r.t. current time
       sync_delta_ = 0.7 * sync_delta_ + 0.3 * current_delta_;
+      // date back sync_time_ to ensure finding TFs that are as old as now() - sync_delta_
+      sync_time_ = ros::Time::now() - ros::Duration(sync_delta_);
+      break;
+    case SyncFrame: // sync to current time
       // date back sync_time_ to ensure finding TFs that are as old as now() - sync_delta_
       sync_time_ = ros::Time::now() - ros::Duration(sync_delta_);
       break;
@@ -255,7 +258,18 @@ bool FrameManager::transform(const std::string& frame,
   {
     tf2::doTransform(pose, pose, tf_buffer_->lookupTransform(fixed_frame_, frame, time));
   }
-  catch (std::runtime_error& e)
+  catch (const tf2::ExtrapolationException& e)
+  {
+    // We don't have tf info for sync_time_. Reset sync_time_ to latest available time of frame
+    auto tf = tf_buffer_->lookupTransform(frame, frame, ros::Time());
+    if (sync_time_ > tf.header.stamp && tf.header.stamp != ros::Time())
+    {
+      sync_delta_ += (sync_time_ - tf.header.stamp).toSec(); // increase sync delta by observed amount
+      sync_time_ = tf.header.stamp;
+    }
+    return false;
+  }
+  catch (const std::runtime_error& e)
   {
     ROS_DEBUG("Error transforming from frame '%s' to frame '%s': %s", frame.c_str(),
               fixed_frame_.c_str(), e.what());
