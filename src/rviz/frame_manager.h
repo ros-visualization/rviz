@@ -315,8 +315,8 @@ private:
   ros::Time sync_time_;
 
   // used for approx. syncing
-  double sync_delta_;
-  double current_delta_;
+  double current_delta_; // current time delay between received sync msg's time stamp and now()
+  double sync_delta_;    // sliding average of current_delta_, used to compute sync_time_
 };
 
 } // namespace rviz

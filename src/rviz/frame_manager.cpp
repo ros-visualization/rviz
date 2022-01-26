@@ -75,16 +75,11 @@ void FrameManager::update()
       // sync_time_ set via syncTime()
       break;
     case SyncApprox:
-      // adjust current time offset to sync source
-      current_delta_ = 0.7 * current_delta_ + 0.3 * sync_delta_;
-      try
-      {
-        sync_time_ = ros::Time::now() - ros::Duration(current_delta_);
-      }
-      catch (...)
-      {
-        sync_time_ = ros::Time::now();
-      }
+      // sync_delta is a sliding average of current_delta_, i.e.
+      // approximating the average delay of incoming sync messages w.r.t. current time
+      sync_delta_ = 0.7 * sync_delta_ + 0.3 * current_delta_;
+      // date back sync_time_ to ensure finding TFs that are as old as now() - sync_delta_
+      sync_time_ = ros::Time::now() - ros::Duration(sync_delta_);
       break;
     }
   }
@@ -119,8 +114,8 @@ void FrameManager::setSyncMode(SyncMode mode)
 {
   sync_mode_ = mode;
   sync_time_ = ros::Time(0);
-  current_delta_ = 0;
   sync_delta_ = 0;
+  current_delta_ = 0;
 }
 
 void FrameManager::syncTime(ros::Time time)
@@ -136,13 +131,13 @@ void FrameManager::syncTime(ros::Time time)
   case SyncApprox:
     if (time == ros::Time(0))
     {
-      sync_delta_ = 0;
+      current_delta_ = 0;
       return;
     }
-    // avoid exception due to negative time
-    if (ros::Time::now() >= time)
+    if (ros::Time::now() >= time) // avoid exception due to negative time
     {
-      sync_delta_ = (ros::Time::now() - time).toSec();
+      // estimate delay of sync message w.r.t. current time
+      current_delta_ = (ros::Time::now() - time).toSec();
     }
     else
     {
