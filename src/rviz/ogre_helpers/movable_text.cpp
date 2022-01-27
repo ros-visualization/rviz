@@ -244,7 +244,7 @@ void MovableText::_setupGeometry()
     mUpdateColors = true;
   }
 
-  if (utfCaption.empty())
+  if (vertexCount == 0)
   {
     return;
   }
