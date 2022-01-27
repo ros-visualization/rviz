@@ -228,7 +228,7 @@ Q_SIGNALS:
   void fixedFrameChanged();
 
 private:
-  bool adjustTime(const std::string& frame, ros::Time& time);
+  void adjustTime(ros::Time& time);
 
   template <class M>
   void messageCallback(const ros::MessageEvent<M const>& msg_evt, Display* display)

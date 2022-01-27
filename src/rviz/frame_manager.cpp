@@ -150,13 +150,11 @@ void FrameManager::syncTime(ros::Time time)
   }
 }
 
-bool FrameManager::adjustTime(const std::string& frame, ros::Time& time)
+void FrameManager::adjustTime(ros::Time& time)
 {
   // we only need to act if we get a zero timestamp, which means "latest"
   if (time != ros::Time())
-  {
-    return true;
-  }
+    return;
 
   switch (sync_mode_)
   {
@@ -164,32 +162,10 @@ bool FrameManager::adjustTime(const std::string& frame, ros::Time& time)
     break;
   case SyncFrame:
   case SyncExact:
+  case SyncApprox:
     time = sync_time_;
     break;
-  case SyncApprox:
-  {
-    // if we don't have tf info for the given timestamp, use the latest available
-    ros::Time latest_time;
-    std::string error_string;
-    int error_code;
-    error_code = tf_buffer_->_getLatestCommonTime(fixed_frame_id_, tf_buffer_->_lookupFrameNumber(frame),
-                                                  latest_time, &error_string);
-
-    if (error_code != 0)
-    {
-      ROS_ERROR("Error getting latest time from frame '%s' to frame '%s': %s (Error code: %d)",
-                frame.c_str(), fixed_frame_.c_str(), error_string.c_str(), error_code);
-      return false;
-    }
-
-    if (latest_time > sync_time_)
-    {
-      time = sync_time_;
-    }
   }
-  break;
-  }
-  return true;
 }
 
 
@@ -198,10 +174,7 @@ bool FrameManager::getTransform(const std::string& frame,
                                 Ogre::Vector3& position,
                                 Ogre::Quaternion& orientation)
 {
-  if (!adjustTime(frame, time))
-  {
-    return false;
-  }
+  adjustTime(time);
 
   boost::mutex::scoped_lock lock(cache_mutex_);
 
@@ -240,10 +213,7 @@ bool FrameManager::transform(const std::string& frame,
                              Ogre::Vector3& position,
                              Ogre::Quaternion& orientation)
 {
-  if (!adjustTime(frame, time))
-  {
-    return false;
-  }
+  adjustTime(time);
 
   position = Ogre::Vector3::ZERO;
   orientation = Ogre::Quaternion::IDENTITY;
@@ -260,6 +230,8 @@ bool FrameManager::transform(const std::string& frame,
   }
   catch (const tf2::ExtrapolationException& e)
   {
+    if (sync_mode_ == SyncApprox)
+      return false;
     // We don't have tf info for sync_time_. Reset sync_time_ to latest available time of frame
     auto tf = tf_buffer_->lookupTransform(frame, frame, ros::Time());
     if (sync_time_ > tf.header.stamp && tf.header.stamp != ros::Time())
@@ -300,10 +272,7 @@ bool FrameManager::frameHasProblems(const std::string& frame, ros::Time /*time*/
 
 bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time, std::string& error)
 {
-  if (!adjustTime(frame, time))
-  {
-    return false;
-  }
+  adjustTime(time);
 
   std::string tf_error;
   bool transform_succeeded = tf_buffer_->canTransform(fixed_frame_, frame, time, &tf_error);
