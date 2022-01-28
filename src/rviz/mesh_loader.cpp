@@ -306,6 +306,7 @@ void buildMesh(const aiScene* scene,
       if (input_mesh->HasNormals())
       {
         aiVector3D n = input_mesh->mNormals[j];
+        n *= transform;
         n.Normalize();
         *vertices++ = n.x;
         *vertices++ = n.y;
