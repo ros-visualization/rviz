@@ -245,6 +245,9 @@ void buildMesh(const aiScene* scene,
   else
     transform *= node->mTransformation;
 
+  // rotation (+scaling) part of transform applied to normals
+  aiMatrix3x3 rotation(transform);
+
   for (uint32_t i = 0; i < node->mNumMeshes; i++)
   {
     aiMesh* input_mesh = scene->mMeshes[node->mMeshes[i]];
@@ -306,6 +309,7 @@ void buildMesh(const aiScene* scene,
       if (input_mesh->HasNormals())
       {
         aiVector3D n = input_mesh->mNormals[j];
+        n *= rotation;
         n.Normalize();
         *vertices++ = n.x;
         *vertices++ = n.y;
