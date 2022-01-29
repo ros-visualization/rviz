@@ -167,6 +167,7 @@ RobotLink::RobotLink(Robot* robot,
   , trail_(nullptr)
   , axes_(nullptr)
   , material_alpha_(1.0)
+  , use_original_material(true)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
@@ -413,11 +414,13 @@ void RobotLink::updateAlpha()
       {
         material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
         material->setDepthWriteEnabled(false);
+        use_original_material = false;
       }
       else
       {
         material->setSceneBlending(Ogre::SBT_REPLACE);
         material->setDepthWriteEnabled(true);
+        use_original_material = true;
       }
     }
   }
@@ -677,6 +680,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
         sub->setMaterial(mat);
       }
       materials_[sub] = sub->getMaterial();
+      original_materials_[sub] = sub->getMaterial()->clone(sub->getMaterial()->getName() + "_original");
     }
   }
 }
@@ -934,9 +938,10 @@ void RobotLink::setToNormalMaterial()
   {
     M_SubEntityToMaterial::iterator it = materials_.begin();
     M_SubEntityToMaterial::iterator end = materials_.end();
-    for (; it != end; ++it)
+    M_SubEntityToMaterial::iterator it_original = original_materials_.begin();
+    for (; it != end; ++it, ++it_original)
     {
-      it->first->setMaterial(it->second);
+      it->first->setMaterial(use_original_material ? it_original->second : it->second);
     }
   }
 }
