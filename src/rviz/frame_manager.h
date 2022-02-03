@@ -305,7 +305,6 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::string fixed_frame_;
-  tf2::CompactFrameID fixed_frame_id_;
 
   bool pause_;
 

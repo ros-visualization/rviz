@@ -96,7 +96,6 @@ void FrameManager::setFixedFrame(const std::string& frame)
     if (fixed_frame_ != frame)
     {
       fixed_frame_ = frame;
-      fixed_frame_id_ = tf_buffer_->_lookupFrameNumber(fixed_frame_);
       cache_.clear();
       should_emit = true;
     }
