@@ -228,7 +228,7 @@ bool VisualizerApp::init(int argc, char** argv)
     load_config_service_ =
         private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
     load_config_discard_changes_service_ =
-        private_nh.advertiseService("load_config_discard_changes", &VisualizerApp::loadConfigDiscardChangesCallback, this);
+        private_nh.advertiseService("load_config_discarding_changes", &VisualizerApp::loadConfigDiscardChangesCallback, this);
     save_config_service_ =
         private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
 
