@@ -748,12 +748,9 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path,
 {
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
-  if (!discard_changes)
+  if (!discard_changes && !prepareToExit())
   {
-    if (!prepareToExit())
-    {
-      return false;
-    }
+    return false;
   }
 
   setWindowModified(false);
