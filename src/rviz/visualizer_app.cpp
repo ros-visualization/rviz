@@ -227,6 +227,8 @@ bool VisualizerApp::init(int argc, char** argv)
 
     load_config_service_ =
         private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
+    load_config_discarding_service_ = private_nh.advertiseService(
+        "load_config_discarding_changes", &VisualizerApp::loadConfigDiscardingCallback, this);
     save_config_service_ =
         private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
 
@@ -272,6 +274,20 @@ bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::Sen
   fs::path path = req.path.data;
   if (fs::is_regular_file(path))
     res.success = frame_->loadDisplayConfigHelper(path.string());
+  else
+    res.success = false;
+  return true;
+}
+
+bool VisualizerApp::loadConfigDiscardingCallback(rviz::SendFilePathRequest& req,
+                                                 rviz::SendFilePathResponse& res)
+{
+  fs::path path = req.path.data;
+  if (fs::is_regular_file(path))
+  {
+    bool discard_changes = true;
+    res.success = frame_->loadDisplayConfigHelper(path.string(), discard_changes);
+  }
   else
     res.success = false;
   return true;
