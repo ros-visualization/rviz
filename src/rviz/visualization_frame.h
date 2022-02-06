@@ -142,8 +142,7 @@ public:
    * @param full_path The (absolute) path to the config file to load
    * @param discard_changes Flag indicating whether to discard any unsaved config changes
    * @return True on success, False on failure. */
-  bool loadDisplayConfigHelper(const std::string& full_path,
-                               const bool discard_changes = false);
+  bool loadDisplayConfigHelper(const std::string& full_path, const bool discard_changes = false);
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into.

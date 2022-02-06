@@ -743,8 +743,7 @@ void VisualizationFrame::loadDisplayConfig(const QString& qpath)
   loadDisplayConfigHelper(actual_load_path.string());
 }
 
-bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path,
-                                                 const bool discard_changes)
+bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, const bool discard_changes)
 {
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
