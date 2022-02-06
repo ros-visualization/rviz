@@ -64,7 +64,7 @@ private Q_SLOTS:
 private:
   void startContinueChecker();
   bool loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
-  bool loadConfigDiscardChangesCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
+  bool loadConfigDiscardingChangesCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
   bool saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
 
   QApplication* app_;
@@ -73,7 +73,7 @@ private:
   ros::NodeHandlePtr nh_;
   ros::ServiceServer reload_shaders_service_;
   ros::ServiceServer load_config_service_;
-  ros::ServiceServer load_config_discard_changes_service_;
+  ros::ServiceServer load_config_discarding_changes_service_;
   ros::ServiceServer save_config_service_;
 };
 
