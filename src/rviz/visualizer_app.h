@@ -36,7 +36,6 @@
 #include <ros/ros.h>
 #include <rviz/rviz_export.h>
 #include <rviz/SendFilePath.h>
-#include <rviz/LoadConfig.h>
 #endif
 
 class QTimer;
@@ -65,7 +64,7 @@ private Q_SLOTS:
 private:
   void startContinueChecker();
   bool loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
-  bool loadConfigDiscardChangesCallback(rviz::LoadConfigRequest& req, rviz::LoadConfigResponse& res);
+  bool loadConfigDiscardChangesCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
   bool saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
 
   QApplication* app_;

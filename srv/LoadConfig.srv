@@ -1,4 +1,0 @@
-std_msgs/String path # absolute path to file or directory
-bool discard_changes # discard changes to RViz config
----
-bool success

@@ -279,12 +279,12 @@ bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::Sen
   return true;
 }
 
-bool VisualizerApp::loadConfigDiscardChangesCallback(rviz::LoadConfigRequest& req, rviz::LoadConfigResponse& res)
+bool VisualizerApp::loadConfigDiscardChangesCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
 {
   fs::path path = req.path.data;
   if (fs::is_regular_file(path))
   {
-    bool discard_changes = req.discard_changes;
+    bool discard_changes = true;
     res.success = frame_->loadDisplayConfigHelper(path.string(), discard_changes);
   }
   else

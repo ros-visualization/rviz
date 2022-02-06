@@ -169,7 +169,6 @@ set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME rviz_default_plugin)
 
 add_service_files(
   FILES
-  LoadConfig.srv
   SendFilePath.srv
 )
 
