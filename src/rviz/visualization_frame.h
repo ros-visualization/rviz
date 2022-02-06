@@ -139,8 +139,11 @@ public:
   void loadDisplayConfig(const QString& path);
 
   /** @brief Load display and other settings from the given full file path.
+   * @param full_path The full path of the config file to load from.
+   * @param discard_changes Discard changes to current config
    * @return True on success, False on failure. */
-  bool loadDisplayConfigHelper(const std::string& full_path);
+  bool loadDisplayConfigHelper(const std::string& full_path,
+                               const bool discard_changes = false);
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into.
