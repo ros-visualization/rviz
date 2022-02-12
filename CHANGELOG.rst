@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.24 (2022-02-12)
+--------------------
+* Fix regression in mesh loader: correctly transform normals (`#1703 <https://github.com/ros-visualization/rviz/issues/1703>`_)
+* MovableText: gracefully handle string of whitespaces (`#1700 <https://github.com/ros-visualization/rviz/issues/1700>`_)
+* Contributors: Robert Haschke
+
 1.13.23 (2021-12-16)
 --------------------
 * Destroy panels before destroying the RenderPanels and its SceneManager (Fixes `#1683 <https://github.com/ros-visualization/rviz/issues/1683>`_)
