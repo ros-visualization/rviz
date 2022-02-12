@@ -172,6 +172,9 @@ bool FrameManager::adjustTime(const std::string& frame, ros::Time& time)
     ros::Time latest_time;
     std::string error_string;
     int error_code;
+    if (fixed_frame_id_ == 0) // we couldn't resolve the fixed_frame_id yet
+      fixed_frame_id_ = tf_buffer_->_lookupFrameNumber(fixed_frame_);
+
     error_code = tf_buffer_->_getLatestCommonTime(fixed_frame_id_, tf_buffer_->_lookupFrameNumber(frame),
                                                   latest_time, &error_string);
 
