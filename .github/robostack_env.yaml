@@ -1,6 +1,7 @@
 name: test
 channels:
   - robostack
+  - robostack-experimental
   - conda-forge
 dependencies:
   - compilers
@@ -10,9 +11,7 @@ dependencies:
   - pkg-config
   - rosdep
   - rosdistro
-  - ros-distro-mutex 0.1 noetic
+  - ros-distro-mutex 0.3 noetic
   - ros-noetic-catkin
   - ros-noetic-ros-environment
   - openssl 1.1.1*
-  # we need the static library of this build
-  - tinyxml2 9.0.0 *_1
