@@ -1,9 +1,9 @@
 name: test
 channels:
   - robostack
-  - robostack-experimental
   - conda-forge
 dependencies:
+  - python 3.8
   - compilers
   - ninja
   - cmake
@@ -11,7 +11,7 @@ dependencies:
   - pkg-config
   - rosdep
   - rosdistro
-  - ros-distro-mutex 0.3 noetic
+  - ros-distro-mutex 0.1 noetic
   - ros-noetic-catkin
   - ros-noetic-ros-environment
   - openssl 1.1.1*
