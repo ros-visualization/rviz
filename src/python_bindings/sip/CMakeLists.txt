@@ -66,7 +66,9 @@ if(sip_helper_FOUND)
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
-  if(APPLE)
+  if(DEFINED PYTHON_EXTENSION_MODULE_SUFFIX)
+    set(rviz_sip_LIBRARY_FILE librviz_sip${PYTHON_EXTENSION_MODULE_SUFFIX})
+  elseif(APPLE)
     set(rviz_sip_LIBRARY_FILE librviz_sip.so)
   elseif(WIN32)
     set(rviz_sip_LIBRARY_FILE librviz_sip.pyd)
