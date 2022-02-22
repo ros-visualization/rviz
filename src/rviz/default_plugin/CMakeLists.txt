@@ -72,10 +72,6 @@ add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
 include(GenerateExportHeader)
 set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/default_plugin/${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}_export.h)
 generate_export_header(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} EXPORT_FILE_NAME ${EXPORT_FILE_NAME})
-if(NOT WIN32)
-  set_target_properties(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
-    PROPERTIES COMPILE_FLAGS "-std=c++11")
-endif()
 target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ${PROJECT_NAME}
   ${Boost_LIBRARIES}

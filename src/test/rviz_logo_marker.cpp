@@ -99,7 +99,8 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "rviz_logo_marker");
   ros::NodeHandle n;
 
-  ros::Timer publish_timer = n.createTimer(ros::Duration(0.1), boost::bind(&publishCallback, _1));
+  ros::Timer publish_timer =
+      n.createTimer(ros::Duration(0.1), boost::bind(&publishCallback, boost::placeholders::_1));
 
   server = new interactive_markers::InteractiveMarkerServer("rviz_logo");
   makeMarker();

@@ -109,10 +109,12 @@ void InteractiveMarkerDisplay::onInitialize()
   auto tf = context_->getFrameManager()->getTF2BufferPtr();
   im_client_.reset(new interactive_markers::InteractiveMarkerClient(*tf, fixed_frame_.toStdString()));
 
-  im_client_->setInitCb(boost::bind(&InteractiveMarkerDisplay::initCb, this, _1));
-  im_client_->setUpdateCb(boost::bind(&InteractiveMarkerDisplay::updateCb, this, _1));
-  im_client_->setResetCb(boost::bind(&InteractiveMarkerDisplay::resetCb, this, _1));
-  im_client_->setStatusCb(boost::bind(&InteractiveMarkerDisplay::statusCb, this, _1, _2, _3));
+  im_client_->setInitCb(boost::bind(&InteractiveMarkerDisplay::initCb, this, boost::placeholders::_1));
+  im_client_->setUpdateCb(
+      boost::bind(&InteractiveMarkerDisplay::updateCb, this, boost::placeholders::_1));
+  im_client_->setResetCb(boost::bind(&InteractiveMarkerDisplay::resetCb, this, boost::placeholders::_1));
+  im_client_->setStatusCb(boost::bind(&InteractiveMarkerDisplay::statusCb, this, boost::placeholders::_1,
+                                      boost::placeholders::_2, boost::placeholders::_3));
 
   client_id_ = ros::this_node::getName() + "/" + getNameStd();
 

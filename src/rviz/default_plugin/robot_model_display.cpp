@@ -205,7 +205,8 @@ void RobotModelDisplay::load()
               QString("Errors loading geometries:").append(ss.str().c_str()));
 
   robot_->update(TFLinkUpdater(context_->getFrameManager(),
-                               boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this),
+                               boost::bind(linkUpdaterStatusFunction, boost::placeholders::_1,
+                                           boost::placeholders::_2, boost::placeholders::_3, this),
                                tf_prefix_property_->getStdString()));
 }
 
@@ -230,7 +231,8 @@ void RobotModelDisplay::update(float wall_dt, float /*ros_dt*/)
   if (has_new_transforms_ || update)
   {
     robot_->update(TFLinkUpdater(context_->getFrameManager(),
-                                 boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this),
+                                 boost::bind(linkUpdaterStatusFunction, boost::placeholders::_1,
+                                             boost::placeholders::_2, boost::placeholders::_3, this),
                                  tf_prefix_property_->getStdString()));
     context_->queueRender();
 

@@ -111,7 +111,7 @@ public:
 
     tf_filter_->connectInput(sub_);
     tf_filter_->registerCallback(
-        boost::bind(&MessageFilterDisplay<MessageType>::incomingMessage, this, _1));
+        boost::bind(&MessageFilterDisplay<MessageType>::incomingMessage, this, boost::placeholders::_1));
     context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
   }
 

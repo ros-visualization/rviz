@@ -94,7 +94,8 @@ void ImageView::showEvent(QShowEvent* event)
 
     texture_sub_.reset(new image_transport::SubscriberFilter());
     texture_sub_->subscribe(texture_it_, "image", 1, image_transport::TransportHints("raw"));
-    texture_sub_->registerCallback(boost::bind(&ImageView::textureCallback, this, _1));
+    texture_sub_->registerCallback(
+        boost::bind(&ImageView::textureCallback, this, boost::placeholders::_1));
   }
   catch (ros::Exception& e)
   {
