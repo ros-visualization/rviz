@@ -705,13 +705,13 @@ void Robot::update(const LinkUpdater& updater)
   {
     RobotLink* link = link_it->second;
 
-    link->setToNormalMaterial();
-
     Ogre::Vector3 visual_position, collision_position;
     Ogre::Quaternion visual_orientation, collision_orientation;
     if (updater.getLinkTransforms(link->getName(), visual_position, visual_orientation,
                                   collision_position, collision_orientation))
     {
+      link->setToNormalMaterial();
+
       // Check if visual_orientation, visual_position, collision_orientation, and collision_position are
       // NaN.
       if (visual_orientation.isNaN())
