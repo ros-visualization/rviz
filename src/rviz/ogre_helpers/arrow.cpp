@@ -60,7 +60,7 @@ Arrow::Arrow(Ogre::SceneManager* scene_manager,
 
   set(shaft_length, shaft_diameter, head_length, head_diameter);
 
-  setOrientation(Ogre::Quaternion::IDENTITY);
+  Arrow::setOrientation(Ogre::Quaternion::IDENTITY);
 }
 
 Arrow::~Arrow()

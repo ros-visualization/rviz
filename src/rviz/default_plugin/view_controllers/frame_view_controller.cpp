@@ -48,7 +48,7 @@ static const QString ANY_AXIS("arbitrary");
 // helper function to create axis strings from option ID
 inline QString fmtAxis(int i)
 {
-  return QStringLiteral("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i - 1) / 2));
+  return QString("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i - 1) / 2));
 }
 
 FrameViewController::FrameViewController()

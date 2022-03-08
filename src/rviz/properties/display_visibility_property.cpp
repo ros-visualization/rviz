@@ -50,7 +50,7 @@ DisplayVisibilityProperty::DisplayVisibilityProperty(uint32_t vis_bit,
   , display_(display)
 {
   custom_name_ = (name.size() != 0);
-  update();
+  DisplayVisibilityProperty::update();
 }
 
 DisplayVisibilityProperty::~DisplayVisibilityProperty()

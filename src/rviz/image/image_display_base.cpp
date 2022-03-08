@@ -70,7 +70,7 @@ ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages
 
 ImageDisplayBase::~ImageDisplayBase()
 {
-  unsubscribe();
+  ImageDisplayBase::unsubscribe();
 }
 
 void ImageDisplayBase::onInitialize()

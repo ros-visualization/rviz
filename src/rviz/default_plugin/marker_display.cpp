@@ -89,7 +89,7 @@ MarkerDisplay::~MarkerDisplay()
 {
   if (initialized())
   {
-    unsubscribe();
+    MarkerDisplay::unsubscribe();
 
     clearMarkers();
 

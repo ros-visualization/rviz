@@ -110,7 +110,7 @@ CameraDisplay::~CameraDisplay()
   {
     render_panel_->getRenderWindow()->removeListener(this);
 
-    unsubscribe();
+    CameraDisplay::unsubscribe();
 
     delete render_panel_;
     delete bg_screen_rect_;

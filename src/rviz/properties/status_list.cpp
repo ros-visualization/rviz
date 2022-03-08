@@ -37,7 +37,7 @@ namespace rviz
 {
 StatusList::StatusList(const QString& name, Property* parent) : StatusProperty("", "", Ok, parent)
 {
-  setName(name);
+  StatusList::setName(name);
   setShouldBeSaved(false);
 }
 

@@ -272,7 +272,7 @@ MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(
 
 MapDisplay::~MapDisplay()
 {
-  unsubscribe();
+  MapDisplay::unsubscribe();
   clear();
   for (unsigned i = 0; i < swatches.size(); i++)
   {

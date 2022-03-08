@@ -466,6 +466,7 @@ void MovableText::_updateColors()
 {
   assert(mpFont);
   assert(!mpMaterial.isNull());
+  assert(mRenderOp.vertexData);
 
   // Convert to system-specific
   RGBA color;

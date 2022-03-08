@@ -733,7 +733,7 @@ void VisualizationFrame::loadDisplayConfig(const QString& qpath)
   if (!valid_load_path)
   {
     actual_load_path = (fs::path(package_path_) / "default.rviz");
-    if (!(valid_load_path = fs::is_regular_file(actual_load_path)))
+    if (!fs::is_regular_file(actual_load_path))
     {
       ROS_ERROR("Default display config '%s' not found.  RViz will be very empty at first.",
                 actual_load_path.c_str());

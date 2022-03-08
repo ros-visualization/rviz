@@ -271,7 +271,7 @@ void buildMesh(const aiScene* scene,
     if (input_mesh->HasTextureCoords(0))
     {
       vertex_decl->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, 0);
-      offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
+      // offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
     }
 
     // todo vertex colors
@@ -700,8 +700,7 @@ Ogre::SkeletonPtr loadSkeletonFromResource(const std::string& resource_path)
     Ogre::SkeletonSerializer ser;
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
     Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().create(
-        skeleton_path.filename().string().c_str(),
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+        skeleton_path.filename().string(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     ser.importSkeleton(stream, skeleton.get());
 
     return skeleton;

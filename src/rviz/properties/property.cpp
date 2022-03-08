@@ -70,7 +70,7 @@ Property::Property(const QString& name,
   , is_read_only_(false)
   , save_(true)
 {
-  setName(name);
+  Property::setName(name);
   if (parent)
   {
     parent->addChild(this);

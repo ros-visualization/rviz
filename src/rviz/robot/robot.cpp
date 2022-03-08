@@ -99,7 +99,7 @@ Robot::Robot(Ogre::SceneNode* root_node,
 
 Robot::~Robot()
 {
-  clear();
+  Robot::clear();
 
   scene_manager_->destroySceneNode(root_visual_node_);
   scene_manager_->destroySceneNode(root_collision_node_);
@@ -666,7 +666,6 @@ void Robot::calculateJointCheckboxes()
     links_with_geom_checked += checked ? 1 : 0;
     links_with_geom_unchecked += checked ? 0 : 1;
   }
-  int links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   // check all child links and joints recursively
   std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
@@ -685,7 +684,7 @@ void Robot::calculateJointCheckboxes()
       links_with_geom_unchecked += child_links_with_geom_unchecked;
     }
   }
-  links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
+  int links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   if (!links_with_geom)
   {

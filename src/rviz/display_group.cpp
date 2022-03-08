@@ -46,7 +46,7 @@ DisplayGroup::DisplayGroup()
 
 DisplayGroup::~DisplayGroup()
 {
-  removeAllDisplays();
+  DisplayGroup::removeAllDisplays();
 }
 
 Qt::ItemFlags DisplayGroup::getViewFlags(int column) const

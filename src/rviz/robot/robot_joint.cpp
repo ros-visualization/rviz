@@ -210,7 +210,8 @@ void RobotJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
   links_with_geom_unchecked = 0;
 
   RobotLink* link = robot_->getLink(child_link_name_);
-  if (link && link->hasGeometry())
+  assert(link);
+  if (link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
     links_with_geom_checked += checked ? 1 : 0;
@@ -230,11 +231,9 @@ void RobotJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
     }
   }
 
-  std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
-  std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
-  for (; child_joint_it != child_joint_end; ++child_joint_it)
+  for (const std::string& child_joint_name : link->getChildJointNames())
   {
-    RobotJoint* child_joint = robot_->getJoint(*child_joint_it);
+    RobotJoint* child_joint = robot_->getJoint(child_joint_name);
     if (child_joint)
     {
       int child_links_with_geom;
@@ -271,7 +270,8 @@ void RobotJoint::getChildLinkState(int& links_with_geom,
   links_with_geom_unchecked = 0;
 
   RobotLink* link = robot_->getLink(child_link_name_);
-  if (link && link->hasGeometry())
+  assert(link);
+  if (link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
     links_with_geom_checked += checked ? 1 : 0;
