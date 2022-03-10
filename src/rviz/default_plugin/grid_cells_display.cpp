@@ -264,6 +264,11 @@ void GridCellsDisplay::reset()
   clear();
 }
 
+void GridCellsDisplay::setTopic(const QString& topic, const QString& /*datatype*/)
+{
+  topic_property_->setString(topic);
+}
+
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>

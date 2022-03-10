@@ -72,6 +72,8 @@ public:
   void fixedFrameChanged() override;
   void reset() override;
 
+  void setTopic(const QString& topic, const QString& datatype) override;
+
 protected:
   // overrides from Display
   void onEnable() override;
