@@ -52,9 +52,9 @@ void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
   gl_TexCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
 
 #ifdef WITH_LIGHTING
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz * lightness[side], gl_in[0].gl_FrontColor.a );
+    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.rgb * lightness[side], gl_in[0].gl_FrontColor.a );
 #else
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz, gl_in[0].gl_FrontColor.a );
+    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.rgb, gl_in[0].gl_FrontColor.a );
 #endif
 
 #ifdef WITH_DEPTH
@@ -69,11 +69,9 @@ void main()
 {
   for( int side=0; side<3; side++ )
   {
-    int side2 = (side+1)%3;
-    int side3 = (side+2)%3;
     vec4 x=axes[ side ];
-    vec4 y=axes[ side2 ];
-    vec4 z=axes[ side3 ];
+    vec4 y=axes[ (side+1)%3 ];
+    vec4 z=axes[ (side+2)%3 ];
 
     // face for +z
     emitVertex( side, x, y, z, vec3(-1, -1, +1) );
