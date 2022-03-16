@@ -39,15 +39,10 @@ const vec4 axes[3] = vec4[] (
 const float lightness[6] = float[] (
     0.9, 0.5, 0.6, 0.6, 1.0, 0.4 );
 
-
-void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
+void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex, vec4 size_factor )
 {
-  // if auto_size == 1, then size_factor == size*gl_Vertex.z
-  // if auto_size == 0, then size_factor == size
-  vec4 size_factor = (1-auto_size.x+(auto_size.x*gl_in[0].gl_Position.z))*size;
-
   vec4 pos_rel = tex.x*x + tex.y*y + tex.z*z;
-  vec4 pos = gl_in[0].gl_Position + vec4( pos_rel * size_factor * 0.5 );
+  vec4 pos = gl_in[0].gl_Position + vec4( pos_rel * size_factor );
   gl_Position = worldviewproj_matrix * pos;
   gl_TexCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
 
@@ -67,6 +62,10 @@ void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
 
 void main()
 {
+  // if auto_size == 1, then size_factor == size*gl_Vertex.z
+  // if auto_size == 0, then size_factor == size
+  vec4 size_factor = (0.5*(1-auto_size.x+(auto_size.x*gl_in[0].gl_Position.z)))*size;
+
   for( int side=0; side<3; side++ )
   {
     vec4 x=axes[ side ];
@@ -74,17 +73,17 @@ void main()
     vec4 z=axes[ (side+2)%3 ];
 
     // face for +z
-    emitVertex( side, x, y, z, vec3(-1, -1, +1) );
-    emitVertex( side, x, y, z, vec3(+1, -1, +1) );
-    emitVertex( side, x, y, z, vec3(-1, +1, +1) );
-    emitVertex( side, x, y, z, vec3(+1, +1, +1) );
+    emitVertex( side, x, y, z, vec3(-1, -1, +1), size_factor );
+    emitVertex( side, x, y, z, vec3(+1, -1, +1), size_factor );
+    emitVertex( side, x, y, z, vec3(-1, +1, +1), size_factor );
+    emitVertex( side, x, y, z, vec3(+1, +1, +1), size_factor );
     EndPrimitive();
 
     // face for -z
-    emitVertex( side+3, x, y, z, vec3(-1, -1, -1) );
-    emitVertex( side+3, x, y, z, vec3(-1, +1, -1) );
-    emitVertex( side+3, x, y, z, vec3(+1, -1, -1) );
-    emitVertex( side+3, x, y, z, vec3(+1, +1, -1) );
+    emitVertex( side+3, x, y, z, vec3(-1, -1, -1), size_factor );
+    emitVertex( side+3, x, y, z, vec3(-1, +1, -1), size_factor );
+    emitVertex( side+3, x, y, z, vec3(+1, -1, -1), size_factor );
+    emitVertex( side+3, x, y, z, vec3(+1, +1, -1), size_factor );
     EndPrimitive();
   }
 }
