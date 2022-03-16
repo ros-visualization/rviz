@@ -1,6 +1,6 @@
 material rviz/PointCloudBox
 {
-  /* This material should only be used with glsl < 1.50 */
+  /* This material should only be used with glsl >= 1.50 */
 
   // the 'gp' techniques need one input vertex per box
   // and use geometry shaders to create the geometry
@@ -11,7 +11,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/box.geom(with_lighting) {}
-      fragment_program_ref rviz/glsl120/smooth_square.frag {}
+      fragment_program_ref rviz/glsl150/smooth_square.frag {}
     }
   }
 
