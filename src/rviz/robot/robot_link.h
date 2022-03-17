@@ -214,12 +214,12 @@ protected:
   FloatProperty* alpha_property_;
 
 private:
-  typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
+  // maintain the original material of each SubEntity to restore it after unsetColor()
+  using M_SubEntityToMaterial =
+      std::map<Ogre::SubEntity*, std::pair<Ogre::MaterialPtr, Ogre::MaterialPtr>>;
   M_SubEntityToMaterial materials_;
-  M_SubEntityToMaterial original_materials_;
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
-  bool use_original_material;
 
   std::vector<Ogre::Entity*>
       visual_meshes_; ///< The entities representing the visual mesh of this link (if they exist)
