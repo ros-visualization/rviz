@@ -11,7 +11,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/box.geom(with_lighting) {}
-      fragment_program_ref rviz/glsl120/smooth_square.frag {}
+      fragment_program_ref rviz/glsl150/smooth_square.frag {}
     }
   }
 
@@ -22,7 +22,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/box.geom(with_depth) {}
-      fragment_program_ref rviz/glsl120/depth.frag {}
+      fragment_program_ref rviz/glsl150/depth.frag {}
     }
   }
 

@@ -1,4 +1,4 @@
-#version 150
+#version 330 core
 
 // Generates an axis-aligned box with a given size
 // for each input vertex.
@@ -19,13 +19,13 @@ uniform mat4 worldviewproj_matrix;
 uniform vec4 size;
 uniform vec4 auto_size;
 
-in gl_PerVertex {
-	vec4 gl_Position;
-	vec4 gl_FrontColor;
-} gl_in[];
+in PerVertex {
+	vec4 frontColor;
+} gs_in[];
 
 
-out vec4 gl_TexCoord[];
+out vec4 texCoord[];
+out vec4 frontColor;
 
 layout(points) in;
 layout(triangle_strip, max_vertices=24) out;
@@ -49,12 +49,12 @@ void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
   vec4 pos_rel = tex.x*x + tex.y*y + tex.z*z;
   vec4 pos = gl_in[0].gl_Position + vec4( pos_rel * size_factor * 0.5 );
   gl_Position = worldviewproj_matrix * pos;
-  gl_TexCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
+  texCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
 
 #ifdef WITH_LIGHTING
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz * lightness[side], gl_in[0].gl_FrontColor.a );
+  frontColor = vec4( gs_in[0].frontColor.xyz * lightness[side], gs_in[0].frontColor.a );
 #else
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz, gl_in[0].gl_FrontColor.a );
+  gl_FrontColor = vec4( gs_in[0].frontColor.xyz, gs_in[0].frontColor.a );
 #endif
 
 #ifdef WITH_DEPTH

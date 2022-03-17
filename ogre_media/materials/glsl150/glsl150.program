@@ -1,3 +1,6 @@
+
+fragment_program rviz/glsl150/depth.frag glsl { source depth.frag }
+
 //all shaders, sorted by name
 
 geometry_program rviz/glsl150/billboard.geom glsl
@@ -77,4 +80,15 @@ geometry_program rviz/glsl150/box.geom(with_lighting) glsl
 vertex_program rviz/glsl150/pass_pos_color.vert glsl
 {
   source pass_pos_color.vert
+}
+
+
+fragment_program rviz/glsl150/smooth_square.frag glsl
+{
+  source smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
 }
