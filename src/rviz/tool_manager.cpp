@@ -149,7 +149,7 @@ void ToolManager::handleChar(QKeyEvent* event, RenderPanel* panel)
     else
     {
       // if no, check if the current tool accesses all key events
-      if (current_tool_->accessAllKeys())
+      if (current_tool_ && current_tool_->accessAllKeys())
       {
         // if yes, pass the key
         current_tool_->processKeyEvent(event, panel);
@@ -161,7 +161,7 @@ void ToolManager::handleChar(QKeyEvent* event, RenderPanel* panel)
       }
     }
   }
-  else
+  else if (current_tool_)
   {
     // if the incoming key triggers no other tool,
     // just hand down the key event
