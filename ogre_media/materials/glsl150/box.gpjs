@@ -1,0 +1,219 @@
+[
+    {
+        "executeOn": "ResetEvaluation",
+        "fileName": "../../../../../../../../tmp/.mount_GPUpadasGMNv/usr/share/gpupad/samples/Cube/math.js",
+        "id": 103,
+        "type": "Script"
+    },
+    {
+        "fileName": "cube_position_normal_texcoords.bin",
+        "id": 7253,
+        "items": [
+            {
+                "id": 7254,
+                "items": [
+                    {
+                        "count": 3,
+                        "dataType": "Float",
+                        "id": 7255,
+                        "name": "position",
+                        "padding": 0,
+                        "type": "Field"
+                    },
+                    {
+                        "count": 3,
+                        "dataType": "Float",
+                        "id": 7256,
+                        "name": "normal",
+                        "padding": 0,
+                        "type": "Field"
+                    },
+                    {
+                        "count": 2,
+                        "dataType": "Float",
+                        "id": 7257,
+                        "name": "texcoords",
+                        "padding": 0,
+                        "type": "Field"
+                    }
+                ],
+                "name": "Vertex",
+                "offset": "0",
+                "rowCount": "36",
+                "type": "Block"
+            }
+        ],
+        "type": "Buffer"
+    },
+    {
+        "id": 7247,
+        "items": [
+            {
+                "divisor": 0,
+                "fieldId": 7255,
+                "id": 7248,
+                "name": "vertex",
+                "normalize": false,
+                "type": "Attribute"
+            }
+        ],
+        "name": "Stream",
+        "type": "Stream"
+    },
+    {
+        "bindingType": "Uniform",
+        "editor": "Expression4",
+        "id": 7250,
+        "name": "size",
+        "type": "Binding",
+        "values": [
+            "4",
+            "4",
+            "4",
+            "4"
+        ]
+    },
+    {
+        "bindingType": "Uniform",
+        "editor": "Expression4x4",
+        "id": 78,
+        "name": "uView",
+        "type": "Binding",
+        "values": [
+            "1",
+            "0",
+            "0",
+            "0",
+            "0",
+            "1",
+            "0",
+            "0",
+            "0",
+            "0",
+            "1",
+            "0",
+            "0.40",
+            "-0.75",
+            "-4.00",
+            "1"
+        ]
+    },
+    {
+        "bindingType": "Uniform",
+        "editor": "Expression",
+        "id": 7259,
+        "name": "uProjection",
+        "type": "Binding",
+        "values": [
+            "perspective(45, 1, 1, 100)"
+        ]
+    },
+    {
+        "bindingType": "Uniform",
+        "editor": "Expression",
+        "id": 7249,
+        "name": "worldviewproj_matrix",
+        "type": "Binding",
+        "values": [
+            "uProjection*uView"
+        ]
+    },
+    {
+        "bindingType": "Uniform",
+        "editor": "Expression4",
+        "id": 7251,
+        "name": "auto_size",
+        "type": "Binding",
+        "values": [
+            "4",
+            "4",
+            "4",
+            "4"
+        ]
+    },
+    {
+        "id": 7241,
+        "items": [
+            {
+                "fileName": "pass_pos_color.vert",
+                "id": 7242,
+                "language": "GLSL",
+                "shaderType": "Vertex",
+                "type": "Shader"
+            },
+            {
+                "fileName": "box.geom",
+                "id": 7243,
+                "language": "GLSL",
+                "shaderType": "Geometry",
+                "type": "Shader"
+            }
+        ],
+        "name": "Program",
+        "type": "Program"
+    },
+    {
+        "flipVertically": false,
+        "format": "RGBA8_UNorm",
+        "height": "600",
+        "id": 7252,
+        "name": "Texture",
+        "target": "Target2D",
+        "type": "Texture",
+        "width": "800"
+    },
+    {
+        "blendConstant": "#ffffffff",
+        "cullMode": "NoCulling",
+        "frontFace": "CCW",
+        "id": 7245,
+        "items": [
+            {
+                "blendAlphaDest": "Zero",
+                "blendAlphaEq": "Add",
+                "blendAlphaSource": "One",
+                "blendColorDest": "Zero",
+                "blendColorEq": "Add",
+                "blendColorSource": "One",
+                "colorWriteMask": 15,
+                "id": 7246,
+                "level": 0,
+                "name": "Attachment",
+                "textureId": 7252,
+                "type": "Attachment"
+            }
+        ],
+        "logicOperation": "NoLogicOperation",
+        "name": "Target",
+        "polygonMode": "Fill",
+        "type": "Target"
+    },
+    {
+        "callType": "ClearTexture",
+        "checked": true,
+        "clearColor": "#ff000000",
+        "clearDepth": 1,
+        "clearStencil": 0,
+        "executeOn": "EveryEvaluation",
+        "id": 7258,
+        "name": "Clear Texture",
+        "textureId": 7252,
+        "type": "Call"
+    },
+    {
+        "baseInstance": "0",
+        "callType": "Draw",
+        "checked": true,
+        "count": "3",
+        "executeOn": "EveryEvaluation",
+        "first": "0",
+        "id": 7244,
+        "instanceCount": "1",
+        "name": "Draw",
+        "primitiveType": "Points",
+        "programId": 7241,
+        "targetId": 7245,
+        "type": "Call",
+        "vertexStreamId": 7247
+    }
+]
