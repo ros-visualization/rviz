@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgrePlane.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreViewport.h>
+#include <OgreRay.h>
+#include <OgrePlane.h>
+#include <OgreCamera.h>
+#include <OgreSceneNode.h>
+#include <OgreViewport.h>
 
 #include "geometry.h"
 

@@ -32,7 +32,7 @@
 
 #include "rviz/display.h"
 
-#include <OGRE/OgreVector3.h>
+#include <OgreVector3.h>
 
 #include <map>
 

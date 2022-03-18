@@ -39,16 +39,16 @@
 
 #include <boost/bind.hpp>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreLight.h>
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreSharedPtr.h>
-#include <OGRE/OgreCamera.h>
+#include <OgreRoot.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreLight.h>
+#include <OgreViewport.h>
+#include <OgreMaterialManager.h>
+#include <OgreMaterial.h>
+#include <OgreRenderWindow.h>
+#include <OgreSharedPtr.h>
+#include <OgreCamera.h>
 
 #include <boost/filesystem.hpp>
 

@@ -36,11 +36,11 @@
 #include <QObject>
 
 #ifndef Q_MOC_RUN
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreAny.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreSharedPtr.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreAny.h>
+#include <OgreMaterial.h>
+#include <OgreSharedPtr.h>
 #endif
 
 #include <urdf/model.h> // can be replaced later by urdf_model/types.h

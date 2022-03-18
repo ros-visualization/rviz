@@ -29,8 +29,8 @@
 #ifndef MSG_CONVERSIONS_H
 #define MSG_CONVERSIONS_H
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Vector3.h>

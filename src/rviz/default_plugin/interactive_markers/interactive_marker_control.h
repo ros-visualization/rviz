@@ -35,10 +35,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreRay.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreSceneManager.h>
 #endif
 
 #include <QCursor>

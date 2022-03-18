@@ -30,8 +30,8 @@
 #ifndef RVIZ_FPS_VIEW_CONTROLLER_H
 #define RVIZ_FPS_VIEW_CONTROLLER_H
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
 
 #include "rviz/frame_position_tracking_view_controller.h"
 
