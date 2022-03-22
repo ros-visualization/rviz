@@ -31,13 +31,13 @@
 
 #include <QMenu>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreResourceGroupManager.h>
-#include <OGRE/OgreSubEntity.h>
-#include <OGRE/OgreMath.h>
-#include <OGRE/OgreRenderWindow.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreResourceGroupManager.h>
+#include <OgreSubEntity.h>
+#include <OgreMath.h>
+#include <OgreRenderWindow.h>
 
 #include <ros/ros.h>
 #include <interactive_markers/tools.h>

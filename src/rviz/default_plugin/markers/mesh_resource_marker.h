@@ -32,7 +32,7 @@
 
 #include "marker_base.h"
 
-#include <OGRE/OgreMaterial.h>
+#include <OgreMaterial.h>
 
 #include <vector>
 

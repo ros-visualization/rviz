@@ -1,5 +1,5 @@
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
 #include <rviz/visualization_manager.h>
 #include <rviz/frame_manager.h>

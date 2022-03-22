@@ -35,9 +35,9 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/vector_property.h>
 
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreViewport.h>
+#include <OgreCamera.h>
+#include <OgreSceneNode.h>
 #include <Eigen/Geometry>
 #include <QSignalBlocker>
 

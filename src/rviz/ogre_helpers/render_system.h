@@ -29,7 +29,7 @@
 #ifndef RENDER_SYSTEM_H
 #define RENDER_SYSTEM_H
 
-#include <OGRE/OgreRoot.h>
+#include <OgreRoot.h>
 #include <stdint.h>
 
 #include "rviz/rviz_export.h"

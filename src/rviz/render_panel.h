@@ -33,7 +33,7 @@
 #include "ogre_helpers/qt_ogre_render_window.h"
 
 #ifndef Q_MOC_RUN
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneManager.h>
 
 #include <boost/thread/mutex.hpp>
 #endif

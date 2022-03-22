@@ -29,16 +29,16 @@
 
 #include <QKeyEvent>
 
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreMovableObject.h>
-#include <OGRE/OgreRectangle2D.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTextureManager.h>
+#include <OgreRay.h>
+#include <OgreSceneManager.h>
+#include <OgreCamera.h>
+#include <OgreMovableObject.h>
+#include <OgreRectangle2D.h>
+#include <OgreSceneNode.h>
+#include <OgreViewport.h>
+#include <OgreMaterialManager.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
 
 #include <ros/time.h>
 

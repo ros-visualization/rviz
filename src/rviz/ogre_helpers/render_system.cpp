@@ -50,10 +50,10 @@
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
 #include <ros/console.h>
 
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreRenderWindow.h>
+#include <OgreSceneManager.h>
 #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2)
-#include <OGRE/Overlay/OgreOverlaySystem.h>
+#include <Overlay/OgreOverlaySystem.h>
 #endif
 
 #include "rviz/env_config.h"
