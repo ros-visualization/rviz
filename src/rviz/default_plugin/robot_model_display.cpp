@@ -227,7 +227,7 @@ void RobotModelDisplay::update(float wall_dt, float /*ros_dt*/)
   float rate = update_rate_property_->getFloat();
   bool update = rate < 0.0001f || time_since_last_transform_ >= rate;
 
-  if (has_new_transforms_ || update)
+  if (robot_->getRootLink() && (has_new_transforms_ || update))
   {
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
