@@ -133,6 +133,7 @@ find_package(catkin REQUIRED
   std_srvs
   tf2_ros
   tf2_geometry_msgs
+  tf2_eigen
   urdf
   visualization_msgs
 )

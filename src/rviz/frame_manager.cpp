@@ -47,7 +47,7 @@ FrameManager::FrameManager(std::shared_ptr<tf2_ros::Buffer> tf_buffer,
       tf_buffer ? std::move(tf_buffer) : std::make_shared<tf2_ros::Buffer>(ros::Duration(10 * 60));
   tf_listener_ = tf_listener ?
                      std::move(tf_listener) :
-                     std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, ros::NodeHandle(), true);
+                     std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, ros::NodeHandle(), false);
 
   setSyncMode(SyncOff);
   setPause(false);

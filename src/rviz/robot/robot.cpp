@@ -66,6 +66,8 @@ Robot::Robot(Ogre::SceneNode* root_node,
   , robot_loaded_(false)
   , inChangedEnableAllLinks(false)
   , name_(name)
+  , root_link_(nullptr)
+  , alpha_(1.f)
 {
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
@@ -218,11 +220,14 @@ void Robot::clear()
 
 RobotLink* Robot::LinkFactory::createLink(Robot* robot,
                                           const urdf::LinkConstSharedPtr& link,
+                                          Ogre::SceneNode* parent_visual_node,
+                                          Ogre::SceneNode* parent_collision_node,
                                           const std::string& parent_joint_name,
                                           bool visual,
                                           bool collision)
 {
-  return new RobotLink(robot, link, parent_joint_name, visual, collision);
+  return new RobotLink(robot, link, parent_visual_node, parent_collision_node, parent_joint_name, visual,
+                       collision);
 }
 
 RobotJoint* Robot::LinkFactory::createJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
@@ -244,12 +249,16 @@ void Robot::load(const urdf::ModelInterface& urdf, bool visual, bool collision)
   // Create properties for each link.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
   {
-    typedef std::map<std::string, urdf::LinkSharedPtr> M_NameToUrdfLink;
-    M_NameToUrdfLink::const_iterator link_it = urdf.links_.begin();
-    M_NameToUrdfLink::const_iterator link_end = urdf.links_.end();
-    for (; link_it != link_end; ++link_it)
+    // traverse URDF tree in depth first order and copy tree structure for links' scene nodes
+    std::vector<std::tuple<urdf::LinkConstSharedPtr, Ogre::SceneNode*, Ogre::SceneNode*>> link_stack_;
+    link_stack_.emplace_back(urdf.getRoot(), root_visual_node_, root_collision_node_);
+    while (!link_stack_.empty())
     {
-      const urdf::LinkConstSharedPtr& urdf_link = link_it->second;
+      urdf::LinkConstSharedPtr urdf_link = std::get<0>(link_stack_.back());
+      Ogre::SceneNode* parent_visual_node = std::get<1>(link_stack_.back());
+      Ogre::SceneNode* parent_collision_node = std::get<2>(link_stack_.back());
+      link_stack_.pop_back();
+
       std::string parent_joint_name;
 
       if (urdf_link != urdf.getRoot() && urdf_link->parent_joint)
@@ -257,7 +266,9 @@ void Robot::load(const urdf::ModelInterface& urdf, bool visual, bool collision)
         parent_joint_name = urdf_link->parent_joint->name;
       }
 
-      RobotLink* link = link_factory_->createLink(this, urdf_link, parent_joint_name, visual, collision);
+      RobotLink* link =
+          link_factory_->createLink(this, urdf_link, parent_visual_node, parent_collision_node,
+                                    parent_joint_name, visual, collision);
 
       if (urdf_link == urdf.getRoot())
       {
@@ -267,6 +278,9 @@ void Robot::load(const urdf::ModelInterface& urdf, bool visual, bool collision)
       links_[urdf_link->name] = link;
 
       link->setRobotAlpha(alpha_);
+
+      for (const auto& c : urdf_link->child_links)
+        link_stack_.emplace_back(c, link->getVisualTreeNode(), link->getCollisionTreeNode());
     }
   }
 
@@ -709,8 +723,8 @@ void Robot::update(const LinkUpdater& updater)
 
     Ogre::Vector3 visual_position, collision_position;
     Ogre::Quaternion visual_orientation, collision_orientation;
-    if (updater.getLinkTransforms(link->getName(), visual_position, visual_orientation,
-                                  collision_position, collision_orientation))
+    if (updater.getLinkTransforms(link->getParentLinkName(), link->getName(), visual_position,
+                                  visual_orientation, collision_position, collision_orientation))
     {
       // Check if visual_orientation, visual_position, collision_orientation, and collision_position are
       // NaN.

@@ -52,7 +52,8 @@ public:
   TFLinkUpdater(FrameManager* frame_manager,
                 const StatusCallback& status_cb = StatusCallback(),
                 const std::string& tf_prefix = std::string());
-  bool getLinkTransforms(const std::string& link_name,
+  bool getLinkTransforms(const std::string& parent_link_name,
+                         const std::string& link_name,
                          Ogre::Vector3& visual_position,
                          Ogre::Quaternion& visual_orientation,
                          Ogre::Vector3& collision_position,

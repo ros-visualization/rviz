@@ -151,6 +151,8 @@ static std::map<const RobotLink*, std::string> errors;
 
 RobotLink::RobotLink(Robot* robot,
                      const urdf::LinkConstSharedPtr& link,
+                     Ogre::SceneNode* parent_visual_node,
+                     Ogre::SceneNode* parent_collision_node,
                      const std::string& parent_joint_name,
                      bool visual,
                      bool collision)
@@ -158,12 +160,14 @@ RobotLink::RobotLink(Robot* robot,
   , scene_manager_(robot->getDisplayContext()->getSceneManager())
   , context_(robot->getDisplayContext())
   , name_(link->name)
+  , parent_link_name_(link->getParent() ? link->getParent()->name : "")
   , parent_joint_name_(parent_joint_name)
   , visual_node_(nullptr)
   , collision_node_(nullptr)
   , trail_(nullptr)
   , axes_(nullptr)
   , material_alpha_(1.0)
+  , use_original_material(true)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
@@ -198,8 +202,12 @@ RobotLink::RobotLink(Robot* robot,
 
   link_property_->collapse();
 
-  visual_node_ = robot_->getVisualNode()->createChildSceneNode();
-  collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
+  // create scene nodes in a tree structure analog to URDF tree
+  // we use visual_node_ and collision_node_ as leafs in order not to hide child links when set to invisible
+  visual_tree_node_ = parent_visual_node->createChildSceneNode();
+  visual_node_ = visual_tree_node_->createChildSceneNode();
+  collision_tree_node_ = parent_collision_node->createChildSceneNode();
+  collision_node_ = collision_tree_node_->createChildSceneNode();
 
   // create material for coloring links
   color_material_ = Ogre::MaterialPtr(new Ogre::Material(
@@ -306,6 +314,8 @@ RobotLink::~RobotLink()
 
   scene_manager_->destroySceneNode(visual_node_);
   scene_manager_->destroySceneNode(collision_node_);
+  scene_manager_->destroySceneNode(visual_tree_node_);
+  scene_manager_->destroySceneNode(collision_tree_node_);
 
   if (trail_)
   {
@@ -404,11 +414,13 @@ void RobotLink::updateAlpha()
       {
         material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
         material->setDepthWriteEnabled(false);
+        use_original_material = false;
       }
       else
       {
         material->setSceneBlending(Ogre::SBT_REPLACE);
         material->setDepthWriteEnabled(true);
+        use_original_material = true;
       }
     }
   }
@@ -668,6 +680,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
         sub->setMaterial(mat);
       }
       materials_[sub] = sub->getMaterial();
+      original_materials_[sub] = sub->getMaterial()->clone(sub->getMaterial()->getName() + "_original");
     }
   }
 }
@@ -872,16 +885,16 @@ void RobotLink::setTransforms(const Ogre::Vector3& visual_position,
                               const Ogre::Vector3& collision_position,
                               const Ogre::Quaternion& collision_orientation)
 {
-  if (visual_node_)
+  if (visual_tree_node_)
   {
-    visual_node_->setPosition(visual_position);
-    visual_node_->setOrientation(visual_orientation);
+    visual_tree_node_->setPosition(visual_position);
+    visual_tree_node_->setOrientation(visual_orientation);
   }
 
-  if (collision_node_)
+  if (collision_tree_node_)
   {
-    collision_node_->setPosition(collision_position);
-    collision_node_->setOrientation(collision_orientation);
+    collision_tree_node_->setPosition(collision_position);
+    collision_tree_node_->setOrientation(collision_orientation);
   }
 
   position_property_->setVector(visual_position);
@@ -925,9 +938,10 @@ void RobotLink::setToNormalMaterial()
   {
     M_SubEntityToMaterial::iterator it = materials_.begin();
     M_SubEntityToMaterial::iterator end = materials_.end();
-    for (; it != end; ++it)
+    M_SubEntityToMaterial::iterator it_original = original_materials_.begin();
+    for (; it != end; ++it, ++it_original)
     {
-      it->first->setMaterial(it->second);
+      it->first->setMaterial(use_original_material ? it_original->second : it->second);
     }
   }
 }

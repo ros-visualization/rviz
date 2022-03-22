@@ -82,6 +82,8 @@ class RobotLink : public QObject
 public:
   RobotLink(Robot* robot,
             const urdf::LinkConstSharedPtr& link,
+            Ogre::SceneNode* parent_visual_node,
+            Ogre::SceneNode* parent_collision_node,
             const std::string& parent_joint_name,
             bool visual,
             bool collision);
@@ -98,6 +100,10 @@ public:
   const std::string& getName() const
   {
     return name_;
+  }
+  const std::string& getParentLinkName() const
+  {
+    return parent_link_name_;
   }
   const std::string& getParentJointName() const
   {
@@ -118,6 +124,14 @@ public:
   Ogre::SceneNode* getCollisionNode() const
   {
     return collision_node_;
+  }
+  Ogre::SceneNode* getVisualTreeNode() const
+  {
+    return visual_tree_node_;
+  }
+  Ogre::SceneNode* getCollisionTreeNode() const
+  {
+    return collision_tree_node_;
   }
   Robot* getRobot() const
   {
@@ -200,6 +214,7 @@ protected:
   DisplayContext* context_;
 
   std::string name_; ///< Name of this link
+  std::string parent_link_name_;
   std::string parent_joint_name_;
   std::vector<std::string> child_joint_names_;
 
@@ -216,8 +231,10 @@ protected:
 private:
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
+  M_SubEntityToMaterial original_materials_;
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
+  bool use_original_material;
 
   std::vector<Ogre::Entity*>
       visual_meshes_; ///< The entities representing the visual mesh of this link (if they exist)
@@ -226,6 +243,8 @@ private:
 
   Ogre::SceneNode* visual_node_;    ///< The scene node the visual meshes are attached to
   Ogre::SceneNode* collision_node_; ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_tree_node_;    ///< The scene node above visual_node is attached to
+  Ogre::SceneNode* collision_tree_node_; ///< The scene node above collision_node is attached to
 
   Ogre::RibbonTrail* trail_;
 

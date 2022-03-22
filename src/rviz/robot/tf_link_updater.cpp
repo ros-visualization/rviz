@@ -43,23 +43,46 @@ TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager,
 {
 }
 
-bool TFLinkUpdater::getLinkTransforms(const std::string& _link_name,
+bool TFLinkUpdater::getLinkTransforms(const std::string& _parent_link_name,
+                                      const std::string& _link_name,
                                       Ogre::Vector3& visual_position,
                                       Ogre::Quaternion& visual_orientation,
                                       Ogre::Vector3& collision_position,
                                       Ogre::Quaternion& collision_orientation) const
 {
+  if (_parent_link_name.empty())
+  {
+    visual_position = Ogre::Vector3::ZERO;
+    visual_orientation = Ogre::Quaternion::IDENTITY;
+    collision_position = Ogre::Vector3::ZERO;
+    collision_orientation = Ogre::Quaternion::IDENTITY;
+    return true;
+  }
+  std::string parent_link_name = concat(tf_prefix_, _parent_link_name);
   std::string link_name = concat(tf_prefix_, _link_name);
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!frame_manager_->getTransform(link_name, ros::Time(), position, orientation))
+
+  geometry_msgs::TransformStamped tf;
+  try
+  {
+    tf = frame_manager_->getTF2BufferPtr()->lookupTransform(parent_link_name, link_name, ros::Time());
+  }
+  catch (std::runtime_error& e)
   {
     std::stringstream ss;
     ss << "No transform from [" << link_name << "] to [" << frame_manager_->getFixedFrame() << "]";
     setLinkStatus(StatusProperty::Error, link_name, ss.str());
+    ROS_DEBUG("Error transforming from frame '%s' to frame '%s': %s", link_name.c_str(),
+              parent_link_name.c_str(), e.what());
     return false;
   }
+
+  position =
+      Ogre::Vector3(tf.transform.translation.x, tf.transform.translation.y, tf.transform.translation.z);
+  orientation = Ogre::Quaternion(tf.transform.rotation.w, tf.transform.rotation.x,
+                                 tf.transform.rotation.y, tf.transform.rotation.z);
 
   setLinkStatus(StatusProperty::Ok, link_name, "Transform OK");
 
