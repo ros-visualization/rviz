@@ -66,6 +66,8 @@ Robot::Robot(Ogre::SceneNode* root_node,
   , robot_loaded_(false)
   , inChangedEnableAllLinks(false)
   , name_(name)
+  , root_link_(nullptr)
+  , alpha_(1.f)
 {
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
