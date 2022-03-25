@@ -84,6 +84,14 @@ typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPt
 class RobotLink : public QObject
 {
   Q_OBJECT
+
+  enum MaterialMode
+  {
+    ORIGINAL = 0,
+    COLOR = 1,
+    ERROR = 2,
+  };
+
 public:
   RobotLink(Robot* robot,
             const urdf::LinkConstSharedPtr& link,
@@ -182,6 +190,7 @@ private Q_SLOTS:
   void updateAxes();
 
 private:
+  void setMaterialMode(unsigned char mode_flags);
   void setRenderQueueGroup(Ogre::uint8 group);
   bool getEnabled() const;
   void createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link,
@@ -249,7 +258,7 @@ private:
   RobotLinkSelectionHandlerPtr selection_handler_;
 
   Ogre::MaterialPtr color_material_;
-  bool using_color_;
+  unsigned char material_mode_flags_;
 
   friend class RobotLinkSelectionHandler;
 };
