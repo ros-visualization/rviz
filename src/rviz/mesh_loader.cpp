@@ -28,28 +28,28 @@
  */
 
 #include "mesh_loader.h"
-#include <OGRE/OgrePrerequisites.h>
+#include <OgrePrerequisites.h>
 #include <resource_retriever/retriever.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <OGRE/OgreSkeleton.h>
-#include <OGRE/OgreSkeletonManager.h>
-#include <OGRE/OgreSkeletonSerializer.h>
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgrePass.h>
-#include <OGRE/OgreTechnique.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreTextureUnitState.h>
-#include <OGRE/OgreMeshSerializer.h>
-#include <OGRE/OgreSubMesh.h>
-#include <OGRE/OgreHardwareBufferManager.h>
-#include <OGRE/OgreSharedPtr.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreSkeleton.h>
+#include <OgreSkeletonManager.h>
+#include <OgreSkeletonSerializer.h>
+#include <OgreMeshManager.h>
+#include <OgreTextureManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreTexture.h>
+#include <OgrePass.h>
+#include <OgreTechnique.h>
+#include <OgreMaterial.h>
+#include <OgreTextureUnitState.h>
+#include <OgreMeshSerializer.h>
+#include <OgreSubMesh.h>
+#include <OgreHardwareBufferManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include <tinyxml2.h>
 

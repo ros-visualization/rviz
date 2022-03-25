@@ -28,10 +28,10 @@
  */
 
 #include <boost/bind/bind.hpp>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreBillboardSet.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreManualObject.h>
+#include <OgreBillboardSet.h>
 
 #include <rviz/frame_manager.h>
 #include <rviz/ogre_helpers/arrow.h>

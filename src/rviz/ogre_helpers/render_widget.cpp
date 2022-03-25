@@ -31,7 +31,7 @@
 #include <rviz/ogre_helpers/render_system.h>
 #include <rviz/ogre_helpers/version_check.h>
 
-#include <OGRE/OgreRenderWindow.h>
+#include <OgreRenderWindow.h>
 
 #include <QtGlobal>
 #include <QApplication>

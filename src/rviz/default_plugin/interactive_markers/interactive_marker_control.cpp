@@ -27,16 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgrePass.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreSubEntity.h>
-#include <OGRE/OgreSharedPtr.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreViewport.h>
+#include <OgreCamera.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgrePass.h>
+#include <OgreMaterial.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include <rviz/display_context.h>
 #include <rviz/selection/selection_manager.h>

@@ -35,13 +35,13 @@
 #include "ros/ros.h"
 #include <ros/package.h>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreRectangle2D.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureUnitState.h>
+#include <OgreRoot.h>
+#include <OgreSceneManager.h>
+#include <OgreViewport.h>
+#include <OgreRectangle2D.h>
+#include <OgreMaterial.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureUnitState.h>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>

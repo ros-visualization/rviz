@@ -30,13 +30,13 @@
 #include "grid.h"
 #include "billboard_line.h"
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreTechnique.h>
 
 #include <sstream>
 

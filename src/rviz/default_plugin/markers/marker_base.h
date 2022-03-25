@@ -39,7 +39,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <OGRE/OgrePrerequisites.h>
+#include <OgrePrerequisites.h>
 
 namespace rviz
 {

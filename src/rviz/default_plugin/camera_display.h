@@ -35,9 +35,9 @@
 #include <QObject>
 
 #ifndef Q_MOC_RUN
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreRenderTargetListener.h>
-#include <OGRE/OgreSharedPtr.h>
+#include <OgreMaterial.h>
+#include <OgreRenderTargetListener.h>
+#include <OgreSharedPtr.h>
 
 #include <sensor_msgs/CameraInfo.h>
 

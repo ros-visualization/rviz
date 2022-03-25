@@ -2,7 +2,7 @@
 #define SCREW_VISUAL_H
 
 #include <geometry_msgs/Vector3.h>
-#include <OGRE/OgrePrerequisites.h>
+#include <OgrePrerequisites.h>
 
 namespace rviz
 {

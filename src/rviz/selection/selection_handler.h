@@ -37,7 +37,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <OGRE/OgreMovableObject.h>
+#include <OgreMovableObject.h>
 #endif
 
 #include <rviz/selection/forwards.h>

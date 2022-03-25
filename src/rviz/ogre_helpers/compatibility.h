@@ -32,13 +32,13 @@
 #define OGRE_HELPERS_COMPATIBILITY_H
 
 #include <rviz/ogre_helpers/version_check.h>
-#include <OGRE/OgreSimpleRenderable.h>
+#include <OgreSimpleRenderable.h>
 
 #if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneManager.h>
 #else
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreMaterialManager.h>
+#include <OgreSceneNode.h>
 #endif
 
 #include <string>

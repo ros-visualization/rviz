@@ -32,7 +32,7 @@
 #ifndef OGRE_TOOLS_ARROW_H
 #define OGRE_TOOLS_ARROW_H
 
-#include <OGRE/OgrePrerequisites.h>
+#include <OgrePrerequisites.h>
 
 namespace Ogre
 {

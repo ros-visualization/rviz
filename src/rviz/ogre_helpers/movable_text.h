@@ -43,10 +43,9 @@
 #define OGRE_TOOLS_MOVABLE_TEXT_H
 
 #include <rviz/ogre_helpers/version_check.h>
-#include <OGRE/OgrePrerequisites.h>
-#include <OGRE/OgreMovableObject.h>
-#include <OGRE/OgreRenderable.h>
-#include <rviz/ogre_helpers/version_check.h>
+#include <OgrePrerequisites.h>
+#include <OgreMovableObject.h>
+#include <OgreRenderable.h>
 
 namespace Ogre
 {

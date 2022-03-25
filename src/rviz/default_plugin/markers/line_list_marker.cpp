@@ -34,9 +34,9 @@
 
 #include <rviz/ogre_helpers/billboard_line.h>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreSceneNode.h>
 
 namespace rviz
 {

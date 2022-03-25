@@ -60,8 +60,8 @@
 #include <ros/package.h>
 #include <ros/init.h>
 
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreMeshManager.h>
+#include <OgreRenderWindow.h>
+#include <OgreMeshManager.h>
 
 #include <rviz/ogre_helpers/initialization.h>
 
