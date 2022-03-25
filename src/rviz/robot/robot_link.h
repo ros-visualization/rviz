@@ -214,7 +214,9 @@ protected:
   FloatProperty* alpha_property_;
 
 private:
-  typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
+  // maintain the original material of each SubEntity to restore it after unsetColor()
+  using M_SubEntityToMaterial =
+      std::map<Ogre::SubEntity*, std::pair<Ogre::MaterialPtr, Ogre::MaterialPtr>>;
   M_SubEntityToMaterial materials_;
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
