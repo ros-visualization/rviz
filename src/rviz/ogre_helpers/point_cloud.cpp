@@ -219,32 +219,27 @@ void PointCloud::setHighlightColor(float r, float g, float b)
 void PointCloud::setRenderMode(RenderMode mode)
 {
   render_mode_ = mode;
-
-  if (mode == RM_POINTS)
+  switch (mode)
   {
-    current_material_ = Ogre::MaterialPtr(point_material_);
+  case RM_POINTS:
+    current_material_ = point_material_;
+    break;
+  case RM_SQUARES:
+    current_material_ = square_material_;
+    break;
+  case RM_FLAT_SQUARES:
+    current_material_ = flat_square_material_;
+    break;
+  case RM_SPHERES:
+    current_material_ = sphere_material_;
+    break;
+  case RM_TILES:
+    current_material_ = tile_material_;
+    break;
+  case RM_BOXES:
+    current_material_ = box_material_;
+    break;
   }
-  else if (mode == RM_SQUARES)
-  {
-    current_material_ = Ogre::MaterialPtr(square_material_);
-  }
-  else if (mode == RM_FLAT_SQUARES)
-  {
-    current_material_ = Ogre::MaterialPtr(flat_square_material_);
-  }
-  else if (mode == RM_SPHERES)
-  {
-    current_material_ = Ogre::MaterialPtr(sphere_material_);
-  }
-  else if (mode == RM_TILES)
-  {
-    current_material_ = Ogre::MaterialPtr(tile_material_);
-  }
-  else if (mode == RM_BOXES)
-  {
-    current_material_ = Ogre::MaterialPtr(box_material_);
-  }
-
   current_material_->load();
 
   // ROS_INFO("Best technique [%s] [gp=%s]", current_material_->getBestTechnique()->getName().c_str(),
@@ -262,8 +257,6 @@ void PointCloud::setRenderMode(RenderMode mode)
       }
 
       current_mode_supports_geometry_shader_ = true;
-
-      // ROS_INFO("Using geometry shader");
     }
     else
     {
