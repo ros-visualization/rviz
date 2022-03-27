@@ -45,6 +45,7 @@
 #include <OgreMaterialManager.h>
 #include <OgreMaterial.h>
 #include <OgreRenderWindow.h>
+#include <OgreRTShaderSystem.h>
 #include <OgreSharedPtr.h>
 #include <OgreCamera.h>
 
@@ -148,6 +149,12 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
 #endif
 
   rviz::RenderSystem::RenderSystem::get()->prepareOverlays(scene_manager_);
+
+  using namespace Ogre;
+  // register our scene with the RTSS
+  RTShader::ShaderGenerator::initialize();
+  RTShader::ShaderGenerator* shadergen = RTShader::ShaderGenerator::getSingletonPtr();
+  shadergen->addSceneManager(scene_manager_);
 
   directional_light_ = scene_manager_->createLight("MainDirectional");
   directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
