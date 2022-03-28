@@ -47,6 +47,7 @@
 #include <OgreRenderWindow.h>
 #include <OgreRTShaderSystem.h>
 #include <OgreSharedPtr.h>
+#include <OgreSGTechniqueResolverListener.h>
 #include <OgreCamera.h>
 
 #include <boost/filesystem.hpp>
@@ -116,6 +117,7 @@ public:
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
   boost::mutex render_mutex_;
+  OgreBites::SGTechniqueResolverListener* material_mgr_listener_;
 };
 
 VisualizationManager::VisualizationManager(RenderPanel* render_panel,
@@ -155,6 +157,12 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   RTShader::ShaderGenerator::initialize();
   RTShader::ShaderGenerator* shadergen = RTShader::ShaderGenerator::getSingletonPtr();
   shadergen->addSceneManager(scene_manager_);
+
+  // Create and register the material manager listener if it doesn't exist yet.
+  // if (!mMaterialMgrListener) {
+  private_->material_mgr_listener_ = new OgreBites::SGTechniqueResolverListener(shadergen);
+  Ogre::MaterialManager::getSingleton().addListener(private_->material_mgr_listener_);
+  //}
 
   directional_light_ = scene_manager_->createLight("MainDirectional");
   directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);

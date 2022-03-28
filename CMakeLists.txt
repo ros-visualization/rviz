@@ -28,7 +28,7 @@ if(NOT DEFINED ASSIMP_LIBRARIES AND TARGET assimp::assimp)
   set(ASSIMP_LIBRARIES assimp::assimp)
 endif()
 
-find_package(OGRE QUIET COMPONENTS Overlay RTShaderSystem)
+find_package(OGRE QUIET COMPONENTS Overlay RTShaderSystem Bites)
 if(OGRE_FOUND)
   if(${OGRE_VERSION} VERSION_LESS 1.11)
     set(OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} ${OGRE_Overlay_INCLUDE_DIRS})
