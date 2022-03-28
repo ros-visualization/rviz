@@ -164,6 +164,9 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   Ogre::MaterialManager::getSingleton().addListener(private_->material_mgr_listener_);
   //}
 
+  // We need to wait with resource initialization till the RTShaderSystem is enabled
+  rviz::RenderSystem::RenderSystem::get()->initialiseResources();
+
   directional_light_ = scene_manager_->createLight("MainDirectional");
   directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
   directional_light_->setDirection(Ogre::Vector3(-1, 0, -1));

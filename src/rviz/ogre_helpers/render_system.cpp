@@ -115,13 +115,17 @@ RenderSystem::RenderSystem() : ogre_overlay_system_(nullptr), stereo_supported_(
   makeRenderWindow(dummy_window_id_, 1, 1);
   detectGlVersion();
   setupResources();
-  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 
 void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
 {
   if (ogre_overlay_system_)
     scene_manager->addRenderQueueListener(ogre_overlay_system_);
+}
+
+void RenderSystem::initialiseResources()
+{
+  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 
 void RenderSystem::setupDummyWindowId()

@@ -67,6 +67,8 @@ public:
   // Needed for Ogre >= 1.9 to use fonts; does nothing for prior versions.
   void prepareOverlays(Ogre::SceneManager* scene_manager);
 
+  void initialiseResources();
+
   // @brief return OpenGl Version as integer, e.g. 320 for OpenGl 3.20
   int getGlVersion()
   {
