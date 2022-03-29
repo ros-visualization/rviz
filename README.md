@@ -1,6 +1,8 @@
-![rviz logo](https://raw.githubusercontent.com/ros-visualization/rviz/melodic-devel/images/splash.png)
+![rviz logo](https://raw.githubusercontent.com/ros-visualization/rviz/noetic-devel/images/splash.png)
 
-[![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__rviz__ubuntu_bionic_amd64)](http://build.ros.org/view/Mdev/job/Mdev__rviz__ubuntu_bionic_amd64/)
+[![Format](https://github.com/ros-visualization/rviz/actions/workflows/format.yaml/badge.svg?branch=noetic-devel)](https://github.com/ros-visualization/rviz/actions/workflows/format.yaml?query=branch%3Anoetic-devel)
+[![CI](https://github.com/ros-visualization/rviz/actions/workflows/ci.yaml/badge.svg?branch=noetic-devel)](https://github.com/ros-visualization/rviz/actions/workflows/ci.yaml?query=branch%3Anoetic-devel)
+[![ROS CI](https://build.ros.org/buildStatus/icon?job=Ndev__rviz__ubuntu_focal_amd64)](https://build.ros.org/view/Ndev/job/Ndev__rviz__ubuntu_focal_amd64/)
 
 rviz is a 3D visualizer for the Robot Operating System (ROS) framework.
 
