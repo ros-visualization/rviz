@@ -72,6 +72,8 @@ ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
                       this, SLOT(updateNormalizeOptions()));
 
   got_float_image_ = false;
+
+  mouse_click = new MouseClick();
 }
 
 void ImageDisplay::onInitialize()
@@ -130,6 +132,8 @@ void ImageDisplay::onInitialize()
   render_panel_->getCamera()->setNearClipDistance(0.01f);
 
   updateNormalizeOptions();
+
+  mouse_click->onInitialize(render_panel_);
 }
 
 ImageDisplay::~ImageDisplay()
@@ -145,6 +149,7 @@ ImageDisplay::~ImageDisplay()
 void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
+  mouse_click->publish();
   render_panel_->getRenderWindow()->setActive(true);
 }
 
@@ -152,6 +157,7 @@ void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
+  mouse_click->unpublish();
   reset();
 }
 
@@ -211,6 +217,8 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
     }
 
     render_panel_->getRenderWindow()->update();
+
+    mouse_click->setDimensions(img_width, img_height, win_width, win_height);
   }
   catch (UnsupportedImageEncoding& e)
   {
@@ -240,6 +248,21 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   }
   texture_.addMessage(msg);
 }
+
+void ImageDisplay::setTopic(const QString& topic, const QString& datatype)
+{
+  std::cout << "ImageDisplay::setTopic called" << std::endl;
+  ImageDisplayBase::setTopic(topic, datatype);
+  mouse_click->setTopic(topic);
+}
+
+void ImageDisplay::updateTopic()
+{
+  std::cout << "ImageDisplay::updateTopic called" << std::endl;
+  ImageDisplayBase::updateTopic();
+  mouse_click->updateTopic(topic_property_->getTopic());
+}
+
 
 } // namespace rviz
 
