@@ -150,6 +150,7 @@ void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
   mouse_click->publish();
+
   render_panel_->getRenderWindow()->setActive(true);
 }
 
@@ -158,6 +159,7 @@ void ImageDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
   mouse_click->unpublish();
+
   reset();
 }
 
@@ -251,14 +253,12 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 
 void ImageDisplay::setTopic(const QString& topic, const QString& datatype)
 {
-  std::cout << "ImageDisplay::setTopic called" << std::endl;
   ImageDisplayBase::setTopic(topic, datatype);
   mouse_click->setTopic(topic);
 }
 
 void ImageDisplay::updateTopic()
 {
-  std::cout << "ImageDisplay::updateTopic called" << std::endl;
   ImageDisplayBase::updateTopic();
   mouse_click->updateTopic(topic_property_->getTopic());
 }
