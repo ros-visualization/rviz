@@ -49,7 +49,7 @@ PARAM = """\n    <param name="%s" value="%s"></param>"""
 def youtube(
     name, args, options, content, lineno, contentOffset, blockText, state, stateMachine
 ):
-    """ Restructured text extension for inserting youtube embedded videos """
+    """Restructured text extension for inserting youtube embedded videos"""
     if len(content) == 0:
         return
     string_vars = {"yid": content[0], "width": 425, "height": 344, "extra": ""}

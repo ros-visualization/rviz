@@ -72,7 +72,7 @@ while not rospy.is_shutdown():
         pi / 2, pi / 3, 0
     )
 
-    pose_with_cov.pose.covariance[0] = linear_deviation ** 2.0
+    pose_with_cov.pose.covariance[0] = linear_deviation**2.0
     pose_with_cov.pose.covariance[6 + 1] = 0.0001
     pose_with_cov.pose.covariance[12 + 2] = 0.0001
     pose_with_cov.pose.covariance[18 + 3] = 0.01

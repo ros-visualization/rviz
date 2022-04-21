@@ -41,8 +41,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"RViz"
-copyright = u"2012, Willow Garage, Inc"
+project = "RViz"
+copyright = "2012, Willow Garage, Inc"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -186,8 +186,8 @@ latex_documents = [
     (
         "index",
         "RViz.tex",
-        u"RViz Documentation",
-        u"Josh Faust, Dave Hershberger, David Gossow, and others",
+        "RViz Documentation",
+        "Josh Faust, Dave Hershberger, David Gossow, and others",
         "manual",
     ),
 ]
@@ -221,8 +221,8 @@ man_pages = [
     (
         "index",
         "rviz",
-        u"RViz Documentation",
-        [u"Josh Faust, Dave Hershberger, David Gossow, and others"],
+        "RViz Documentation",
+        ["Josh Faust, Dave Hershberger, David Gossow, and others"],
         1,
     )
 ]
@@ -240,8 +240,8 @@ texinfo_documents = [
     (
         "index",
         "RViz",
-        u"RViz Documentation",
-        u"Josh Faust, Dave Hershberger, David Gossow, and others",
+        "RViz Documentation",
+        "Josh Faust, Dave Hershberger, David Gossow, and others",
         "RViz",
         "One line description of project.",
         "Miscellaneous",
