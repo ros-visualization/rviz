@@ -386,9 +386,6 @@ void Display::setAssociatedWidget(QWidget* widget)
 
 void Display::associatedPanelVisibilityChange(bool visible)
 {
-  if (associated_widget_panel_) // consider the actual visibility of the panel
-    visible = associated_widget_panel_->isVisible();
-
   associated_widget_visible_ = visible;
   // If something external makes the panel visible/invisible, make sure to enable/disable the display
   setEnabled(visible);
