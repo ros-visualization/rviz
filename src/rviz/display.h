@@ -328,7 +328,7 @@ private:
   uint32_t visibility_bits_;
   QWidget* associated_widget_;
   PanelDockWidget* associated_widget_panel_;
-  bool associated_widget_visible_;
+  bool suppress_hiding_associated_widget_panel_;
 };
 
 } // end namespace rviz
