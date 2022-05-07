@@ -32,7 +32,7 @@
 
 #include <rviz/default_plugin/view_controllers/orbit_view_controller.h>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 
 namespace Ogre
 {

@@ -35,7 +35,7 @@
 #include <ros/message_forward.h>
 
 #ifndef Q_MOC_RUN
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreColourValue.h>
 
 #include <rviz/ogre_helpers/point_cloud.h>

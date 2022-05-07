@@ -28,7 +28,7 @@
  */
 
 #include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 
 #include <rviz/default_plugin/interactive_markers/interactive_marker_control.h>
 #include <rviz/default_plugin/marker_display.h>

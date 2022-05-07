@@ -35,7 +35,7 @@
 
 #include <rviz/ogre_helpers/point_cloud.h>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>

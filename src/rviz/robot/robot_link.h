@@ -36,7 +36,7 @@
 #include <QObject>
 
 #ifndef Q_MOC_RUN
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include <OgreMaterial.h>

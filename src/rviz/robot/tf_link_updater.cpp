@@ -31,7 +31,7 @@
 #include <rviz/frame_manager.h>
 #include <rviz/helpers/tf_prefix.h>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 
 namespace rviz

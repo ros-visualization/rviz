@@ -35,7 +35,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include <OgreRay.h>
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
 #endif
