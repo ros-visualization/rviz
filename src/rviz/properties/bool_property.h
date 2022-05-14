@@ -46,6 +46,18 @@ public:
                const char* changed_slot = nullptr,
                QObject* receiver = nullptr);
 
+  template <class Functor>
+  BoolProperty(const QString& name = QString(),
+               bool default_value = false,
+               const QString& description = QString(),
+               Property* parent = nullptr,
+               Functor method = [] {},
+               QObject* context = nullptr)
+    : Property(name, default_value, description, parent, method, context)
+    , disable_children_if_false_(false)
+  {
+  }
+
   ~BoolProperty() override;
 
   virtual bool getBool() const;

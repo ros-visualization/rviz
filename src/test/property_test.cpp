@@ -33,6 +33,7 @@
 
 #include <rviz/properties/property.h>
 #include <rviz/properties/color_property.h>
+#include <rviz/properties/int_property.h>
 #include <rviz/properties/vector_property.h>
 #include <rviz/properties/quaternion_property.h>
 #include <rviz/properties/enum_property.h>
@@ -62,7 +63,7 @@ TEST(Property, value)
   EXPECT_EQ(199, p.getValue().toInt());
 }
 
-TEST(Property, set_value_events)
+TEST(Property, set_value_events_qt4)
 {
   Property p;
   p.setValue(0);
@@ -73,6 +74,34 @@ TEST(Property, set_value_events)
 
   p.setValue(17);
   EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+}
+
+TEST(Property, set_value_events_qt5)
+{
+  Property p;
+  p.setValue(0);
+
+  MockPropertyChangeReceiver r(&p);
+  // a lambda without a context object for lifetime, another with a context
+  p.connect(&p, &Property::aboutToChange, [&r] { r.aboutToChange(); });
+  p.connect(&p, &Property::changed, &r, [&r] { r.changed(); });
+
+  p.setValue(17);
+  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+}
+
+TEST(IntProperty, set_value_events_functor)
+{
+  QString result;
+  std::unique_ptr<IntProperty> p;
+  const auto aboutToChange = [&] { result += " aboutToChange, v=" + p->getValue().toString(); };
+  const auto changed = [&] { result += " changed, v=" + p->getValue().toString(); };
+  p = std::make_unique<IntProperty>("test_property", 0, "For testing", nullptr, changed);
+
+  p->connect(p.get(), &IntProperty::aboutToChange, aboutToChange);
+
+  p->setValue(17);
+  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", result.toStdString());
 }
 
 TEST(Property, children)
