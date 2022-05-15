@@ -65,6 +65,23 @@ public:
                             const char* changed_slot = nullptr,
                             QObject* receiver = nullptr);
 
+  template <class Functor>
+  DisplayVisibilityProperty(uint32_t vis_bit,
+                            Display* display,
+                            const QString& name = QString(),
+                            bool default_value = false,
+                            const QString& description = QString(),
+                            Property* parent = nullptr,
+                            Functor method = [] {},
+                            QObject* context = nullptr)
+    : BoolProperty(name, default_value, description, parent, method, context)
+    , vis_bit_(vis_bit)
+    , display_(display)
+  {
+    custom_name_ = (name.size() != 0);
+    DisplayVisibilityProperty::update();
+  }
+
   ~DisplayVisibilityProperty() override;
 
   virtual void update();

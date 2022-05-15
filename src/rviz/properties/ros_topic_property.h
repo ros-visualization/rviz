@@ -48,6 +48,20 @@ public:
                    const char* changed_slot = nullptr,
                    QObject* receiver = nullptr);
 
+  template <class Functor>
+  RosTopicProperty(const QString& name = QString(),
+                   const QString& default_value = QString(),
+                   const QString& message_type = QString(),
+                   const QString& description = QString(),
+                   Property* parent = nullptr,
+                   Functor method = []{},
+                   QObject* context = nullptr)
+    : EditableEnumProperty(name, default_value, description, parent, method, context)
+    , message_type_(message_type)
+  {
+    connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillTopicList()));
+  }
+
   void setMessageType(const QString& message_type);
   QString getMessageType() const
   {

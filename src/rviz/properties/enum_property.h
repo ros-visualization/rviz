@@ -54,6 +54,17 @@ public:
                const char* changed_slot = nullptr,
                QObject* receiver = nullptr);
 
+  template <class Functor>
+  EnumProperty(const QString& name = QString(),
+               const QString& default_value = QString(),
+               const QString& description = QString(),
+               Property* parent = nullptr,
+               Functor method = [] {},
+               QObject* context = nullptr)
+    : StringProperty(name, default_value, description, parent, method, context)
+  {
+  }
+
   /** @brief Clear the list of options.
    *
    * Does not change the current value of the property. */

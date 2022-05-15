@@ -63,15 +63,20 @@ DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(uint32_t vis_bit,
   , display_group_(display_group)
   , parent_display_(parent_display)
 {
-  connect(display_group, SIGNAL(displayAdded(rviz::Display*)), this,
+  initialize_this();
+}
+
+void DisplayGroupVisibilityProperty::initialize_this()
+{
+  connect(display_group_, SIGNAL(displayAdded(rviz::Display*)), this,
           SLOT(onDisplayAdded(rviz::Display*)));
-  connect(display_group, SIGNAL(displayRemoved(rviz::Display*)), this,
+  connect(display_group_, SIGNAL(displayRemoved(rviz::Display*)), this,
           SLOT(onDisplayRemoved(rviz::Display*)));
 
-  for (int i = 0; i < display_group->numDisplays(); i++)
+  for (int i = 0; i < display_group_->numDisplays(); i++)
   {
-    rviz::Display* display = display_group->getDisplayAt(i);
-    if (display != parent_display)
+    rviz::Display* display = display_group_->getDisplayAt(i);
+    if (display != parent_display_)
     {
       onDisplayAdded(display);
     }

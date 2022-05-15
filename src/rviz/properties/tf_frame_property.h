@@ -51,6 +51,24 @@ public:
                   const char* changed_slot = nullptr,
                   QObject* receiver = nullptr);
 
+  template <class Functor>
+  TfFrameProperty(const QString& name = QString(),
+                  const QString& default_value = QString(),
+                  const QString& description = QString(),
+                  Property* parent = nullptr,
+                  FrameManager* frame_manager = nullptr,
+                  bool include_fixed_frame_string = false,
+                  Functor method = []{},
+                  QObject* context = nullptr)
+    : EditableEnumProperty(name, default_value, description, parent, method, context)
+    , frame_manager_(nullptr)
+    , include_fixed_frame_string_(include_fixed_frame_string)
+  {
+    // Parent class EditableEnumProperty has requestOptions() signal.
+    connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillFrameList()));
+    setFrameManager(frame_manager);
+  }
+
   /** @brief Override from Property to resolve the frame name on the way in. */
   bool setValue(const QVariant& new_value) override;
 

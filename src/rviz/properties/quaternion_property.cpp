@@ -44,6 +44,11 @@ QuaternionProperty::QuaternionProperty(const QString& name,
   , quaternion_(default_value)
   , ignore_child_updates_(false)
 {
+  initialize_this();
+}
+
+void QuaternionProperty::initialize_this()
+{
   x_ = new Property("X", quaternion_.x, "X coordinate", this);
   y_ = new Property("Y", quaternion_.y, "Y coordinate", this);
   z_ = new Property("Z", quaternion_.z, "Z coordinate", this);

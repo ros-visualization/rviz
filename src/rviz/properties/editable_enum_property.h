@@ -51,6 +51,17 @@ public:
                        const char* changed_slot = nullptr,
                        QObject* receiver = nullptr);
 
+  template <class Functor>
+  EditableEnumProperty(const QString& name = QString(),
+                       const QString& default_value = QString(),
+                       const QString& description = QString(),
+                       Property* parent = nullptr,
+                       Functor method = [] {},
+                       QObject* context = nullptr)
+    : StringProperty(name, default_value, description, parent, method, context)
+  {
+  }
+
   virtual void clearOptions();
   virtual void addOption(const QString& option);
   void addOptionStd(const std::string& option)

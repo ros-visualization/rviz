@@ -44,6 +44,11 @@ VectorProperty::VectorProperty(const QString& name,
   , vector_(default_value)
   , ignore_child_updates_(false)
 {
+  initialize_this();
+}
+
+void VectorProperty::initialize_this()
+{
   x_ = new Property("X", vector_.x, "X coordinate", this);
   y_ = new Property("Y", vector_.y, "Y coordinate", this);
   z_ = new Property("Z", vector_.z, "Z coordinate", this);

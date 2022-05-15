@@ -71,6 +71,31 @@ public:
                                  Property* parent = nullptr,
                                  const char* changed_slot = nullptr,
                                  QObject* receiver = nullptr);
+
+  template <class Functor>
+  DisplayGroupVisibilityProperty(uint32_t vis_bit,
+                                 DisplayGroup* display_group,
+                                 Display* parent_display,
+                                 const QString& name = QString(),
+                                 bool default_value = false,
+                                 const QString& description = QString(),
+                                 Property* parent = nullptr,
+                                 Functor method = [] {},
+                                 QObject* context = nullptr)
+    : DisplayVisibilityProperty(vis_bit,
+                                display_group,
+                                name,
+                                default_value,
+                                description,
+                                parent,
+                                method,
+                                context)
+    , display_group_(display_group)
+    , parent_display_(parent_display)
+  {
+    initialize_this();
+  }
+
   ~DisplayGroupVisibilityProperty() override;
 
   // @brief Update visibility masks of all objects in the Ogre scene
@@ -85,6 +110,8 @@ private:
   // sort the properties in the same way as in the
   // root display group
   void sortDisplayList();
+
+  void initialize_this();
 
   DisplayGroup* display_group_;
   std::map<rviz::Display*, DisplayVisibilityProperty*> disp_vis_props_;

@@ -47,6 +47,17 @@ public:
                  const char* changed_slot = nullptr,
                  QObject* receiver = nullptr);
 
+  template <class Functor>
+  StringProperty(const QString& name = QString(),
+                 const QString& default_value = QString(),
+                 const QString& description = QString(),
+                 Property* parent = nullptr,
+                 Functor method = []{},
+                 QObject* context = nullptr)
+    : Property(name, default_value, description, parent, method, context)
+  {
+  }
+
   std::string getStdString()
   {
     return getValue().toString().toStdString();

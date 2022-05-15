@@ -46,6 +46,20 @@ public:
                      const char* changed_slot = nullptr,
                      QObject* receiver = nullptr);
 
+  template <class Functor>
+  QuaternionProperty(const QString& name = QString(),
+                     const Ogre::Quaternion& default_value = Ogre::Quaternion::IDENTITY,
+                     const QString& description = QString(),
+                     Property* parent = nullptr,
+                     Functor method = []{},
+                     QObject* context = nullptr)
+    : Property(name, QVariant(), description, parent, method, context)
+    , quaternion_(default_value)
+    , ignore_child_updates_(false)
+  {
+    initialize_this();
+  }
+
   virtual bool setQuaternion(const Ogre::Quaternion& quaternion);
   virtual Ogre::Quaternion getQuaternion() const
   {
@@ -69,6 +83,7 @@ private Q_SLOTS:
 
 private:
   void updateString();
+  void initialize_this();
 
   Ogre::Quaternion quaternion_;
   Property* x_;
