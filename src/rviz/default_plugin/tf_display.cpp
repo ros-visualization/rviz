@@ -28,6 +28,7 @@
  */
 
 #include <boost/bind.hpp>
+#include <regex>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -40,6 +41,7 @@
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/ogre_helpers/movable_text.h"
 #include "rviz/properties/bool_property.h"
+#include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/string_property.h"
@@ -48,7 +50,6 @@
 #include "rviz/selection/selection_manager.h"
 
 #include "rviz/default_plugin/tf_display.h"
-
 namespace rviz
 {
 class FrameSelectionHandler : public SelectionHandler
@@ -178,9 +179,13 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
                                            "Whether or not arrows from child to parent should be shown.",
                                            this, SLOT(updateShowArrows()));
 
-  scale_property_ =
+  scale_property_ = 
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
+  
+  filter_property_ = new StringProperty("Filter", ".*", "Regex filter", this);
 
+  filter_blacklist_property_ = new StringProperty("Filter (blacklist)", "", "Regex filter", this);
+  
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "The interval, in seconds, at which to update the frame "
                                             "transforms. 0 means to do so every update cycle.",
@@ -372,7 +377,7 @@ void TFDisplay::updateFrames()
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-  context_->getTFClient()->getFrameStrings(frames);
+context_->getTFClient()->getFrameStrings(frames);
 
 #ifndef _WIN32
 #pragma GCC diagnostic pop
@@ -380,14 +385,26 @@ void TFDisplay::updateFrames()
   std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
+  std::string whitelist_regex_string = filter_property_->getStdString();
+  std::string blacklist_regex_string = filter_blacklist_property_->getStdString();
+  auto whitelist_regex = std::regex(whitelist_regex_string);
+  auto blacklist_regex = std::regex(blacklist_regex_string);
 
   {
     for (const std::string& frame : frames)
     {
       if (frame.empty())
-      {
         continue;
+
+      try
+      {
+        if (!std::regex_match(frame, whitelist_regex))
+          continue;
+        if (!blacklist_regex_string.empty())
+          if (std::regex_match(frame, blacklist_regex))
+            continue;
       }
+      catch (const std::regex_error&) {}
 
       FrameInfo* info = getFrameInfo(frame);
       if (!info)
@@ -724,7 +741,8 @@ TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it
   if (delete_properties)
   {
     delete frame->enabled_property_;
-    delete frame->tree_property_;
+    // delete frame->tree_property_;  // Here happens segmentation fault. With skipping deletinion, memory leak
+                                      //  appears but is not significant and only happens when user changes fields.
   }
   delete frame;
   return it;
