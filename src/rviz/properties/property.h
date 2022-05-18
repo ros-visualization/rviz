@@ -133,8 +133,13 @@ public:
   Property(const QString& name = QString(),
            const QVariant& default_value = QVariant(),
            const QString& description = QString(),
-           Property* parent = nullptr,
-           const char* changed_slot = nullptr,
+           Property* parent = nullptr);
+
+  Property(const QString& name,
+           const QVariant& default_value,
+           const QString& description,
+           Property* parent,
+           const char* changed_slot,
            QObject* receiver = nullptr);
 
   Property(const QString& name,
