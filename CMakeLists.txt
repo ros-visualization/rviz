@@ -82,9 +82,9 @@ else()
 endif()
 
 # TODO: adapt version after upgrade to newer OGRE release
-# Disable deprecation warnings for OGRE >= 1.10
+# Consider deprecation issues as warnings, not as errors for OGRE >= 1.10
 if(NOT OGRE_VERSION VERSION_LESS "1.10.0" AND NOT MSVC)
-  add_compile_options(-Wno-deprecated-declarations)
+  add_compile_options(-Wno-error=deprecated-declarations)
 endif()
 
 if(APPLE)

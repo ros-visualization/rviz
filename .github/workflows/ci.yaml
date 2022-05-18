@@ -11,16 +11,20 @@ on:
 jobs:
   default:
     strategy:
+      fail-fast: false
       matrix:
         distro: [noetic]
+        ogre: ["1.9", "1.12"]
         include:
           - distro: noetic
+            ogre: 1.9
             env:
               CLANG_TIDY: true
 
     env:
       CXXFLAGS: "-Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
       UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
+      AFTER_INSTALL_TARGET_DEPENDENCIES: apt install -qq -y libogre-${{ matrix.ogre }}-dev
       CATKIN_LINT: true
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: /home/runner/work
@@ -29,7 +33,7 @@ jobs:
       # perform full clang-tidy check only on manual trigger (workflow_dispatch), PRs do check changed files, otherwise nothing
       CLANG_TIDY_BASE_REF: ${{ github.event_name != 'workflow_dispatch' && (github.base_ref || github.ref) || '' }}
 
-    name: "${{ matrix.distro }}${{ matrix.repo && format(' • {0}', matrix.repo) || '' }}${{ matrix.env.CLANG_TIDY && (github.event_name != 'workflow_dispatch' && ' • clang-tidy (delta)' || ' • clang-tidy (all)') || '' }}"
+    name: "${{ matrix.distro }} • ogre ${{ matrix.ogre }}${{ matrix.env.CLANG_TIDY && (github.event_name != 'workflow_dispatch' && ' • clang-tidy (delta)' || ' • clang-tidy (all)') || '' }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
