@@ -85,6 +85,39 @@ Property::Property(const QString& name,
   }
 }
 
+Property::Property(const QString& name,
+                   const QVariant& default_value,
+                   const QString& description,
+                   Property* parent,
+                   std::function<void()> changed_slot,
+                   QObject* receiver)
+  : value_(default_value)
+  , model_(nullptr)
+  , child_indexes_valid_(false)
+  , parent_(nullptr)
+  , description_(description)
+  , hidden_(false)
+  , is_read_only_(false)
+  , save_(true)
+{
+  Property::setName(name);
+  if (parent)
+  {
+    parent->addChild(this);
+  }
+  if (receiver == nullptr)
+  {
+    receiver = parent;
+  }
+  if (changed_slot)
+  {
+    if (receiver)
+      connect(this, &Property::changed, receiver, changed_slot);
+    else
+      connect(this, &Property::changed, changed_slot);
+  }
+}
+
 Property::~Property()
 {
   // Disconnect myself from my parent.

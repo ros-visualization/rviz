@@ -30,6 +30,7 @@
 #define PROPERTY_H
 
 #include <string>
+#include <functional>
 
 #include <QObject>
 #include <QIcon>
@@ -136,39 +137,12 @@ public:
            const char* changed_slot = nullptr,
            QObject* receiver = nullptr);
 
-  template <class Functor>
-  Property(const QString& name = QString(),
-           const QVariant& default_value = QVariant(),
-           const QString& description = QString(),
-           Property* parent = nullptr,
-           Functor method = []{},
-           QObject* context = nullptr)
-    : value_(default_value)
-    , model_(nullptr)
-    , child_indexes_valid_(false)
-    , parent_(nullptr)
-    , description_(description)
-    , hidden_(false)
-    , is_read_only_(false)
-    , save_(true)
-  {
-    Property::setName(name);
-    if (parent)
-    {
-      parent->addChild(this);
-    } else
-    {
-      parent = this;  // for context
-    }
-    if (context == nullptr)
-    {
-      context = parent;
-    }
-    if (context)
-    {
-      connect(this, &Property::changed, context, method);
-    }
-  }
+  Property(const QString& name,
+           const QVariant& default_value,
+           const QString& description,
+           Property* parent,
+           std::function<void()> changed_slot,
+           QObject* receiver = nullptr);
 
   /** @brief Destructor.  Removes this property from its parent's list
    * of children.
