@@ -672,7 +672,11 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
         *active = *sub->getMaterial();
         sub->setMaterial(active);
         // create a backup of the material as we will modify the active one e.g. in updateAlpha()
-        original = active->clone(sub->getMaterial()->getName() + "_original");
+        // need to have a unique name in case the same material is used multiple times or
+        // the same RobotModel is loaded multiple times
+        static int material_count = 0;
+        original = active->clone(sub->getMaterial()->getName() + "_" + std::to_string(material_count++) +
+                                 "_original");
       }
       materials_[sub] = std::make_pair(active, original);
     }
