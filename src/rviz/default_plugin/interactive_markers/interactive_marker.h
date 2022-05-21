@@ -36,7 +36,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #endif
 

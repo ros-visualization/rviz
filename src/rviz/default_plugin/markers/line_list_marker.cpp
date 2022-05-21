@@ -34,7 +34,7 @@
 
 #include <rviz/ogre_helpers/billboard_line.h>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneNode.h>
 

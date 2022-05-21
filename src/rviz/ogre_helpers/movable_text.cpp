@@ -42,7 +42,7 @@
 #include "movable_text.h"
 #include <rviz/ogre_helpers/version_check.h>
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreRoot.h>
 #include <OgreCamera.h>

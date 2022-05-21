@@ -30,7 +30,7 @@
 #ifndef RVIZ_POSE_TOOL_H
 #define RVIZ_POSE_TOOL_H
 
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 
 #include <QCursor>
 

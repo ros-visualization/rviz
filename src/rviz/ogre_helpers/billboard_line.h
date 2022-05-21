@@ -35,7 +35,7 @@
 #include <stdint.h>
 
 #include <vector>
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
 #include <OgreSharedPtr.h>

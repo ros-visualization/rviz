@@ -34,7 +34,7 @@
 #include <set>
 
 #include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 
 #include <rviz/selection/forwards.h>
 

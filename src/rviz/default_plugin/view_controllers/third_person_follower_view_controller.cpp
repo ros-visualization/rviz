@@ -36,7 +36,7 @@
 #include <OgreQuaternion.h>
 #include <OgreRay.h>
 #include <OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreViewport.h>
 #include <OgreMath.h>
 
