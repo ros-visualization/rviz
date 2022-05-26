@@ -43,6 +43,8 @@
 #include "rviz/class_id_recording_factory.h"
 #include "rviz/load_resource.h"
 
+#include <ros/console.h>
+
 namespace rviz
 {
 template <class Type>
