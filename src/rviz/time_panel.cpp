@@ -59,12 +59,17 @@ TimePanel::TimePanel(QWidget* parent) : Panel(parent)
 
   sync_mode_selector_ = new QComboBox(this);
   sync_mode_selector_->addItem("Off");
-  sync_mode_selector_->addItem("Frame");
-  sync_mode_selector_->setItemData(1, "Synchronize TF lookups within a frame", Qt::ToolTipRole);
+  sync_mode_selector_->setItemData(FrameManager::SyncOff, "Display data using latest TF data",
+                                   Qt::ToolTipRole);
   sync_mode_selector_->addItem("Exact");
-  sync_mode_selector_->setItemData(1, "Synchronize TF lookups to an external (Display) source",
+  sync_mode_selector_->setItemData(FrameManager::SyncExact, "Synchronize TF lookups to a source display",
                                    Qt::ToolTipRole);
   sync_mode_selector_->addItem("Approximate");
+  sync_mode_selector_->setItemData(
+      FrameManager::SyncApprox, "Synchronize to a source display in a smooth fashion", Qt::ToolTipRole);
+  sync_mode_selector_->addItem("Frame");
+  sync_mode_selector_->setItemData(FrameManager::SyncFrame, "Synchronize TF lookups within a frame",
+                                   Qt::ToolTipRole);
   sync_mode_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
   sync_mode_selector_->setToolTip(
       "Allows you to synchronize the ROS time and Tf transforms to a given source.");
@@ -227,7 +232,7 @@ void TimePanel::syncSourceSelected(int /*index*/)
 void TimePanel::syncModeSelected(int mode)
 {
   vis_manager_->getFrameManager()->setSyncMode((FrameManager::SyncMode)mode);
-  sync_source_selector_->setVisible(mode > FrameManager::SyncFrame);
+  sync_source_selector_->setVisible(mode >= FrameManager::SyncExact && mode <= FrameManager::SyncApprox);
   vis_manager_->notifyConfigChanged();
 }
 

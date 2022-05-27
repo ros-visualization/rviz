@@ -67,10 +67,10 @@ class FrameManager : public QObject
 public:
   enum SyncMode
   {
-    SyncOff = 0,
+    SyncOff = 0, // use latest TF updates
+    SyncExact,   // sync to incoming messages of a display (emitting timeSignal())
+    SyncApprox,
     SyncFrame, // synchronize frame lookups to start of update() loop
-    SyncExact,
-    SyncApprox
   };
 
   /// Constructor, will create a TransformListener (and Buffer) automatically if not provided
