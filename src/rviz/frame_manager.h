@@ -67,9 +67,10 @@ class FrameManager : public QObject
 public:
   enum SyncMode
   {
-    SyncOff = 0,
-    SyncExact,
-    SyncApprox
+    SyncOff = 0, // use latest TF updates
+    SyncExact,   // sync to incoming messages of a display (emitting timeSignal())
+    SyncApprox,
+    SyncFrame, // synchronize frame lookups to start of update() loop
   };
 
   /// Constructor, will create a TransformListener (and Buffer) automatically if not provided
@@ -229,7 +230,7 @@ Q_SIGNALS:
   void fixedFrameChanged();
 
 private:
-  bool adjustTime(const std::string& frame, ros::Time& time);
+  void adjustTime(ros::Time& time);
 
   template <class M>
   void messageCallback(const ros::MessageEvent<M const>& msg_evt, Display* display)
@@ -306,7 +307,6 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::string fixed_frame_;
-  tf2::CompactFrameID fixed_frame_id_;
 
   bool pause_;
 
@@ -316,8 +316,8 @@ private:
   ros::Time sync_time_;
 
   // used for approx. syncing
-  double sync_delta_;
-  double current_delta_;
+  double current_delta_; // current time delay between received sync msg's time stamp and now()
+  double sync_delta_;    // sliding average of current_delta_, used to compute sync_time_
 };
 
 } // namespace rviz

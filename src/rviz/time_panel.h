@@ -62,7 +62,6 @@ protected Q_SLOTS:
   void pauseToggled(bool checked);
   void syncModeSelected(int index);
   void syncSourceSelected(int index);
-  void experimentalToggled(bool checked);
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
@@ -82,12 +81,7 @@ protected:
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel(QLineEdit* label, double time);
 
-  QWidget* old_widget_;
-  QWidget* experimental_widget_;
-
   QString config_sync_source_;
-
-  QCheckBox* experimental_cb_;
 
   QPushButton* pause_button_;
   QComboBox* sync_source_selector_;
