@@ -666,13 +666,12 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       }
       else
       {
+        original = sub->getMaterial();
         // create a new material copy for each instance of a RobotLink to allow modification per link
         active = Ogre::MaterialPtr(new Ogre::Material(
             nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-        *active = *sub->getMaterial();
+        *active = *original;
         sub->setMaterial(active);
-        // create a backup of the material as we will modify the active one e.g. in updateAlpha()
-        original = active->clone(sub->getMaterial()->getName() + "_original");
       }
       materials_[sub] = std::make_pair(active, original);
     }
