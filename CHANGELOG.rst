@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.25 (2022-05-27)
+--------------------
+* RobotLink: Simplify material mode handling (`#1732 <https://github.com/ros-visualization/rviz/issues/1732>`_)
+* Drop OGRE/ from #include directives (`#1730 <https://github.com/ros-visualization/rviz/issues/1730>`_)
+* Fix segfault when no tools are available (`#1729 <https://github.com/ros-visualization/rviz/issues/1729>`_)
+* GridCells: implement setTopic() (`#1722 <https://github.com/ros-visualization/rviz/issues/1722>`_)
+* Contributors: Brosong, Jochen Sprickerhof, Robert Haschke
+
 1.13.24 (2022-02-12)
 --------------------
 * Fix regression in mesh loader: correctly transform normals (`#1703 <https://github.com/ros-visualization/rviz/issues/1703>`_)
