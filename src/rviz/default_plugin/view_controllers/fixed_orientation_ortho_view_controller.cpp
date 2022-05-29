@@ -49,6 +49,7 @@ FixedOrientationOrthoViewController::FixedOrientationOrthoViewController() : dra
 {
   scale_property_ =
       new FloatProperty("Scale", 10, "How much to scale up the size of things in the scene.", this);
+  scale_property_->setMin(1e-14);
   angle_property_ = new FloatProperty("Angle", 0, "Angle around the Z axis to rotate.", this);
   x_property_ = new FloatProperty("X", 0, "X component of camera position.", this);
   y_property_ = new FloatProperty("Y", 0, "Y component of camera position.", this);
