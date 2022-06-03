@@ -163,7 +163,6 @@ RobotLink::RobotLink(Robot* robot,
   , collision_node_(nullptr)
   , trail_(nullptr)
   , axes_(nullptr)
-  , material_alpha_(1.0)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
@@ -396,7 +395,8 @@ void RobotLink::updateAlpha()
     else
     {
       Ogre::ColourValue color = active->getTechnique(0)->getPass(0)->getDiffuse();
-      color.a = robot_alpha_ * material_alpha_ * link_alpha;
+      const float material_alpha = original->getTechnique(0)->getPass(0)->getDiffuse().a;
+      color.a = robot_alpha_ * material_alpha * link_alpha;
       active->setDiffuse(color);
 
       if (color.a < 0.9998) // transparent
@@ -491,8 +491,6 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
     const urdf::Color& col = material->color;
     mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
-
-    material_alpha_ = col.a;
   }
   else
   {
@@ -660,19 +658,15 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 
       Ogre::MaterialPtr active, original;
       if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
-      {
-        sub->setMaterial(active = default_material_);
-        original = active; // we don't need a backup copy of the default material
-      }
+        original = default_material_;
       else
-      {
         original = sub->getMaterial();
-        // create a new material copy for each instance of a RobotLink to allow modification per link
-        active = Ogre::MaterialPtr(new Ogre::Material(
-            nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-        *active = *original;
-        sub->setMaterial(active);
-      }
+
+      // create a new material copy for each instance of a RobotLink to allow modification per link
+      active = Ogre::MaterialPtr(new Ogre::Material(
+          nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+      *active = *original;
+      sub->setMaterial(active);
       materials_[sub] = std::make_pair(active, original);
     }
   }

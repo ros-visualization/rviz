@@ -242,9 +242,7 @@ private:
 
   Axes* axes_;
 
-  float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF,
-                         /// otherwise is 1.0.
-  float robot_alpha_;    ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
+  float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   bool only_render_depth_;
   bool is_selectable_;
