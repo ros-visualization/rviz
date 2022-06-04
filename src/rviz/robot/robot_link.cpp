@@ -201,8 +201,9 @@ RobotLink::RobotLink(Robot* robot,
   collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
 
   // create material for coloring links
+  std::string material_name = "robot link " + link->name + ":color material";
   color_material_ = Ogre::MaterialPtr(new Ogre::Material(
-      nullptr, "robot link color material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+      nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
@@ -459,9 +460,6 @@ void RobotLink::updateVisibility()
 Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& link,
                                                 urdf::MaterialConstSharedPtr material)
 {
-  Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(
-      nullptr, "robot link material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-
   // only the first visual's material actually comprises color values, all others only have the name
   // hence search for the first visual with given material name (better fix the bug in urdf parser)
   if (material && !material->name.empty())
@@ -477,6 +475,13 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
   }
   if (!material && link->visual && link->visual->material)
     material = link->visual->material; // fallback to visual's material
+
+  std::string name = "robot link " + link->name;
+  if (material)
+    name += ":" + material->name;
+
+  Ogre::MaterialPtr mat = Ogre::MaterialPtr(
+      new Ogre::Material(nullptr, name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
   if (!material)
   {
