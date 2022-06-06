@@ -33,12 +33,12 @@
 
 #include <rviz/ogre_helpers/version_check.h>
 #include <OgreSimpleRenderable.h>
+#include <OgreSceneNode.h>
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 8)
 #include <OgreSceneManager.h>
 #else
 #include <OgreMaterialManager.h>
-#include <OgreSceneNode.h>
 #endif
 
 #include <string>
@@ -48,14 +48,14 @@ namespace rviz
 /* This header provides helper functions to maintain compatibility with Ogre versions 1.9 ... 1.12+.
  *
  * setMaterial() allows setting the material of a renderable by either name or MaterialPtr.
- * OGRE 1.10 added:   renderable.setMaterial(const Ogre::MaterialPtr &)
+ * OGRE 1.10.8 added: renderable.setMaterial(const Ogre::MaterialPtr &)
  * OGRE 1.11 removed: renderable.setMaterial(const std::string       &)
  *
  * removeAndDestroyChildNode(parent, child) allows removal of a SceneNode*.
- * OGRE 1.10 added: SceneNode::removeAndDestroyChild(SceneNode* child)
+ * OGRE 1.10.8 added: SceneNode::removeAndDestroyChild(SceneNode* child)
  */
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 8)
 inline void setMaterial(Ogre::SimpleRenderable& renderable, const std::string& material_name)
 {
   renderable.setMaterial(material_name);
@@ -85,7 +85,7 @@ inline void setMaterial(Ogre::SimpleRenderable& renderable, const Ogre::Material
 }
 #endif
 
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 0)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1, 10, 8)
 inline void removeAndDestroyChildNode(Ogre::SceneNode* parent, Ogre::SceneNode* child)
 {
   child->removeAndDestroyAllChildren();
