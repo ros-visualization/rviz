@@ -37,7 +37,6 @@
 #include <OgreQuaternion.h>
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
-#include <OgreBillboardSet.h>
 #include <OgreBillboard.h>
 #include <OgreTexture.h>
 #include <OgreTextureManager.h>

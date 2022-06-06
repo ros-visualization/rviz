@@ -31,7 +31,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
-#include <OgreBillboardSet.h>
 
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/arrow.h"

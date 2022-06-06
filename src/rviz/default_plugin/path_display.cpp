@@ -32,7 +32,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
-#include <OgreBillboardSet.h>
 #include <OgreMatrix4.h>
 
 #include "rviz/display_context.h"
