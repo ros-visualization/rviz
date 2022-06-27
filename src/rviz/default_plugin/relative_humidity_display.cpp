@@ -57,6 +57,7 @@ RelativeHumidityDisplay::RelativeHumidityDisplay() : point_cloud_common_(new Poi
 
 RelativeHumidityDisplay::~RelativeHumidityDisplay()
 {
+  RelativeHumidityDisplay::unsubscribe();
   delete point_cloud_common_;
 }
 

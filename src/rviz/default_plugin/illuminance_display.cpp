@@ -56,6 +56,7 @@ IlluminanceDisplay::IlluminanceDisplay() : point_cloud_common_(new PointCloudCom
 
 IlluminanceDisplay::~IlluminanceDisplay()
 {
+  IlluminanceDisplay::unsubscribe();
   delete point_cloud_common_;
 }
 
