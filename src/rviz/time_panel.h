@@ -70,7 +70,7 @@ protected Q_SLOTS:
   void onDisplayAdded(rviz::Display* display);
   void onDisplayRemoved(rviz::Display* display);
 
-  void onTimeSignal(rviz::Display* display, ros::Time time);
+  void onTimeSignal(ros::Time time);
 
   void load(const Config& config) override;
   void save(Config config) const override;

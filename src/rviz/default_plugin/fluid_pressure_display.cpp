@@ -56,6 +56,7 @@ FluidPressureDisplay::FluidPressureDisplay() : point_cloud_common_(new PointClou
 
 FluidPressureDisplay::~FluidPressureDisplay()
 {
+  FluidPressureDisplay::unsubscribe();
   delete point_cloud_common_;
 }
 

@@ -281,7 +281,7 @@ void Display::setFixedFrame(const QString& fixed_frame)
 
 void Display::emitTimeSignal(ros::Time time)
 {
-  Q_EMIT(timeSignal(this, time));
+  Q_EMIT(timeSignal(time, QPrivateSignal()));
 }
 
 void Display::reset()

@@ -380,6 +380,9 @@ void PointCloudCommon::initialize(DisplayContext* context, Ogre::SceneNode* scen
 
 PointCloudCommon::~PointCloudCommon()
 {
+  // Ensure any threads holding the mutexes have finished
+  boost::recursive_mutex::scoped_lock lock1(transformers_mutex_);
+  boost::mutex::scoped_lock lock2(new_clouds_mutex_);
   delete transformer_class_loader_;
 }
 
