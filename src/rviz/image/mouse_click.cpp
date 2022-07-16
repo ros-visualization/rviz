@@ -69,7 +69,7 @@ bool MouseClick::eventFilter(QObject* obj, QEvent* event)
         int bias = int((float(win_height_) - float(resized_img_height)) / 2.0);
         pix_y = (float(windowPos.y()) - bias) / float(resized_img_height) * float(img_height_);
       }
-      else // Window wider than the image: black bards on the side.
+      else // Window wider than the image: black bars on the side.
       {
         pix_y = int(float(windowPos.y()) / float(win_height_) * float(img_height_));
 
