@@ -79,7 +79,7 @@ bool MouseClick::eventFilter(QObject* obj, QEvent* event)
       }
 
       // Publish if clicked point is inside the image.
-      if (pix_x > 0 && pix_x < img_width_ && pix_y > 0 && pix_y < img_height_)
+      if (pix_x >= 0 && pix_x < img_width_ && pix_y >= 0 && pix_y < img_height_)
       {
         geometry_msgs::PointStamped point_msgs;
         point_msgs.header.stamp = ros::Time::now();
