@@ -102,7 +102,7 @@ private:
   IntProperty* median_buffer_size_property_;
   bool got_float_image_;
 
-  MouseClick* mouse_click;
+  MouseClick* mouse_click_;
 };
 
 } // namespace rviz
