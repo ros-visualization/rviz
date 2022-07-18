@@ -54,6 +54,23 @@ TfFrameProperty::TfFrameProperty(const QString& name,
   setFrameManager(frame_manager);
 }
 
+TfFrameProperty::TfFrameProperty(const QString& name,
+                                 const QString& default_value,
+                                 const QString& description,
+                                 Property* parent,
+                                 FrameManager* frame_manager,
+                                 bool include_fixed_frame_string,
+                                 std::function<void()> changed_slot,
+                                 QObject* receiver)
+  : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver)
+  , frame_manager_(nullptr)
+  , include_fixed_frame_string_(include_fixed_frame_string)
+{
+  // Parent class EditableEnumProperty has requestOptions() signal.
+  connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillFrameList()));
+  setFrameManager(frame_manager);
+}
+
 bool TfFrameProperty::setValue(const QVariant& new_value)
 {
   QString new_string = new_value.toString();

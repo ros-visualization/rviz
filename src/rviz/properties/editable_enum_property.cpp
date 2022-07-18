@@ -44,6 +44,16 @@ EditableEnumProperty::EditableEnumProperty(const QString& name,
 {
 }
 
+EditableEnumProperty::EditableEnumProperty(const QString& name,
+                                           const QString& default_value,
+                                           const QString& description,
+                                           Property* parent,
+                                           std::function<void()> changed_slot,
+                                           QObject* receiver)
+  : StringProperty(name, default_value, description, parent, changed_slot, receiver)
+{
+}
+
 void EditableEnumProperty::clearOptions()
 {
   strings_.clear();

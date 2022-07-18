@@ -49,6 +49,19 @@ RosTopicProperty::RosTopicProperty(const QString& name,
   connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillTopicList()));
 }
 
+RosTopicProperty::RosTopicProperty(const QString& name,
+                                   const QString& default_value,
+                                   const QString& message_type,
+                                   const QString& description,
+                                   Property* parent,
+                                   std::function<void()> changed_slot,
+                                   QObject* receiver)
+  : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver)
+  , message_type_(message_type)
+{
+  connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillTopicList()));
+}
+
 void RosTopicProperty::setMessageType(const QString& message_type)
 {
   message_type_ = message_type;

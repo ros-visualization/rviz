@@ -47,19 +47,12 @@ public:
                  const char* changed_slot = nullptr,
                  QObject* receiver = nullptr);
 
-  template <class Functor>
-  VectorProperty(const QString& name = QString(),
-                 const Ogre::Vector3& default_value = Ogre::Vector3::ZERO,
-                 const QString& description = QString(),
-                 Property* parent = nullptr,
-                 Functor method = []{},
-                 QObject* context = nullptr)
-    : Property(name, QVariant(), description, parent, method, context)
-    , vector_(default_value)
-    , ignore_child_updates_(false)
-  {
-    initialize_this();
-  }
+  VectorProperty(const QString& name,
+                 const Ogre::Vector3& default_value,
+                 const QString& description,
+                 Property* parent,
+                 std::function<void()> changed_slot,
+                 QObject* receiver = nullptr);
 
   virtual bool setVector(const Ogre::Vector3& vector);
   virtual Ogre::Vector3 getVector() const

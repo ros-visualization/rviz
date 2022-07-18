@@ -41,4 +41,14 @@ StringProperty::StringProperty(const QString& name,
 {
 }
 
+StringProperty::StringProperty(const QString& name,
+                               const QString& default_value,
+                               const QString& description,
+                               Property* parent,
+                               std::function<void()> changed_slot,
+                               QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+{
+}
+
 } // end namespace rviz

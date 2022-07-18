@@ -48,6 +48,18 @@ IntProperty::IntProperty(const QString& name,
 {
 }
 
+IntProperty::IntProperty(const QString& name,
+                         int default_value,
+                         const QString& description,
+                         Property* parent,
+                         std::function<void()> changed_slot,
+                         QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+  , min_(INT_MIN)
+  , max_(INT_MAX)
+{
+}
+
 bool IntProperty::setValue(const QVariant& new_value)
 {
   return Property::setValue(qBound(min_, new_value.toInt(), max_));

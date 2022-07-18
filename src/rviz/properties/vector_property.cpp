@@ -47,6 +47,19 @@ VectorProperty::VectorProperty(const QString& name,
   initialize_this();
 }
 
+VectorProperty::VectorProperty(const QString& name,
+                 const Ogre::Vector3& default_value,
+                 const QString& description,
+                 Property* parent,
+                 std::function<void()> changed_slot,
+                 QObject* receiver)
+  : Property(name, QVariant(), description, parent, changed_slot, receiver)
+  , vector_(default_value)
+  , ignore_child_updates_(false)
+{
+  initialize_this();
+}
+
 void VectorProperty::initialize_this()
 {
   x_ = new Property("X", vector_.x, "X coordinate", this);

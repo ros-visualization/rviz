@@ -47,6 +47,18 @@ FloatProperty::FloatProperty(const QString& name,
 {
 }
 
+FloatProperty::FloatProperty(const QString& name,
+                             float default_value,
+                             const QString& description,
+                             Property* parent,
+                             std::function<void()> changed_slot,
+                             QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+  , min_(-FLT_MAX)
+  , max_(FLT_MAX)
+{
+}
+
 bool FloatProperty::setValue(const QVariant& new_value)
 {
   return Property::setValue(qBound(min_, new_value.toFloat(), max_));

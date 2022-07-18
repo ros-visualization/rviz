@@ -47,6 +47,19 @@ QuaternionProperty::QuaternionProperty(const QString& name,
   initialize_this();
 }
 
+QuaternionProperty::QuaternionProperty(const QString& name,
+                                       const Ogre::Quaternion& default_value,
+                                       const QString& description,
+                                       Property* parent,
+                                       std::function<void()> changed_slot,
+                                       QObject* receiver)
+  : Property(name, QVariant(), description, parent, changed_slot, receiver)
+  , quaternion_(default_value)
+  , ignore_child_updates_(false)
+{
+  initialize_this();
+}
+
 void QuaternionProperty::initialize_this()
 {
   x_ = new Property("X", quaternion_.x, "X coordinate", this);

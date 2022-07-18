@@ -58,18 +58,12 @@ public:
               const char* changed_slot = nullptr,
               QObject* receiver = nullptr);
 
-  template <class Functor>
-  IntProperty(const QString& name = QString(),
-              int default_value = 0,
-              const QString& description = QString(),
-              Property* parent = nullptr,
-              Functor method = [] {},
-              QObject* context = nullptr)
-    : Property(name, default_value, description, parent, method, context)
-    , min_(INT_MIN)
-    , max_(INT_MAX)
-  {
-  }
+  IntProperty(const QString& name,
+              int default_value,
+              const QString& description,
+              Property* parent,
+              std::function<void()> changed_slot,
+              QObject* receiver = nullptr);
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
