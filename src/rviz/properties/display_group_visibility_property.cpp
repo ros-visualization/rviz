@@ -66,6 +66,29 @@ DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(uint32_t vis_bit,
   initialize_this();
 }
 
+DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(uint32_t vis_bit,
+                                                               DisplayGroup* display_group,
+                                                               Display* parent_display,
+                                                               const QString& name,
+                                                               bool default_value,
+                                                               const QString& description,
+                                                               Property* parent,
+                                                               std::function<void()> changed_slot,
+                                                               QObject* receiver)
+  : DisplayVisibilityProperty(vis_bit,
+                              display_group,
+                              name,
+                              default_value,
+                              description,
+                              parent,
+                              changed_slot,
+                              receiver)
+  , display_group_(display_group)
+  , parent_display_(parent_display)
+{
+  initialize_this();
+}
+
 void DisplayGroupVisibilityProperty::initialize_this()
 {
   connect(display_group_, SIGNAL(displayAdded(rviz::Display*)), this,

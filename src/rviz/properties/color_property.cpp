@@ -49,6 +49,17 @@ ColorProperty::ColorProperty(const QString& name,
   updateString();
 }
 
+ColorProperty::ColorProperty(const QString& name,
+                             const QColor& default_value,
+                             const QString& description,
+                             Property* parent,
+                             std::function<void()> changed_slot,
+                             QObject* receiver)
+  : Property(name, QVariant(), description, parent, changed_slot, receiver), color_(default_value)
+{
+  updateString();
+}
+
 bool ColorProperty::setColor(const QColor& new_color)
 {
   if (new_color != color_)

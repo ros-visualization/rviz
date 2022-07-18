@@ -44,6 +44,17 @@ BoolProperty::BoolProperty(const QString& name,
 {
 }
 
+BoolProperty::BoolProperty(const QString& name,
+                           bool default_value,
+                           const QString& description,
+                           Property* parent,
+                           std::function<void()> changed_slot,
+                           QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+  , disable_children_if_false_(false)
+{
+}
+
 BoolProperty::~BoolProperty()
 {
 }

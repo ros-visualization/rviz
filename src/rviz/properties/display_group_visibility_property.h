@@ -72,29 +72,15 @@ public:
                                  const char* changed_slot = nullptr,
                                  QObject* receiver = nullptr);
 
-  template <class Functor>
   DisplayGroupVisibilityProperty(uint32_t vis_bit,
                                  DisplayGroup* display_group,
                                  Display* parent_display,
-                                 const QString& name = QString(),
-                                 bool default_value = false,
-                                 const QString& description = QString(),
-                                 Property* parent = nullptr,
-                                 Functor method = [] {},
-                                 QObject* context = nullptr)
-    : DisplayVisibilityProperty(vis_bit,
-                                display_group,
-                                name,
-                                default_value,
-                                description,
-                                parent,
-                                method,
-                                context)
-    , display_group_(display_group)
-    , parent_display_(parent_display)
-  {
-    initialize_this();
-  }
+                                 const QString& name,
+                                 bool default_value,
+                                 const QString& description,
+                                 Property* parent,
+                                 std::function<void()> changed_slot,
+                                 QObject* receiver = nullptr);
 
   ~DisplayGroupVisibilityProperty() override;
 

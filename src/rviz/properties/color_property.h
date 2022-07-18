@@ -48,6 +48,13 @@ public:
                 const char* changed_slot = nullptr,
                 QObject* receiver = nullptr);
 
+  ColorProperty(const QString& name,
+                const QColor& default_value,
+                const QString& description,
+                Property* parent,
+                std::function<void()> changed_slot,
+                QObject* receiver = nullptr);
+
   bool setValue(const QVariant& new_value) override;
 
   bool paint(QPainter* painter, const QStyleOptionViewItem& option) const override;
