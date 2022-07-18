@@ -31,8 +31,6 @@
 
 #include <rviz/properties/property.h>
 
-#include <cfloat>
-
 namespace rviz
 {
 /** @brief Property specialized to enforce floating point max/min. */
