@@ -1348,10 +1348,8 @@ void VisualizationFrame::onDeletePanel()
         custom_panels_.removeAt(i);
         setDisplayConfigModified();
         action->deleteLater();
-        if (delete_view_menu_->actions().size() == 1 && delete_view_menu_->actions().first() == action)
-        {
-          delete_view_menu_->setEnabled(false);
-        }
+        delete_view_menu_->removeAction(action);
+        delete_view_menu_->setDisabled(delete_view_menu_->actions().isEmpty());
         return;
       }
     }
