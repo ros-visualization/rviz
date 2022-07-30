@@ -107,23 +107,15 @@ void SplitterHandle::mouseMoveEvent(QMouseEvent* event)
   if (event->buttons() & Qt::LeftButton)
   {
     QPoint pos_rel_parent = parent_->mapFromGlobal(event->globalPos());
+    const auto& content = parent_->contentsRect();
 
-    int new_x = pos_rel_parent.x() - x_press_offset_;
-
-    if (new_x > parent_->width() - width() - padding)
-    {
-      new_x = parent_->width() - width() - padding;
-    }
-
-    if (new_x < padding)
-    {
-      new_x = padding;
-    }
+    int new_x =
+        qBound(padding, pos_rel_parent.x() - x_press_offset_, parent_->width() - width() - padding);
 
     if (new_x != x())
     {
-      int new_column_width = new_x + width() / 2 - parent_->contentsRect().x();
-      first_column_size_ratio_ = new_column_width / (float)parent_->contentsRect().width();
+      int new_column_width = new_x + width() / 2 - content.x();
+      first_column_size_ratio_ = new_column_width / (float)content.width();
       updateGeometry();
     }
   }
