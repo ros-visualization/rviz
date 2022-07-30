@@ -134,7 +134,7 @@ void SplitterHandle::paintEvent(QPaintEvent* /*event*/)
   QPainter painter(this);
   painter.fillRect(0, 0, width(), height(), Qt::yellow);
   painter.setPen(color_);
-  painter.drawLine(1 + width() / 2, 0, 1 + width() / 2, height());
+  painter.drawLine(width() / 2, 0, width() / 2, height());
 }
 
 } // end namespace rviz
