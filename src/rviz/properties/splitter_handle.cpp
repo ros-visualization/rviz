@@ -49,9 +49,7 @@ SplitterHandle::SplitterHandle(QTreeView* parent)
 
 bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
 {
-  if (event_target == parent_ &&
-      (event->type() == QEvent::Resize || event->type() == QEvent::LayoutRequest ||
-       event->type() == QEvent::Show))
+  if (event_target == parent_ && event->type() == QEvent::Resize)
   {
     updateGeometry();
   }
@@ -61,11 +59,12 @@ bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
 void SplitterHandle::updateGeometry()
 {
   int w = 7;
-  int new_column_width = int(first_column_size_ratio_ * parent_->contentsRect().width());
-  parent_->setColumnWidth(0, new_column_width);
-  parent_->setColumnWidth(1, parent_->viewport()->contentsRect().width() - new_column_width);
+  const auto& content = parent_->contentsRect();
+  int new_column_width = int(first_column_size_ratio_ * content.width());
+  parent_->header()->resizeSection(0, new_column_width); // fixed size for name column
+  parent_->header()->resizeSection(1, content.width() - new_column_width);
 
-  int new_x = new_column_width - w / 2 + parent_->columnViewportPosition(0);
+  int new_x = new_column_width - w / 2;
   if (new_x != x() || parent_->height() != height())
     setGeometry(new_x, 0, w, parent_->height());
 }
@@ -98,7 +97,7 @@ void SplitterHandle::mouseMoveEvent(QMouseEvent* event)
   {
     QPoint pos_rel_parent = parent_->mapFromGlobal(event->globalPos());
 
-    int new_x = pos_rel_parent.x() - x_press_offset_ - parent_->columnViewportPosition(0);
+    int new_x = pos_rel_parent.x() - x_press_offset_;
 
     if (new_x > parent_->width() - width() - padding)
     {
