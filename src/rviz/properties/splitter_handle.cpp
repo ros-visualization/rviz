@@ -95,26 +95,24 @@ void SplitterHandle::mousePressEvent(QMouseEvent* event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    // position of mouse press inside this QWidget
-    x_press_offset_ = event->x();
+    // position of mouse press relative to splitter line / the center of the widget
+    x_press_offset_ = event->x() - width() / 2;
   }
 }
 
 void SplitterHandle::mouseMoveEvent(QMouseEvent* event)
 {
-  int padding = 55;
-
   if (event->buttons() & Qt::LeftButton)
   {
     QPoint pos_rel_parent = parent_->mapFromGlobal(event->globalPos());
     const auto& content = parent_->contentsRect();
 
-    int new_x =
-        qBound(padding, pos_rel_parent.x() - x_press_offset_, parent_->width() - width() - padding);
+    int new_column_width = qBound(parent_->header()->minimumSectionSize(),            // minimum
+                                  pos_rel_parent.x() - content.x() - x_press_offset_, // desired
+                                  content.width());                                   // maximum
 
-    if (new_x != x())
+    if (new_column_width != parent_->header()->sectionSize(0))
     {
-      int new_column_width = new_x + width() / 2 - content.x();
       first_column_size_ratio_ = new_column_width / (float)content.width();
       updateGeometry();
     }
