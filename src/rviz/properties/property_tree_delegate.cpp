@@ -28,7 +28,6 @@
  */
 
 #include <QAbstractItemView>
-#include <QPainter>
 
 #include "rviz/properties/property.h"
 #include "rviz/properties/line_edit_with_button.h"
@@ -48,9 +47,7 @@ void PropertyTreeDelegate::paint(QPainter* painter,
   Property* prop = static_cast<Property*>(index.internalPointer());
   if (!prop || !prop->paint(painter, option))
   {
-    QStyleOptionViewItem opt = option;
-    painter->fillRect(opt.rect, Qt::red);
-    QStyledItemDelegate::paint(painter, opt, index);
+    QStyledItemDelegate::paint(painter, option, index);
   }
 }
 

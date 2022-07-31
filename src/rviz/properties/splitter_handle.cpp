@@ -33,8 +33,6 @@
 #include <QPainter>
 #include <QTreeView>
 #include <QHeaderView>
-#include <QAction>
-#include <QDebug>
 
 #include "rviz/properties/splitter_handle.h"
 
@@ -47,13 +45,6 @@ SplitterHandle::SplitterHandle(QTreeView* parent)
   updateGeometry();
   parent_->header()->setStretchLastSection(false);
   parent_->installEventFilter(this);
-
-  parent->setStyleSheet("border-width: 1 1 1 10; border-style: solid; border-color: magenta");
-  auto act = new QAction("Update Geometry", this);
-  act->setShortcut(QKeySequence("F5"));
-  act->setShortcutContext(Qt::WidgetShortcut);
-  parent->addAction(act);
-  connect(act, &QAction::triggered, this, &SplitterHandle::updateGeometry);
 }
 
 bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
@@ -70,8 +61,6 @@ void SplitterHandle::updateGeometry()
   int w = 7;
   const auto& content = parent_->contentsRect();
   int new_column_width = int(first_column_size_ratio_ * content.width());
-  qDebug() << parent_->contentsRect() << parent_->contentsRect().width() << parent_->width()
-           << new_column_width;
   parent_->header()->resizeSection(0, new_column_width); // fixed size for name column
   parent_->header()->resizeSection(1, content.width() - new_column_width);
 
@@ -143,7 +132,6 @@ void SplitterHandle::mouseDoubleClickEvent(QMouseEvent* /*event*/)
 void SplitterHandle::paintEvent(QPaintEvent* /*event*/)
 {
   QPainter painter(this);
-  painter.fillRect(0, 0, width(), height(), Qt::yellow);
   painter.setPen(color_);
   painter.drawLine(width() / 2, 0, width() / 2, height());
 }
