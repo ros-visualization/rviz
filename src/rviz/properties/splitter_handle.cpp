@@ -123,6 +123,23 @@ void SplitterHandle::mouseMoveEvent(QMouseEvent* event)
   }
 }
 
+// adjust splitter position to optimally fit content
+void SplitterHandle::mouseDoubleClickEvent(QMouseEvent* /*event*/)
+{
+  int available_width = parent_->contentsRect().width();
+  int default_width = 0.5f * available_width;
+  // missing width to default
+  int col0 = static_cast<QAbstractItemView*>(parent_)->sizeHintForColumn(0) - default_width;
+  int col1 = static_cast<QAbstractItemView*>(parent_)->sizeHintForColumn(1) - default_width;
+
+  if (col0 <= 0 && col1 <= 0) // each column fits
+    setDesiredWidth(default_width);
+  else if (col0 + col1 <= 0) // both columns fit together, but require a non-default splitting
+    setDesiredWidth(default_width + col0 + 0.5f * std::abs(col0 + col1)); // uniformly split extra space
+  else
+    setDesiredWidth(default_width + col0 - 0.5f * (col0 + col1)); // uniformly cut missing space
+}
+
 void SplitterHandle::paintEvent(QPaintEvent* /*event*/)
 {
   QPainter painter(this);
