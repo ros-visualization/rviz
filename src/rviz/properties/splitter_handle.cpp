@@ -75,9 +75,9 @@ void SplitterHandle::updateGeometry()
   parent_->header()->resizeSection(0, new_column_width); // fixed size for name column
   parent_->header()->resizeSection(1, content.width() - new_column_width);
 
-  int new_x = new_column_width - w / 2;
-  if (new_x != x() || parent_->height() != height())
-    setGeometry(new_x, 0, w, parent_->height());
+  int new_x = content.x() + new_column_width - w / 2;
+  if (new_x != x() || content.height() != height())
+    setGeometry(new_x, content.y(), w, content.height());
 }
 
 void SplitterHandle::setRatio(float ratio)
