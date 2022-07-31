@@ -91,6 +91,20 @@ float SplitterHandle::getRatio()
   return first_column_size_ratio_;
 }
 
+void SplitterHandle::setDesiredWidth(int width)
+{
+  const auto& content = parent_->contentsRect();
+  int new_column_width = qBound(parent_->header()->minimumSectionSize(), // minimum
+                                width,                                   // desired
+                                content.width());                        // maximum
+
+  if (new_column_width != parent_->header()->sectionSize(0))
+  {
+    first_column_size_ratio_ = new_column_width / (float)content.width();
+    updateGeometry();
+  }
+}
+
 void SplitterHandle::mousePressEvent(QMouseEvent* event)
 {
   if (event->button() == Qt::LeftButton)
@@ -105,17 +119,7 @@ void SplitterHandle::mouseMoveEvent(QMouseEvent* event)
   if (event->buttons() & Qt::LeftButton)
   {
     QPoint pos_rel_parent = parent_->mapFromGlobal(event->globalPos());
-    const auto& content = parent_->contentsRect();
-
-    int new_column_width = qBound(parent_->header()->minimumSectionSize(),            // minimum
-                                  pos_rel_parent.x() - content.x() - x_press_offset_, // desired
-                                  content.width());                                   // maximum
-
-    if (new_column_width != parent_->header()->sectionSize(0))
-    {
-      first_column_size_ratio_ = new_column_width / (float)content.width();
-      updateGeometry();
-    }
+    setDesiredWidth(pos_rel_parent.x() - parent_->contentsRect().x() - x_press_offset_);
   }
 }
 
