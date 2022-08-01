@@ -34,8 +34,8 @@
 #include <QApplication>
 #include <QVBoxLayout>
 
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreCamera.h>
+#include <OgreSceneNode.h>
 
 using namespace rviz;
 

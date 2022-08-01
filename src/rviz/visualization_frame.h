@@ -269,6 +269,7 @@ protected Q_SLOTS:
 
   void reset();
 
+  void onPanelDeleted(QObject* dock);
   void onHelpDestroyed();
 
   void hideLeftDock(bool hide);

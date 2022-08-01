@@ -52,6 +52,7 @@ LaserScanDisplay::LaserScanDisplay()
 
 LaserScanDisplay::~LaserScanDisplay()
 {
+  LaserScanDisplay::unsubscribe();
   delete point_cloud_common_;
   delete projector_;
 }

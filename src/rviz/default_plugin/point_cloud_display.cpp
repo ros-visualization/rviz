@@ -48,6 +48,7 @@ PointCloudDisplay::PointCloudDisplay() : point_cloud_common_(new PointCloudCommo
 
 PointCloudDisplay::~PointCloudDisplay()
 {
+  PointCloudDisplay::unsubscribe();
   delete point_cloud_common_;
 }
 

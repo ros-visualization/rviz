@@ -53,6 +53,9 @@ public:
   /** @brief Get the ratio of the parent's left column to the parent widget width. */
   float getRatio();
 
+  /** @brief Set desired width of first column - subject to clamping */
+  void setDesiredWidth(int width);
+
   /** @brief Catch resize events sent to parent to update splitter's
    * geometry.  Always returns false. */
   bool eventFilter(QObject* event_target, QEvent* event) override;
@@ -70,6 +73,7 @@ public:
 protected:
   void mousePressEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
   void paintEvent(QPaintEvent* event) override;
 
 private:

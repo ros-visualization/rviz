@@ -50,6 +50,7 @@ TemperatureDisplay::TemperatureDisplay() : point_cloud_common_(new PointCloudCom
 
 TemperatureDisplay::~TemperatureDisplay()
 {
+  TemperatureDisplay::unsubscribe();
   delete point_cloud_common_;
 }
 

@@ -225,7 +225,7 @@ public:
 
 Q_SIGNALS:
 
-  void timeSignal(rviz::Display* display, ros::Time time);
+  void timeSignal(ros::Time time, QPrivateSignal);
 
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
