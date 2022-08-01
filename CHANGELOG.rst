@@ -2,6 +2,38 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.15 (2022-08-01)
+--------------------
+* Improve SplitterHandle of PropertyTreeWidgets (`#1760 <https://github.com/ros-visualization/rviz/issues/1760>`_)
+
+  * Suppress horizontal scrolling and auto-resizing of columns
+  * Double click auto-adjusts to content
+* Fix segfault occuring for direct dock panel deletion (`#1759 <https://github.com/ros-visualization/rviz/issues/1759>`_)
+* Fix race conditions in PointCloud displays (`#1754 <https://github.com/ros-visualization/rviz/issues/1754>`_)
+* Acquire mutexes before destroying PointCloudCommon
+* PointCloud displays: unsubscribe before destroying PointCloudCommon
+* Fix segfault in ``TimePanel::onTimeSignal()`` (`#1753 <https://github.com/ros-visualization/rviz/issues/1753>`_): Drop source Display* argument, which is a dangling pointer if the Display was deleted meanwhile
+* OGRE compatibility layer: more precise version info
+* Use more verbose material names for robot links (robot link material -> robot link <link name>:<material name>)
+* Fix transparency of RobotLinks with multiple visuals and different alpha values (`#1751 <https://github.com/ros-visualization/rviz/issues/1751>`_)
+* Maintain original (mesh) materials for RobotLinks (`#1704 <https://github.com/ros-visualization/rviz/issues/1704>`_, `#1732 <https://github.com/ros-visualization/rviz/issues/1732>`_)
+* Improve TF time syncing (`#1698 <https://github.com/ros-visualization/rviz/issues/1698>`_)
+
+  - TimePanel: Integrate experimental view
+  - New mode SyncFrame, syncing TF lookups within a visualization frame
+* Conditionally include OgreVector3.h vs. OgreVector.h for OGRE 1.9 vs. 1.12 (`#1741 <https://github.com/ros-visualization/rviz/issues/1741>`_)
+* Don't disable display if associated widget tab changes (`#1739 <https://github.com/ros-visualization/rviz/issues/1739>`_)
+* Drop OGRE/ from #include directives (`#1730 <https://github.com/ros-visualization/rviz/issues/1730>`_)
+* Fix segfault when no tools are available (`#1729 <https://github.com/ros-visualization/rviz/issues/1729>`_)
+* GridCells: implement setTopic() (`#1722 <https://github.com/ros-visualization/rviz/issues/1722>`_)
+* Adaptions for Ubuntu 22 (`#1717 <https://github.com/ros-visualization/rviz/issues/1717>`_)
+
+  * Switch to new boost/bind/bind.hpp
+  * Drop C++11 COMPILE_FLAGS
+  * Do not force obsolete CXX14
+  * Support python_qt_bindings with sip5
+* Contributors: AndreasR30, Brosong, Jochen Sprickerhof, Lucas Walter, Matthijs van der Burgh, Robert Haschke
+
 1.14.14 (2022-02-12)
 --------------------
 * Fixup `#1497 <https://github.com/ros-visualization/rviz/issues/1497>`_: Initialize ``fixed_frame_id``
