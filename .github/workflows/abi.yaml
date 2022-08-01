@@ -20,7 +20,7 @@ jobs:
       BASEDIR: /home/runner/work
       DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
       CACHE_PREFIX: ${{ matrix.distro }}
-      ABICHECK_URL: github:ros-visualization/rviz#1.13.17
+      ABICHECK_URL: github:ros-visualization/rviz#1.13.26
 
     name: "check"
     runs-on: ubuntu-latest

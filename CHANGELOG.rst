@@ -2,6 +2,20 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.26 (2022-08-01)
+--------------------
+* Improve SplitterHandle of PropertyTreeWidgets (`#1760 <https://github.com/ros-visualization/rviz/issues/1760>`_)
+
+  * Suppress horizontal scrolling and auto-resizing of columns
+  * Double click auto-adjusts to content
+* Fix segfault occuring for direct dock panel deletion (`#1759 <https://github.com/ros-visualization/rviz/issues/1759>`_)
+* Fix race conditions in PointCloud displays (`#1754 <https://github.com/ros-visualization/rviz/issues/1754>`_)
+* Acquire mutexes before destroying PointCloudCommon
+* PointCloud displays: unsubscribe before destroying PointCloudCommon
+* Fix segfault in ``TimePanel::onTimeSignal()`` (`#1753 <https://github.com/ros-visualization/rviz/issues/1753>`_): Drop source Display* argument, which is a dangling pointer if the Display was deleted meanwhile
+* Drop OGRE/ from #include directives
+* Contributors: Robert Haschke
+
 1.13.25 (2022-05-27)
 --------------------
 * RobotLink: Simplify material mode handling (`#1732 <https://github.com/ros-visualization/rviz/issues/1732>`_)
