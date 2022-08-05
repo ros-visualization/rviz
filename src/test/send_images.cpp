@@ -57,8 +57,8 @@ int main(int argc, char** argv)
   if (image_format == "rgb8")
   {
     sensor_msgs::Image msg;
-    int width = 100;
-    int height = 1000;
+    int width = 300;
+    int height = 200;
     msg.data.resize(width * height * 3);
     msg.header.frame_id = "camera_frame";
     msg.height = height;
@@ -74,14 +74,25 @@ int main(int argc, char** argv)
       {
         for (int y = 0; y < height; y++)
         {
+          uint8_t r = 0, g = 0, b = 0;
+          if (x < 5)
+            r = 255;
+          if (y < 5)
+            r = g = 255;
+          if (x >= 5 && x < width - 5 && y >= 5 && y < height - 5)
+          {
+            std::uniform_int_distribution<int> uniform(0, RAND_MAX);
+            auto rand = uniform(random_generator);
+            r = rand & 0xff;
+            g = (rand >> 8) & 0xff;
+            b = (rand >> 16) & 0xff;
+          }
           int index = (x + y * width) * 3;
-          std::uniform_int_distribution<int> uniform(0, RAND_MAX);
-          auto rand = uniform(random_generator);
-          msg.data[index] = rand & 0xff;
+          msg.data[index] = r;
           index++;
-          msg.data[index] = (rand >> 8) & 0xff;
+          msg.data[index] = g;
           index++;
-          msg.data[index] = (rand >> 16) & 0xff;
+          msg.data[index] = b;
         }
       }
       msg.header.seq = count;
