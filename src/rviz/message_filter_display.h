@@ -180,7 +180,7 @@ protected:
    * processMessage(). */
   void incomingMessage(const typename MessageType::ConstPtr& msg)
   {
-    if (!msg)
+    if (!msg || !isEnabled())
     {
       return;
     }
