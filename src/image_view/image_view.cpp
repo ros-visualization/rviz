@@ -110,6 +110,7 @@ void ImageView::showEvent(QShowEvent* event)
   Ogre::TextureUnitState* tu = material->getTechnique(0)->getPass(0)->createTextureUnitState();
   tu->setTextureName(texture_->getTexture()->getName());
   tu->setTextureFiltering(Ogre::TFO_NONE);
+  tu->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 
   Ogre::Rectangle2D* rect = new Ogre::Rectangle2D(true);
   rect->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);

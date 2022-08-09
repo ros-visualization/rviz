@@ -213,6 +213,9 @@ protected:
 
   void processTypeErasedMessage(boost::shared_ptr<const void> type_erased_msg) override
   {
+    if (!isEnabled())
+      return;
+
     auto msg = boost::static_pointer_cast<const MessageType>(type_erased_msg);
     ++messages_received_;
     setStatus(StatusProperty::Ok, "Topic", QString::number(messages_received_) + " messages received");
