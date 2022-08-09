@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.27 (2022-08-09)
+--------------------
+* MFD: Don't process messages when disabled (`#1765 <https://github.com/ros-visualization/rviz/issues/1765>`_)
+* Fix image display wrapping (`#1763 <https://github.com/ros-visualization/rviz/issues/1763>`_)
+* Contributors: Robert Haschke
+
 1.13.26 (2022-08-01)
 --------------------
 * Improve SplitterHandle of PropertyTreeWidgets (`#1760 <https://github.com/ros-visualization/rviz/issues/1760>`_)
