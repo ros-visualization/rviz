@@ -73,7 +73,6 @@ ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
 
   got_float_image_ = false;
 
-  mouse_click = new MouseClick();
 }
 
 void ImageDisplay::onInitialize()
@@ -133,7 +132,9 @@ void ImageDisplay::onInitialize()
 
   updateNormalizeOptions();
 
-  mouse_click->onInitialize(render_panel_);
+  
+  mouse_click_.reset(new MouseClick(render_panel_, update_nh_));
+  mouse_click_->onInitialize();
 }
 
 ImageDisplay::~ImageDisplay()
@@ -149,7 +150,7 @@ ImageDisplay::~ImageDisplay()
 void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
-  mouse_click->publish();
+  mouse_click_->publish();
 
   render_panel_->getRenderWindow()->setActive(true);
 }
@@ -158,7 +159,7 @@ void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
-  mouse_click->unpublish();
+  mouse_click_->unpublish();
 
   reset();
 }
@@ -220,7 +221,7 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
 
     render_panel_->getRenderWindow()->update();
 
-    mouse_click->setDimensions(img_width, img_height, win_width, win_height);
+    mouse_click_->setDimensions(img_width, img_height, win_width, win_height);
   }
   catch (UnsupportedImageEncoding& e)
   {
@@ -254,13 +255,13 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 void ImageDisplay::setTopic(const QString& topic, const QString& datatype)
 {
   ImageDisplayBase::setTopic(topic, datatype);
-  mouse_click->setTopic(topic);
+  mouse_click_->setTopic(topic);
 }
 
 void ImageDisplay::updateTopic()
 {
   ImageDisplayBase::updateTopic();
-  mouse_click->updateTopic(topic_property_->getTopic());
+  mouse_click_->updateTopic(topic_property_->getTopic());
 }
 
 

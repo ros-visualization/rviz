@@ -15,6 +15,7 @@
 #include "std_msgs/String.h"
 
 #include "rviz/rviz_export.h"
+#include "rviz/display.h"
 #endif
 
 
@@ -33,10 +34,10 @@ namespace rviz
 class RVIZ_EXPORT MouseClick : QObject
 {
 public:
-  MouseClick();
+  MouseClick(QObject* parent, const ros::NodeHandle& nh);
   ~MouseClick();
 
-  void onInitialize(QObject* parent);
+  void onInitialize();
 
   /** @brief ROS topic management. */
   void publish();

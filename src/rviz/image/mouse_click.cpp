@@ -6,23 +6,22 @@
 namespace rviz
 {
 
-MouseClick::MouseClick() : QObject()
+MouseClick::MouseClick(QObject* parent, const ros::NodeHandle& nh) : QObject(parent)
 {
+  node_handle_.reset(new ros::NodeHandle());
+  *node_handle_ = nh;
+  has_dimensions_ = false;
+  is_topic_name_ok_ = false;
+  setParent(parent);
+  parent->installEventFilter(this);
 }
 
 MouseClick::~MouseClick()
 {
 }
 
-
-void MouseClick::onInitialize(QObject* parent)
+void MouseClick::onInitialize()
 {
-  setParent(parent);
-  parent->installEventFilter(this);
-
-  has_dimensions_ = false;
-  is_topic_name_ok_ = false;
-  node_handle_.reset(new ros::NodeHandle());
 }
 
 void MouseClick::publish()
@@ -30,7 +29,7 @@ void MouseClick::publish()
   if (is_topic_name_ok_)
   {
     publisher_.reset(
-        new ros::Publisher(node_handle_->advertise<geometry_msgs::PointStamped>(topic_, 1000)));
+        new ros::Publisher(node_handle_->advertise<geometry_msgs::PointStamped>(topic_, 1)));
   }
 }
 
@@ -82,10 +81,10 @@ bool MouseClick::eventFilter(QObject* obj, QEvent* event)
       if (pix_x >= 0 && pix_x < img_width_ && pix_y >= 0 && pix_y < img_height_)
       {
         geometry_msgs::PointStamped point_msg;
-        point_msgs.header.stamp = ros::Time::now();
-        point_msgs.point.x = pix_x;
-        point_msgs.point.y = pix_y;
-        publisher_->publish(point_msgs);
+        point_msg.header.stamp = ros::Time::now();
+        point_msg.point.x = pix_x;
+        point_msg.point.y = pix_y;
+        publisher_->publish(point_msg);
       }
     }
   }
