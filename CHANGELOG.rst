@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.28 (2022-08-12)
+--------------------
+* Fixup to `#1759 <https://github.com/ros-visualization/rviz/issues/1759>`_
+* Contributors: Robert Haschke
+
 1.13.27 (2022-08-09)
 --------------------
 * MFD: Don't process messages when disabled (`#1765 <https://github.com/ros-visualization/rviz/issues/1765>`_)
