@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.18 (2022-08-12)
+--------------------
+* Fixup to `#1760 <https://github.com/ros-visualization/rviz/issues/1760>`_, SplitterHandle (`#1766 <https://github.com/ros-visualization/rviz/issues/1766>`_)
+* Contributors: Robert Haschke
+
 1.14.17 (2022-08-12)
 --------------------
 * Fixup to `#1759 <https://github.com/ros-visualization/rviz/issues/1759>`_
