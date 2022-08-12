@@ -165,10 +165,8 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
 
 VisualizationFrame::~VisualizationFrame()
 {
-  for (int i = 0; i < custom_panels_.size(); i++)
-  {
+  for (int i = custom_panels_.size() - 1; i >= 0; --i)
     delete custom_panels_[i].dock;
-  }
 
   delete panel_factory_;
   delete render_panel_;
@@ -953,11 +951,8 @@ void VisualizationFrame::saveWindowGeometry(Config config)
 void VisualizationFrame::loadPanels(const Config& config)
 {
   // First destroy any existing custom panels.
-  for (int i = 0; i < custom_panels_.size(); i++)
-  {
+  for (int i = custom_panels_.size() - 1; i >= 0; --i)
     delete custom_panels_[i].dock;
-    delete custom_panels_[i].delete_action;
-  }
   custom_panels_.clear();
 
   // Then load the ones in the config.
