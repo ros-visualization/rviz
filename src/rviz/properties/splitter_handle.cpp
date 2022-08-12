@@ -33,6 +33,7 @@
 #include <QPainter>
 #include <QTreeView>
 #include <QHeaderView>
+#include <QScrollBar>
 
 #include "rviz/properties/splitter_handle.h"
 
@@ -42,14 +43,14 @@ SplitterHandle::SplitterHandle(QTreeView* parent)
   : QWidget(parent), parent_(parent), first_column_size_ratio_(0.5f), color_(128, 128, 128, 64)
 {
   setCursor(Qt::SplitHCursor);
-  updateGeometry();
   parent_->header()->setStretchLastSection(false);
-  parent_->installEventFilter(this);
+  parent_->viewport()->installEventFilter(this);
+  updateGeometry();
 }
 
-bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
+bool SplitterHandle::eventFilter(QObject* /*event_target*/, QEvent* event)
 {
-  if (event_target == parent_ && event->type() == QEvent::Resize)
+  if (event->type() == QEvent::Resize)
   {
     updateGeometry();
   }
@@ -58,12 +59,36 @@ bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
 
 void SplitterHandle::updateGeometry()
 {
-  int w = 7;
+  auto* header = parent_->header();
+  const int sbw = parent_->verticalScrollBar()->isVisible() ? 0 : parent_->verticalScrollBar()->width();
+  const int w = 7;
+  const int min = header->minimumSectionSize();
+  const int available = parent_->viewport()->contentsRect().width();
   const auto& content = parent_->contentsRect();
-  int new_column_width = int(first_column_size_ratio_ * content.width());
-  parent_->header()->resizeSection(0, new_column_width); // fixed size for name column
-  parent_->header()->resizeSection(1, content.width() - new_column_width);
 
+  // determine new width of first column (w.r.t. overall content width!)
+  int new_column_width = int(first_column_size_ratio_ * content.width());
+  if (new_column_width <= 0)
+    new_column_width = 0;
+  else if (new_column_width >= available)
+    new_column_width = available;
+  else
+    new_column_width = qBound(min,                    // minimum
+                              new_column_width,       // desired
+                              available - min - sbw); // maximum
+
+  if (new_column_width > header->sectionSize(0))
+  { // decrease 2nd column before increasing 1st one
+    header->resizeSection(1, available - new_column_width);
+    header->resizeSection(0, new_column_width);
+  }
+  else
+  { // decrease 1st column before increasing 2nd one
+    header->resizeSection(0, new_column_width);
+    header->resizeSection(1, available - new_column_width);
+  }
+
+  // update geometry + position of splitter itself
   int new_x = content.x() + new_column_width - w / 2;
   if (new_x != x() || content.height() != height())
     setGeometry(new_x, content.y(), w, content.height());
@@ -82,16 +107,8 @@ float SplitterHandle::getRatio()
 
 void SplitterHandle::setDesiredWidth(int width)
 {
-  const auto& content = parent_->contentsRect();
-  int new_column_width = qBound(parent_->header()->minimumSectionSize(), // minimum
-                                width,                                   // desired
-                                content.width());                        // maximum
-
-  if (new_column_width != parent_->header()->sectionSize(0))
-  {
-    first_column_size_ratio_ = new_column_width / (float)content.width();
-    updateGeometry();
-  }
+  first_column_size_ratio_ = width / (float)parent_->contentsRect().width();
+  updateGeometry();
 }
 
 void SplitterHandle::mousePressEvent(QMouseEvent* event)
