@@ -71,7 +71,6 @@ PropertyTreeWidget::PropertyTreeWidget(QWidget* parent)
   setAllColumnsShowFocus(true);
   setSelectionMode(QAbstractItemView::ExtendedSelection);
   setEditTriggers(QAbstractItemView::AllEditTriggers);
-  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   QTimer* timer = new QTimer(this);
   connect(timer, SIGNAL(timeout()), this, SLOT(update()));
