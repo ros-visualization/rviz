@@ -68,9 +68,14 @@ void SplitterHandle::updateGeometry()
 
   // determine new width of first column (w.r.t. overall content width!)
   int new_column_width = int(first_column_size_ratio_ * content.width());
-  new_column_width = qBound(min,                    // minimum
-                            new_column_width,       // desired
-                            available - min - sbw); // maximum
+  if (new_column_width <= 0)
+    new_column_width = 0;
+  else if (new_column_width >= available)
+    new_column_width = available;
+  else
+    new_column_width = qBound(min,                    // minimum
+                              new_column_width,       // desired
+                              available - min - sbw); // maximum
 
   if (new_column_width > header->sectionSize(0))
   { // decrease 2nd column before increasing 1st one
