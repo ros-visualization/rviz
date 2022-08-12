@@ -44,12 +44,12 @@ SplitterHandle::SplitterHandle(QTreeView* parent)
   setCursor(Qt::SplitHCursor);
   updateGeometry();
   parent_->header()->setStretchLastSection(false);
-  parent_->installEventFilter(this);
+  parent_->viewport()->installEventFilter(this);
 }
 
-bool SplitterHandle::eventFilter(QObject* event_target, QEvent* event)
+bool SplitterHandle::eventFilter(QObject* /*event_target*/, QEvent* event)
 {
-  if (event_target == parent_ && event->type() == QEvent::Resize)
+  if (event->type() == QEvent::Resize)
   {
     updateGeometry();
   }
