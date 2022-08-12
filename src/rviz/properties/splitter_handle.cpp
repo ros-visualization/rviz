@@ -62,7 +62,7 @@ void SplitterHandle::updateGeometry()
   const auto& content = parent_->contentsRect();
   int new_column_width = int(first_column_size_ratio_ * content.width());
   parent_->header()->resizeSection(0, new_column_width); // fixed size for name column
-  parent_->header()->resizeSection(1, content.width() - new_column_width);
+  parent_->header()->resizeSection(1, parent_->viewport()->contentsRect().width() - new_column_width);
 
   int new_x = content.x() + new_column_width - w / 2;
   if (new_x != x() || content.height() != height())
