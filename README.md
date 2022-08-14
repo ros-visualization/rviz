@@ -8,32 +8,16 @@ rviz is a 3D visualizer for the Robot Operating System (ROS) framework.
 
 For more information, please see the wiki: http://wiki.ros.org/rviz
 
+Maintainers:
+- Robert Haschke (2019-)
+- William Woodall (2013-2018)
+- David Gossow (2013)
+- Dave Hershberger (2011-2013)
+- Josh Faust (2010)
+
 This package contains Public Domain icons downloaded from http://tango.freedesktop.org/releases/.
 
-Upstream Authors (2005-2009):
-
-- Ulisse Perusin `<uli.peru@gmail.com>`
-- Steven Garrity `<sgarrity@silverorange.com>`
-- Lapo Calamandrei `<calamandrei@gmail.com>`
-- Ryan Collier `<rcollier@novell.com>`
-- Rodney Dawes `<dobey@novell.com>`
-- Andreas Nilsson `<nisses.mail@home.se>`
-- Tuomas Kuosmanen `<tigert@tigert.com>`
-- Garrett LeSage `<garrett@novell.com>`
-- Jakub Steiner `<jimmac@novell.com>`
-
-Other icons and graphics contained in this package are released into the
-Public Domain as well.
-
-Authors (2012-2019):
-
-- David Gossow
-- Chad Rockey
-- Kei Okada
-- Julius Kammerl
-- Acorn Pooley
-- Rein Appeldoorn
-- Robert Haschke
+Other icons and graphics contained in this package are released into the Public Domain as well.
 
 Copyright notice for all icons and graphics in this package:
 
