@@ -119,7 +119,7 @@ private:
   BoolProperty* all_enabled_property_;
 
   FloatProperty* scale_property_;
-  StringProperty* filter_property_;
+  StringProperty* filter_whitelist_property_;
   StringProperty* filter_blacklist_property_;
   Property* frames_category_;
   Property* tree_category_;

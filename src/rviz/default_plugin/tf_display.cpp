@@ -41,7 +41,6 @@
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/ogre_helpers/movable_text.h"
 #include "rviz/properties/bool_property.h"
-#include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/string_property.h"
@@ -50,6 +49,7 @@
 #include "rviz/selection/selection_manager.h"
 
 #include "rviz/default_plugin/tf_display.h"
+
 namespace rviz
 {
 class FrameSelectionHandler : public SelectionHandler
@@ -182,7 +182,7 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
   scale_property_ = 
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
   
-  filter_property_ = new StringProperty("Filter", ".*", "Regex filter", this);
+  filter_property_ = new StringProperty("Filter", "", "Regex filter", this);
 
   filter_blacklist_property_ = new StringProperty("Filter (blacklist)", "", "Regex filter", this);
   
@@ -370,42 +370,51 @@ FrameInfo* TFDisplay::getFrameInfo(const std::string& frame)
 void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
-  V_string frames;
+  V_string frames, filtered_frames;
 // TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-context_->getTFClient()->getFrameStrings(frames);
+  context_->getTFClient()->getFrameStrings(frames);
 
 #ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif
-  std::sort(frames.begin(), frames.end());
 
-  S_FrameInfo current_frames;
-  std::string whitelist_regex_string = filter_property_->getStdString();
+  std::string whitelist_regex_string = filter_whitelist_property_->getStdString();
   std::string blacklist_regex_string = filter_blacklist_property_->getStdString();
   auto whitelist_regex = std::regex(whitelist_regex_string);
   auto blacklist_regex = std::regex(blacklist_regex_string);
+
+  auto it = frames.begin();
+  while (it != frames.end())
+  {
+    try
+    {
+      if ((whitelist_regex_string.empty() || std::regex_match(*it, whitelist_regex)) &&
+        !(!blacklist_regex_string.empty() && std::regex_match(*it, blacklist_regex)))
+        ++it;
+      else
+        it = frames.erase(it); 
+    }
+    catch (const std::regex_error& e)
+    {}
+  }
+
+  std::sort(frames.begin(), frames.end());
+
+  S_FrameInfo current_frames;
 
   {
     for (const std::string& frame : frames)
     {
       if (frame.empty())
-        continue;
-
-      try
       {
-        if (!std::regex_match(frame, whitelist_regex))
-          continue;
-        if (!blacklist_regex_string.empty())
-          if (std::regex_match(frame, blacklist_regex))
-            continue;
+        continue;
       }
-      catch (const std::regex_error&) {}
-
+      
       FrameInfo* info = getFrameInfo(frame);
       if (!info)
       {
