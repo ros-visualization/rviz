@@ -78,7 +78,7 @@ public:
   VisualizationFrame(QWidget* parent = nullptr);
   ~VisualizationFrame() override;
 
-  // now deprecated
+  [[deprecated("setApp() not needed anymore")]]
   void setApp(QApplication* app);
 
   /** @brief Call this @e before initialize() to have it take effect. */

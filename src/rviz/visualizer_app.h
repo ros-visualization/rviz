@@ -51,7 +51,7 @@ public:
   VisualizerApp();
   ~VisualizerApp() override;
 
-  // now deprecated
+  [[deprecated("setApp() not needed anymore")]]
   void setApp(QApplication* app);
 
   /** Start everything.  Pass in command line arguments.
