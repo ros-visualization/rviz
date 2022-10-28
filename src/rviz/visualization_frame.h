@@ -78,6 +78,7 @@ public:
   VisualizationFrame(QWidget* parent = nullptr);
   ~VisualizationFrame() override;
 
+  // now deprecated
   void setApp(QApplication* app);
 
   /** @brief Call this @e before initialize() to have it take effect. */
@@ -327,8 +328,6 @@ protected:
   void setDisplayConfigFile(const std::string& path);
 
   void hideDockImpl(Qt::DockWidgetArea area, bool hide);
-
-  QApplication* app_;
 
   RenderPanel* render_panel_;
 

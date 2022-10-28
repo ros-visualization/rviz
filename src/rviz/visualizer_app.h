@@ -29,7 +29,6 @@
 #ifndef RVIZ_VISUALIZER_APP_H
 #define RVIZ_VISUALIZER_APP_H
 
-#include <QApplication>
 #include <QObject>
 
 #ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
@@ -38,6 +37,7 @@
 #include <rviz/SendFilePath.h>
 #endif
 
+class QApplication;
 class QTimer;
 
 namespace rviz
@@ -51,6 +51,7 @@ public:
   VisualizerApp();
   ~VisualizerApp() override;
 
+  // now deprecated
   void setApp(QApplication* app);
 
   /** Start everything.  Pass in command line arguments.
@@ -67,7 +68,6 @@ private:
   bool loadConfigDiscardingCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
   bool saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
 
-  QApplication* app_;
   QTimer* continue_timer_;
   VisualizationFrame* frame_;
   ros::NodeHandlePtr nh_;
