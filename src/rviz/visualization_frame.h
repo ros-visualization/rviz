@@ -78,8 +78,7 @@ public:
   VisualizationFrame(QWidget* parent = nullptr);
   ~VisualizationFrame() override;
 
-  [[deprecated("setApp() not needed anymore")]]
-  void setApp(QApplication* app);
+  [[deprecated("setApp() not needed anymore")]] void setApp(QApplication* app);
 
   /** @brief Call this @e before initialize() to have it take effect. */
   void setShowChooseNewMaster(bool show);

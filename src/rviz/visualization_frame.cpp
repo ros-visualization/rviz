@@ -749,7 +749,9 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, c
     dialog.reset(new LoadingDialog(this));
     dialog->show();
     connect(this, SIGNAL(statusUpdate(const QString&)), dialog.get(), SLOT(showMessage(const QString&)));
-    QCoreApplication::processEvents(); // make the window correctly appear although running a long-term function
+
+    // make the window correctly appear although running a long-term function
+    QCoreApplication::processEvents();
   }
 
   YamlConfigReader reader;
