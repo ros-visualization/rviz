@@ -21,14 +21,15 @@ jobs:
       DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
       CACHE_PREFIX: ${{ matrix.distro }}
       ABICHECK_URL: github:ros-visualization/rviz#1.14.15
+      GHA_CACHE_SAVE: always
 
     name: "check"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache ccache
-        uses: pat-s/always-upload-cache@v2.1.5
+        uses: rhaschke/cache@main
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
@@ -37,7 +38,7 @@ jobs:
             ccache-${{ env.CACHE_PREFIX }}
 
       - name: Cache ABI workspace
-        uses: pat-s/always-upload-cache@v2.1.5
+        uses: rhaschke/cache@main
         with:
           path: ${{ env.BASEDIR }}/base_ws
           key: base_ws-${{ env.CACHE_PREFIX }}-${{ env.ABICHECK_URL }}
@@ -49,7 +50,7 @@ jobs:
         env: ${{ matrix.env || env }}
 
       - name: Upload test results (on failure)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: abi-check
