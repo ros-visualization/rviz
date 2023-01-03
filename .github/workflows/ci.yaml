@@ -31,23 +31,25 @@ jobs:
     name: "${{ matrix.distro }}${{ matrix.repo && format(' • {0}', matrix.repo) || '' }}${{ matrix.env.CLANG_TIDY && (github.event_name != 'workflow_dispatch' && ' • clang-tidy (delta)' || ' • clang-tidy (all)') || '' }}"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache ccache
-        uses: pat-s/always-upload-cache@v2.1.5
+        uses: rhaschke/cache@main
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
           restore-keys: |
             ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
             ccache-${{ env.CACHE_PREFIX }}
+        env:
+          GHA_CACHE_SAVE: always
 
       - name: industrial_ci
         uses: rhaschke/industrial_ci@master
         env: ${{ matrix.env || env }}
 
       - name: Upload test artifacts (on failure)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: test-results
