@@ -387,7 +387,11 @@ void RobotJoint::updateAxis()
       axis_->getSceneNode()->setVisible(getEnabled());
 
       axis_->setPosition(position_property_->getVector());
-      axis_->setOrientation(orientation_property_->getQuaternion());
+      Ogre::Quaternion q = orientation_property_->getQuaternion();
+      axis_->setOrientation(q);
+
+      q = q * joint_origin_rot_.UnitInverse(); // parent_link_orientation
+      axis_->setDirection(q * axis_property_->getVector());
 
       // TODO(lucasw) store an Ogre::ColorValue and set it according to
       // joint type.
