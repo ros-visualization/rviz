@@ -33,6 +33,7 @@
 #include <QAction>
 #include <QShortcut>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QDockWidget>
@@ -103,7 +104,6 @@ namespace rviz
 {
 VisualizationFrame::VisualizationFrame(QWidget* parent)
   : QMainWindow(parent)
-  , app_(nullptr)
   , render_panel_(nullptr)
   , show_help_action_(nullptr)
   , preferences_(new Preferences())
@@ -166,7 +166,7 @@ VisualizationFrame::~VisualizationFrame()
 
 void VisualizationFrame::setApp(QApplication* app)
 {
-  app_ = app;
+  Q_UNUSED(app);
 }
 
 void VisualizationFrame::setStatus(const QString& message)
@@ -258,8 +258,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
 
   // Periodically process events for the splash screen.
   // See: http://doc.qt.io/qt-5/qsplashscreen.html#details
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   if (!ros::isInitialized())
   {
@@ -268,8 +267,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   }
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   QWidget* central_widget = new QWidget(this);
   QHBoxLayout* central_layout = new QHBoxLayout;
@@ -305,40 +303,34 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   central_widget->setLayout(central_layout);
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   initMenus();
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   initToolbars();
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   setCentralWidget(central_widget);
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   manager_ = new VisualizationManager(render_panel_, this);
   manager_->setHelpPath(help_path_);
   connect(manager_, SIGNAL(escapePressed()), this, SLOT(exitFullScreen()));
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   render_panel_->initialize(manager_->getSceneManager(), manager_);
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   ToolManager* tool_man = manager_->getToolManager();
 
@@ -351,8 +343,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   manager_->initialize();
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   if (display_config_file != "")
   {
@@ -364,8 +355,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   }
 
   // Periodically process events for the splash screen.
-  if (app_)
-    app_->processEvents();
+  QCoreApplication::processEvents();
 
   delete splash_;
   splash_ = nullptr;
@@ -759,7 +749,9 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, c
     dialog.reset(new LoadingDialog(this));
     dialog->show();
     connect(this, SIGNAL(statusUpdate(const QString&)), dialog.get(), SLOT(showMessage(const QString&)));
-    app_->processEvents(); // make the window correctly appear although running a long-term function
+
+    // make the window correctly appear although running a long-term function
+    QCoreApplication::processEvents();
   }
 
   YamlConfigReader reader;
