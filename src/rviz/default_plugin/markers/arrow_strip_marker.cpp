@@ -1,4 +1,3 @@
-
 #include <rviz/ogre_helpers/ogre_vector.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneNode.h>
@@ -26,7 +25,8 @@ namespace rviz {
     }
 
     void ArrowStripMarker::onNewMessage(const MarkerConstPtr& /*old_message*/, const MarkerConstPtr& new_message) {
-        ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW_STRIP);
+        // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
+        // ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW_STRIP);
 
         Ogre::Vector3 pos, scale;
         Ogre::Quaternion orient;

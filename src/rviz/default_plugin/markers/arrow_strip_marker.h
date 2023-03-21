@@ -17,7 +17,6 @@ namespace rviz {
             ~ArrowStripMarker();
         protected:
             void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
-            virtual void setDefaultProportions();
 
             std::vector<Arrow*> arrows_;
     };
