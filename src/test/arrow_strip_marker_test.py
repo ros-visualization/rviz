@@ -33,6 +33,7 @@ def generate_circle(radius, samples):
         x = radius * math.sin(angle_step * i)
         y = radius * math.cos(angle_step * i)
         points.append(Point(x, y, 0))
+    points.append(points[0])
     return points
 
 def to_quaternion(axis, angle):
