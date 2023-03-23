@@ -33,8 +33,7 @@ ArrowStripMarker::~ArrowStripMarker()
 void ArrowStripMarker::onNewMessage(const MarkerConstPtr& /*old_message*/,
                                     const MarkerConstPtr& new_message)
 {
-  // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-  // ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW_STRIP);
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW_STRIP);
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;

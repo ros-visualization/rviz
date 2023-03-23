@@ -69,9 +69,8 @@ createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* context, Ogr
   case visualization_msgs::Marker::LINE_LIST:
     return new rviz::LineListMarker(owner, context, parent_node);
 
-    // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-    // case visualization_msgs::Marker::ARROW_STRIP:
-    //   return new rviz::ArrowStripMarker(owner, context, parent_node);
+  case visualization_msgs::Marker::ARROW_STRIP:
+    return new rviz::ArrowStripMarker(owner, context, parent_node);
 
   case visualization_msgs::Marker::SPHERE_LIST:
   case visualization_msgs::Marker::CUBE_LIST:
@@ -114,9 +113,8 @@ QString getMarkerTypeName(unsigned int type)
     return "Line Strip";
   case visualization_msgs::Marker::LINE_LIST:
     return "Line List";
-  // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-  // case visualization_msgs::Marker::ARROW_STRIP:
-  //   return "Arrow Strip";
+  case visualization_msgs::Marker::ARROW_STRIP:
+    return "Arrow Strip";
   case visualization_msgs::Marker::POINTS:
     return "Points";
   case visualization_msgs::Marker::TEXT_VIEW_FACING:
@@ -320,15 +318,14 @@ void checkPointsNotEmpty(const visualization_msgs::Marker& marker,
       increaseLevel(::ros::console::levels::Error, level);
     }
     break;
-  // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-  // case visualization_msgs::Marker::ARROW_STRIP:
-  //   if (marker.points.size() <= 1)
-  //   {
-  //     addSeparatorIfRequired(ss);
-  //     ss << "At least two points are required for an ARROW_STRIP marker.";
-  //     increaseLevel(::ros::console::levels::Error, level);
-  //   }
-  //   break;
+  case visualization_msgs::Marker::ARROW_STRIP:
+    if (marker.points.size() <= 1)
+    {
+      addSeparatorIfRequired(ss);
+      ss << "At least two points are required for an ARROW_STRIP marker.";
+      increaseLevel(::ros::console::levels::Error, level);
+    }
+    break;
   default:
     break;
   }
@@ -476,16 +473,15 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     checkTextEmpty(marker, ss, level);
     checkMeshEmpty(marker, ss, level);
     break;
-  // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-  // case visualization_msgs::Marker::ARROW_STRIP:
-  //   checkQuaternion(marker, ss, level);
-  //   checkScale(marker, ss, level);
-  //   checkColor(marker, ss, level);
-  //   checkPointsNotEmpty(marker, ss, level);
-  //   checkColorsEmpty(marker, ss, level);
-  //   checkTextEmpty(marker, ss, level);
-  //   checkMeshEmpty(marker, ss, level);
-  //   break;
+  case visualization_msgs::Marker::ARROW_STRIP:
+    checkQuaternion(marker, ss, level);
+    checkScale(marker, ss, level);
+    checkColor(marker, ss, level);
+    checkPointsNotEmpty(marker, ss, level);
+    checkColorsEmpty(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
+    break;
   case visualization_msgs::Marker::SPHERE_LIST:
   case visualization_msgs::Marker::CUBE_LIST:
   case visualization_msgs::Marker::TRIANGLE_LIST:

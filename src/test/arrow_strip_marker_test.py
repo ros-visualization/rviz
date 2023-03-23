@@ -19,8 +19,7 @@ def generate_arrows(points, pose, scale, color):
     m.header.stamp = rospy.Time.now()
     m.ns = "arrow_strip"
     m.id = 0
-    # TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-    # m.type = Marker.ARROW_STRIP
+    m.type = Marker.ARROW_STRIP
     m.points = points
     m.pose = pose
     m.scale = scale

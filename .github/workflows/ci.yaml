@@ -23,7 +23,7 @@ jobs:
 
     env:
       CXXFLAGS: "-Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
-      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
+      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings github:rr-tom-noble/common_msgs#feature/add-arrow-strip-marker-type
       AFTER_INSTALL_TARGET_DEPENDENCIES: apt install -qq -y libogre-${{ matrix.ogre }}-dev
       CATKIN_LINT: true
       CCACHE_DIR: ${{ github.workspace }}/.ccache
