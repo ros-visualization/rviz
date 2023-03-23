@@ -68,10 +68,10 @@ createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* context, Ogr
 
   case visualization_msgs::Marker::LINE_LIST:
     return new rviz::LineListMarker(owner, context, parent_node);
-  
-  // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
-  // case visualization_msgs::Marker::ARROW_STRIP:
-  //   return new rviz::ArrowStripMarker(owner, context, parent_node);
+
+    // TODO: Enable when https://github.com/ros/common_msgs/pull/190 is merged.
+    // case visualization_msgs::Marker::ARROW_STRIP:
+    //   return new rviz::ArrowStripMarker(owner, context, parent_node);
 
   case visualization_msgs::Marker::SPHERE_LIST:
   case visualization_msgs::Marker::CUBE_LIST:
