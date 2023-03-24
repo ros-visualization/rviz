@@ -9,7 +9,7 @@ from std_msgs.msg import ColorRGBA
 
 FRAME_ID = "map"
 rospy.init_node("marker_test")
-marker_pub = rospy.Publisher("marker_test", Marker)
+marker_pub = rospy.Publisher("marker_test", Marker, queue_size=1)
 
 
 def generate_arrows(points, pose, scale, color):
@@ -35,6 +35,7 @@ def generate_circle(radius, samples):
         y = radius * math.cos(angle_step * i)
         points.append(Point(x, y, 0))
     points.append(points[0])
+    points.append(Point())
     return points
 
 
