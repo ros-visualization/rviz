@@ -32,7 +32,6 @@
 
 #include <map>
 #include <set>
-#include <regex>
 
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
@@ -60,6 +59,7 @@ class VectorProperty;
 class FrameInfo;
 class FrameSelectionHandler;
 typedef boost::shared_ptr<FrameSelectionHandler> FrameSelectionHandlerPtr;
+class RegexFilterProperty;
 
 /** @brief Displays a visual representation of the TF hierarchy. */
 class TFDisplay : public Display
@@ -79,7 +79,6 @@ protected:
   void reset() override;
 
 private Q_SLOTS:
-  void updateFilterRegex(StringProperty* prop, std::regex& regex);
   void updateShowAxes();
   void updateShowArrows();
   void updateShowNames();
@@ -121,13 +120,10 @@ private:
   BoolProperty* all_enabled_property_;
 
   FloatProperty* scale_property_;
-  StringProperty* filter_whitelist_property_;
-  StringProperty* filter_blacklist_property_;
+  RegexFilterProperty* filter_whitelist_property_;
+  RegexFilterProperty* filter_blacklist_property_;
   Property* frames_category_;
   Property* tree_category_;
-
-  std::regex filter_whitelist_regex_;
-  std::regex filter_blacklist_regex_;
 
   bool changing_single_frame_enabled_state_;
   friend class FrameInfo;

@@ -28,9 +28,13 @@
  */
 
 #include <boost/bind.hpp>
+#include <regex>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <QValidator>
+#include <QLineEdit>
+#include <QToolTip>
 
 #include <tf/transform_listener.h>
 
@@ -162,6 +166,75 @@ void FrameSelectionHandler::setOrientation(const Ogre::Quaternion& orientation)
   }
 }
 
+class RegexValidator : public QValidator
+{
+  QLineEdit* editor_;
+
+public:
+  RegexValidator(QLineEdit* editor) : QValidator(editor), editor_(editor)
+  {
+  }
+  QValidator::State validate(QString& input, int& /*pos*/) const override
+  {
+    try
+    {
+      std::regex(input.toLocal8Bit().constData());
+      editor_->setStyleSheet(QString());
+      QToolTip::hideText();
+      return QValidator::Acceptable;
+    }
+    catch (const std::regex_error& e)
+    {
+      editor_->setStyleSheet("background: #ffe4e4");
+      QToolTip::showText(editor_->mapToGlobal(QPoint(0, 5)), tr(e.what()), editor_, QRect(), 5000);
+      return QValidator::Intermediate;
+    }
+  }
+};
+
+class RegexFilterProperty : public StringProperty
+{
+  std::regex default_;
+  std::regex regex_;
+
+  void onValueChanged()
+  {
+    const auto& value = getString();
+    if (value.isEmpty())
+      regex_ = default_;
+    else
+    {
+      try
+      {
+        regex_.assign(value.toLocal8Bit().constData(), std::regex_constants::optimize);
+      }
+      catch (const std::regex_error& e)
+      {
+        regex_ = default_;
+      }
+    }
+  }
+
+public:
+  RegexFilterProperty(const QString& name, const std::regex regex, Property* parent)
+    : StringProperty(name, "", "regular expression", parent), default_(regex), regex_(regex)
+  {
+    QObject::connect(this, &RegexFilterProperty::changed, this, [this]() { onValueChanged(); });
+  }
+  const std::regex& regex() const
+  {
+    return regex_;
+  }
+
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option) override
+  {
+    auto* editor = qobject_cast<QLineEdit*>(StringProperty::createEditor(parent, option));
+    if (editor)
+      editor->setValidator(new RegexValidator(editor));
+    return editor;
+  }
+};
+
 typedef std::set<FrameInfo*> S_FrameInfo;
 
 TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_enabled_state_(false)
@@ -181,12 +254,8 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
   scale_property_ =
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
 
-  filter_whitelist_property_ = new StringProperty("Filter (whitelist)", "", "Regex filter", this);
-  filter_blacklist_property_ = new StringProperty("Filter (blacklist)", "", "Regex filter", this);
-  QObject::connect(filter_whitelist_property_, &StringProperty::changed, this,
-                   [this]() { updateFilterRegex(filter_whitelist_property_, filter_whitelist_regex_); });
-  QObject::connect(filter_blacklist_property_, &StringProperty::changed, this,
-                   [this]() { updateFilterRegex(filter_blacklist_property_, filter_blacklist_regex_); });
+  filter_whitelist_property_ = new RegexFilterProperty("Filter (whitelist)", std::regex(""), this);
+  filter_blacklist_property_ = new RegexFilterProperty("Filter (blacklist)", std::regex(), this);
 
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "The interval, in seconds, at which to update the frame "
@@ -284,18 +353,6 @@ void TFDisplay::onDisable()
 {
   root_node_->setVisible(false);
   clear();
-}
-
-void TFDisplay::updateFilterRegex(StringProperty* prop, std::regex& regex)
-{
-  try
-  {
-    regex.assign(prop->getString().toLocal8Bit().constData(), std::regex_constants::optimize);
-  }
-  catch (const std::regex_error& e)
-  {
-    ROS_ERROR_STREAM(e.what());
-  }
 }
 
 void TFDisplay::updateShowNames()
@@ -401,11 +458,8 @@ void TFDisplay::updateFrames()
   auto it = frames.begin(), end = frames.end();
   while (it != end)
   {
-    if (it->empty() ||
-        !(filter_whitelist_property_->getString().isEmpty() ||
-          std::regex_search(*it, filter_whitelist_regex_)) ||
-        (!filter_blacklist_property_->getString().isEmpty() &&
-         std::regex_search(*it, filter_blacklist_regex_)))
+    if (it->empty() || !std::regex_search(*it, filter_whitelist_property_->regex()) ||
+        std::regex_search(*it, filter_blacklist_property_->regex()))
       std::swap(*it, *--end); // swap current to-be-dropped name with last one
     else
       ++it;
