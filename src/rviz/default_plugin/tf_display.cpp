@@ -564,6 +564,9 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
   setStatusStd(StatusProperty::Ok, frame->name_, "Transform OK");
 
+  float scale = scale_property_->getFloat();
+  bool frame_enabled = frame->enabled_property_->getBool();
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->getTransform(frame->name_, ros::Time(), position, orientation))
@@ -576,26 +579,24 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->name_node_->setVisible(false);
     frame->axes_->getSceneNode()->setVisible(false);
     frame->parent_arrow_->getSceneNode()->setVisible(false);
-    return;
   }
+  else
+  {
+    frame->selection_handler_->setPosition(position);
+    frame->selection_handler_->setOrientation(orientation);
 
-  frame->selection_handler_->setPosition(position);
-  frame->selection_handler_->setOrientation(orientation);
+    frame->axes_->setPosition(position);
+    frame->axes_->setOrientation(orientation);
+    frame->axes_->getSceneNode()->setVisible(show_axes_property_->getBool() && frame_enabled);
+    frame->axes_->setScale(Ogre::Vector3(scale, scale, scale));
 
-  bool frame_enabled = frame->enabled_property_->getBool();
+    frame->name_node_->setPosition(position);
+    frame->name_node_->setVisible(show_names_property_->getBool() && frame_enabled);
+    frame->name_node_->setScale(scale, scale, scale);
 
-  frame->axes_->setPosition(position);
-  frame->axes_->setOrientation(orientation);
-  frame->axes_->getSceneNode()->setVisible(show_axes_property_->getBool() && frame_enabled);
-  float scale = scale_property_->getFloat();
-  frame->axes_->setScale(Ogre::Vector3(scale, scale, scale));
-
-  frame->name_node_->setPosition(position);
-  frame->name_node_->setVisible(show_names_property_->getBool() && frame_enabled);
-  frame->name_node_->setScale(scale, scale, scale);
-
-  frame->position_property_->setVector(position);
-  frame->orientation_property_->setQuaternion(orientation);
+    frame->position_property_->setVector(position);
+    frame->orientation_property_->setQuaternion(orientation);
+  }
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
