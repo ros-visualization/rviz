@@ -179,13 +179,12 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
                                            "Whether or not arrows from child to parent should be shown.",
                                            this, SLOT(updateShowArrows()));
 
-  scale_property_ = 
+  scale_property_ =
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
-  
-  filter_property_ = new StringProperty("Filter", "", "Regex filter", this);
 
+  filter_whitelist_property_ = new StringProperty("Filter (whitelist)", "", "Regex filter", this);
   filter_blacklist_property_ = new StringProperty("Filter (blacklist)", "", "Regex filter", this);
-  
+
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "The interval, in seconds, at which to update the frame "
                                             "transforms. 0 means to do so every update cycle.",
@@ -370,7 +369,7 @@ FrameInfo* TFDisplay::getFrameInfo(const std::string& frame)
 void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
-  V_string frames, filtered_frames;
+  V_string frames;
 // TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
 #pragma GCC diagnostic push
@@ -387,17 +386,15 @@ void TFDisplay::updateFrames()
   std::string blacklist_regex_string = filter_blacklist_property_->getStdString();
   auto whitelist_regex = std::regex(whitelist_regex_string);
   auto blacklist_regex = std::regex(blacklist_regex_string);
-
-  auto it = frames.begin();
-  while (it != frames.end())
+  for (auto it = frames.begin(), end = frames.end(); it != end;)
   {
     try
     {
       if ((whitelist_regex_string.empty() || std::regex_match(*it, whitelist_regex)) &&
-        !(!blacklist_regex_string.empty() && std::regex_match(*it, blacklist_regex)))
+          !(!blacklist_regex_string.empty() && std::regex_match(*it, blacklist_regex)) && !it->empty())
         ++it;
       else
-        it = frames.erase(it); 
+        it = frames.erase(it);
     }
     catch (const std::regex_error& e)
     {}
@@ -410,11 +407,6 @@ void TFDisplay::updateFrames()
   {
     for (const std::string& frame : frames)
     {
-      if (frame.empty())
-      {
-        continue;
-      }
-      
       FrameInfo* info = getFrameInfo(frame);
       if (!info)
       {
@@ -750,8 +742,7 @@ TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it
   if (delete_properties)
   {
     delete frame->enabled_property_;
-    // delete frame->tree_property_;  // Here happens segmentation fault. With skipping deletinion, memory leak
-                                      //  appears but is not significant and only happens when user changes fields.
+    delete frame->tree_property_;
   }
   delete frame;
   return it;
