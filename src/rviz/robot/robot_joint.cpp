@@ -387,14 +387,11 @@ void RobotJoint::updateAxis()
       axis_->getSceneNode()->setVisible(getEnabled());
 
       axis_->setPosition(position_property_->getVector());
-      Ogre::Quaternion q = orientation_property_->getQuaternion();
-      axis_->setOrientation(q);
+      Ogre::Quaternion parent_link_orientation =
+          orientation_property_->getQuaternion() * joint_origin_rot_.UnitInverse();
+      axis_->setDirection(parent_link_orientation * axis_property_->getVector());
 
-      q = q * joint_origin_rot_.UnitInverse(); // parent_link_orientation
-      axis_->setDirection(q * axis_property_->getVector());
-
-      // TODO(lucasw) store an Ogre::ColorValue and set it according to
-      // joint type.
+      // TODO(lucasw) store an Ogre::ColorValue and set it according to joint type.
       axis_->setColor(0.0, 0.8, 0.0, 1.0);
     }
   }
@@ -425,7 +422,6 @@ void RobotJoint::setTransforms(const Ogre::Vector3& parent_link_position,
   if (axis_)
   {
     axis_->setPosition(position);
-    axis_->setOrientation(orientation);
     axis_->setDirection(parent_link_orientation * axis_property_->getVector());
   }
 }
