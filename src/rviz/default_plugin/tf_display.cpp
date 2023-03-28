@@ -28,7 +28,6 @@
  */
 
 #include <boost/bind.hpp>
-#include <regex>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -184,6 +183,10 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
 
   filter_whitelist_property_ = new StringProperty("Filter (whitelist)", "", "Regex filter", this);
   filter_blacklist_property_ = new StringProperty("Filter (blacklist)", "", "Regex filter", this);
+  QObject::connect(filter_whitelist_property_, &StringProperty::changed, this,
+                   [this]() { updateFilterRegex(filter_whitelist_property_, filter_whitelist_regex_); });
+  QObject::connect(filter_blacklist_property_, &StringProperty::changed, this,
+                   [this]() { updateFilterRegex(filter_blacklist_property_, filter_blacklist_regex_); });
 
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "The interval, in seconds, at which to update the frame "
@@ -281,6 +284,17 @@ void TFDisplay::onDisable()
 {
   root_node_->setVisible(false);
   clear();
+}
+
+void TFDisplay::updateFilterRegex(StringProperty* prop, std::regex& regex)
+{
+  try
+  {
+    regex.assign(prop->getString().toLocal8Bit().constData(), std::regex_constants::optimize);
+  }
+  catch (const std::regex_error& e)
+  {
+  }
 }
 
 void TFDisplay::updateShowNames()
@@ -382,22 +396,16 @@ void TFDisplay::updateFrames()
 #pragma GCC diagnostic pop
 #endif
 
-  std::string whitelist_regex_string = filter_whitelist_property_->getStdString();
-  std::string blacklist_regex_string = filter_blacklist_property_->getStdString();
-  auto whitelist_regex = std::regex(whitelist_regex_string);
-  auto blacklist_regex = std::regex(blacklist_regex_string);
   for (auto it = frames.begin(), end = frames.end(); it != end;)
   {
-    try
-    {
-      if ((whitelist_regex_string.empty() || std::regex_match(*it, whitelist_regex)) &&
-          !(!blacklist_regex_string.empty() && std::regex_match(*it, blacklist_regex)) && !it->empty())
-        ++it;
-      else
-        it = frames.erase(it);
-    }
-    catch (const std::regex_error& e)
-    {}
+    if (!it->empty() &&
+        (filter_whitelist_property_->getString().isEmpty() ||
+         std::regex_search(*it, filter_whitelist_regex_)) &&
+        !(!filter_blacklist_property_->getString().isEmpty() &&
+          std::regex_search(*it, filter_blacklist_regex_)))
+      ++it;
+    else
+      it = frames.erase(it);
   }
 
   std::sort(frames.begin(), frames.end());
