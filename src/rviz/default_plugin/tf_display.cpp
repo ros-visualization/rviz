@@ -294,6 +294,7 @@ void TFDisplay::updateFilterRegex(StringProperty* prop, std::regex& regex)
   }
   catch (const std::regex_error& e)
   {
+    ROS_ERROR_STREAM(e.what());
   }
 }
 
@@ -396,49 +397,44 @@ void TFDisplay::updateFrames()
 #pragma GCC diagnostic pop
 #endif
 
-  for (auto it = frames.begin(), end = frames.end(); it != end;)
+  // filter frames according to white- and black-list regular expressions
+  auto it = frames.begin(), end = frames.end();
+  while (it != end)
   {
-    if (!it->empty() &&
-        (filter_whitelist_property_->getString().isEmpty() ||
-         std::regex_search(*it, filter_whitelist_regex_)) &&
-        !(!filter_blacklist_property_->getString().isEmpty() &&
-          std::regex_search(*it, filter_blacklist_regex_)))
-      ++it;
+    if (it->empty() ||
+        !(filter_whitelist_property_->getString().isEmpty() ||
+          std::regex_search(*it, filter_whitelist_regex_)) ||
+        (!filter_blacklist_property_->getString().isEmpty() &&
+         std::regex_search(*it, filter_blacklist_regex_)))
+      std::swap(*it, *--end); // swap current to-be-dropped name with last one
     else
-      it = frames.erase(it);
+      ++it;
   }
 
-  std::sort(frames.begin(), frames.end());
+  std::sort(frames.begin(), end);
 
   S_FrameInfo current_frames;
-
+  for (it = frames.begin(); it != end; ++it)
   {
-    for (const std::string& frame : frames)
+    FrameInfo* info = getFrameInfo(*it);
+    if (!info)
     {
-      FrameInfo* info = getFrameInfo(frame);
-      if (!info)
-      {
-        info = createFrame(frame);
-      }
-      else
-      {
-        updateFrame(info);
-      }
-
-      current_frames.insert(info);
+      info = createFrame(*it);
     }
+    else
+    {
+      updateFrame(info);
+    }
+
+    current_frames.insert(info);
   }
 
+  for (auto frame_it = frames_.begin(), frame_end = frames_.end(); frame_it != frame_end;)
   {
-    M_FrameInfo::iterator frame_it = frames_.begin();
-    M_FrameInfo::iterator frame_end = frames_.end();
-    while (frame_it != frame_end)
-    {
-      if (current_frames.find(frame_it->second) == current_frames.end())
-        frame_it = deleteFrame(frame_it, true);
-      else
-        ++frame_it;
-    }
+    if (current_frames.find(frame_it->second) == current_frames.end())
+      frame_it = deleteFrame(frame_it, true);
+    else
+      ++frame_it;
   }
 
   context_->queueRender();
