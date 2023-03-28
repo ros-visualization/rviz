@@ -90,7 +90,8 @@ private:
   void updateFrames();
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);
-  M_FrameInfo::iterator deleteFrame(M_FrameInfo::iterator it, bool delete_properties);
+  M_FrameInfo::iterator
+  deleteFrame(M_FrameInfo::iterator it, bool delete_properties, bool delete_tree_property);
 
   FrameInfo* getFrameInfo(const std::string& frame);
 

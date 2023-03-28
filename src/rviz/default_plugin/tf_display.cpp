@@ -28,6 +28,7 @@
  */
 
 #include <boost/bind.hpp>
+#include <algorithm>
 #include <regex>
 
 #include <OgreSceneNode.h>
@@ -333,7 +334,7 @@ void TFDisplay::clear()
 
   // Clear all frames
   while (!frames_.empty())
-    deleteFrame(frames_.begin(), false);
+    deleteFrame(frames_.begin(), false, false);
 
   update_timer_ = 0.0f;
 
@@ -466,6 +467,7 @@ void TFDisplay::updateFrames()
   }
 
   std::sort(frames.begin(), end);
+  std::sort(end, frames.end());
 
   S_FrameInfo current_frames;
   for (it = frames.begin(); it != end; ++it)
@@ -483,10 +485,12 @@ void TFDisplay::updateFrames()
     current_frames.insert(info);
   }
 
+  it = end;
+  end = frames.end();
   for (auto frame_it = frames_.begin(), frame_end = frames_.end(); frame_it != frame_end;)
   {
     if (current_frames.find(frame_it->second) == current_frames.end())
-      frame_it = deleteFrame(frame_it, true);
+      frame_it = deleteFrame(frame_it, true, std::lower_bound(it, end, frame_it->first) == end);
     else
       ++frame_it;
   }
@@ -787,7 +791,8 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   frame->selection_handler_->setParentName(frame->parent_);
 }
 
-TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it, bool delete_properties)
+TFDisplay::M_FrameInfo::iterator
+TFDisplay::deleteFrame(M_FrameInfo::iterator it, bool delete_properties, bool delete_tree_property)
 {
   FrameInfo* frame = it->second;
   it = frames_.erase(it);
@@ -800,7 +805,8 @@ TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it
   if (delete_properties)
   {
     delete frame->enabled_property_;
-    delete frame->tree_property_;
+    if (delete_tree_property)
+      delete frame->tree_property_;
   }
   delete frame;
   return it;
