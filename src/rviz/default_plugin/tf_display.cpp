@@ -254,9 +254,6 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
   scale_property_ =
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
 
-  filter_whitelist_property_ = new RegexFilterProperty("Filter (whitelist)", std::regex(""), this);
-  filter_blacklist_property_ = new RegexFilterProperty("Filter (blacklist)", std::regex(), this);
-
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "The interval, in seconds, at which to update the frame "
                                             "transforms. 0 means to do so every update cycle.",
@@ -270,6 +267,9 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
       " and then it will fade out completely.",
       this);
   frame_timeout_property_->setMin(1);
+
+  filter_whitelist_property_ = new RegexFilterProperty("Filter (whitelist)", std::regex(""), this);
+  filter_blacklist_property_ = new RegexFilterProperty("Filter (blacklist)", std::regex(), this);
 
   frames_category_ = new Property("Frames", QVariant(), "The list of all frames.", this);
 
