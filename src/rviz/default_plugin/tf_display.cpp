@@ -679,30 +679,27 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->parent_arrow_->getSceneNode()->setVisible(false);
   }
 
-  // If this frame has no tree property or the parent has changed,
-  if (!frame->tree_property_ || old_parent != frame->parent_)
+  // If this frame has no tree property yet or the parent has changed,
+  if (!frame->tree_property_ || old_parent != frame->parent_ ||
+      // or its actual parent was not yet created
+      (has_parent && frame->tree_property_->getParent() == tree_category_))
   {
     // Look up the new parent.
     FrameInfo* parent = has_parent ? getFrameInfo(frame->parent_) : nullptr;
     // Retrieve tree property to add the new child at
-    rviz::Property* parent_tree_property = has_parent ? nullptr : tree_category_;
-    if (parent && parent->tree_property_)
+    rviz::Property* parent_tree_property;
+    if (parent && parent->tree_property_) // parent already created
       parent_tree_property = parent->tree_property_;
-    else if (has_parent) // otherwise reset parent_ to retry if the parent property was created
-      frame->parent_ = old_parent;
+    else // create (temporarily) at root
+      parent_tree_property = tree_category_;
 
-    // If the parent has a tree property, make a new tree property for this frame.
-    if (!parent_tree_property)
-      ;                              // nothing more to do
-    else if (!frame->tree_property_) // create new property
-    {
-      frame->tree_property_ =
-          new Property(QString::fromStdString(frame->name_), QVariant(), "");
+    if (!frame->tree_property_)
+    { // create new tree node
+      frame->tree_property_ = new Property(QString::fromStdString(frame->name_));
       parent_tree_property->insertChildSorted(frame->tree_property_);
     }
-    else // update property
-    {
-      // re-parent the tree property
+    else if (frame->tree_property_->getParent() != parent_tree_property)
+    { // re-parent existing tree property
       frame->tree_property_->getParent()->takeChild(frame->tree_property_);
       parent_tree_property->insertChildSorted(frame->tree_property_);
     }
