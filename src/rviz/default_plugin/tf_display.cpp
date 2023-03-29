@@ -28,9 +28,13 @@
  */
 
 #include <boost/bind.hpp>
+#include <regex>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <QValidator>
+#include <QLineEdit>
+#include <QToolTip>
 
 #include <tf/transform_listener.h>
 
@@ -162,6 +166,75 @@ void FrameSelectionHandler::setOrientation(const Ogre::Quaternion& orientation)
   }
 }
 
+class RegexValidator : public QValidator
+{
+  QLineEdit* editor_;
+
+public:
+  RegexValidator(QLineEdit* editor) : QValidator(editor), editor_(editor)
+  {
+  }
+  QValidator::State validate(QString& input, int& /*pos*/) const override
+  {
+    try
+    {
+      std::regex(input.toLocal8Bit().constData());
+      editor_->setStyleSheet(QString());
+      QToolTip::hideText();
+      return QValidator::Acceptable;
+    }
+    catch (const std::regex_error& e)
+    {
+      editor_->setStyleSheet("background: #ffe4e4");
+      QToolTip::showText(editor_->mapToGlobal(QPoint(0, 5)), tr(e.what()), editor_, QRect(), 5000);
+      return QValidator::Intermediate;
+    }
+  }
+};
+
+class RegexFilterProperty : public StringProperty
+{
+  std::regex default_;
+  std::regex regex_;
+
+  void onValueChanged()
+  {
+    const auto& value = getString();
+    if (value.isEmpty())
+      regex_ = default_;
+    else
+    {
+      try
+      {
+        regex_.assign(value.toLocal8Bit().constData(), std::regex_constants::optimize);
+      }
+      catch (const std::regex_error& e)
+      {
+        regex_ = default_;
+      }
+    }
+  }
+
+public:
+  RegexFilterProperty(const QString& name, const std::regex regex, Property* parent)
+    : StringProperty(name, "", "regular expression", parent), default_(regex), regex_(regex)
+  {
+    QObject::connect(this, &RegexFilterProperty::changed, this, [this]() { onValueChanged(); });
+  }
+  const std::regex& regex() const
+  {
+    return regex_;
+  }
+
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option) override
+  {
+    auto* editor = qobject_cast<QLineEdit*>(StringProperty::createEditor(parent, option));
+    if (editor)
+      editor->setValidator(new RegexValidator(editor));
+    return editor;
+  }
+};
+
 typedef std::set<FrameInfo*> S_FrameInfo;
 
 TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_enabled_state_(false)
@@ -194,6 +267,9 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
       " and then it will fade out completely.",
       this);
   frame_timeout_property_->setMin(1);
+
+  filter_whitelist_property_ = new RegexFilterProperty("Filter (whitelist)", std::regex(""), this);
+  filter_blacklist_property_ = new RegexFilterProperty("Filter (blacklist)", std::regex(), this);
 
   frames_category_ = new Property("Frames", QVariant(), "The list of all frames.", this);
 
@@ -377,42 +453,42 @@ void TFDisplay::updateFrames()
 #ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif
-  std::sort(frames.begin(), frames.end());
 
-  S_FrameInfo current_frames;
-
+  // filter frames according to white- and black-list regular expressions
+  auto it = frames.begin(), end = frames.end();
+  while (it != end)
   {
-    for (const std::string& frame : frames)
-    {
-      if (frame.empty())
-      {
-        continue;
-      }
-
-      FrameInfo* info = getFrameInfo(frame);
-      if (!info)
-      {
-        info = createFrame(frame);
-      }
-      else
-      {
-        updateFrame(info);
-      }
-
-      current_frames.insert(info);
-    }
+    if (it->empty() || !std::regex_search(*it, filter_whitelist_property_->regex()) ||
+        std::regex_search(*it, filter_blacklist_property_->regex()))
+      std::swap(*it, *--end); // swap current to-be-dropped name with last one
+    else
+      ++it;
   }
 
+  std::sort(frames.begin(), end);
+
+  S_FrameInfo current_frames;
+  for (it = frames.begin(); it != end; ++it)
   {
-    M_FrameInfo::iterator frame_it = frames_.begin();
-    M_FrameInfo::iterator frame_end = frames_.end();
-    while (frame_it != frame_end)
+    FrameInfo* info = getFrameInfo(*it);
+    if (!info)
     {
-      if (current_frames.find(frame_it->second) == current_frames.end())
-        frame_it = deleteFrame(frame_it, true);
-      else
-        ++frame_it;
+      info = createFrame(*it);
     }
+    else
+    {
+      updateFrame(info);
+    }
+
+    current_frames.insert(info);
+  }
+
+  for (auto frame_it = frames_.begin(), frame_end = frames_.end(); frame_it != frame_end;)
+  {
+    if (current_frames.find(frame_it->second) == current_frames.end())
+      frame_it = deleteFrame(frame_it, true);
+    else
+      ++frame_it;
   }
 
   context_->queueRender();
