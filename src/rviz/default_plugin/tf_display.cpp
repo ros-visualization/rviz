@@ -377,8 +377,6 @@ void TFDisplay::updateFrames()
 #ifndef _WIN32
 #pragma GCC diagnostic pop
 #endif
-  std::sort(frames.begin(), frames.end());
-
   S_FrameInfo current_frames;
 
   {
@@ -445,8 +443,9 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
 
   info->enabled_property_ = new BoolProperty(QString::fromStdString(info->name_), true,
-                                             "Enable or disable this individual frame.",
-                                             frames_category_, SLOT(updateVisibilityFromFrame()), info);
+                                             "Enable or disable this individual frame.", nullptr,
+                                             SLOT(updateVisibilityFromFrame()), info);
+  frames_category_->insertChildSorted(info->enabled_property_);
 
   info->parent_property_ =
       new StringProperty("Parent", "", "Parent of this frame.  (Not editable)", info->enabled_property_);
@@ -698,13 +697,14 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     else if (!frame->tree_property_) // create new property
     {
       frame->tree_property_ =
-          new Property(QString::fromStdString(frame->name_), QVariant(), "", parent_tree_property);
+          new Property(QString::fromStdString(frame->name_), QVariant(), "");
+      parent_tree_property->insertChildSorted(frame->tree_property_);
     }
     else // update property
     {
       // re-parent the tree property
       frame->tree_property_->getParent()->takeChild(frame->tree_property_);
-      parent_tree_property->addChild(frame->tree_property_);
+      parent_tree_property->insertChildSorted(frame->tree_property_);
     }
   }
 
