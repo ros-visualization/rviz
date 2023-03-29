@@ -466,7 +466,6 @@ void TFDisplay::updateFrames()
       ++it;
   }
 
-  // sort kept frames (frames.begin..end) and filtered ones (end..frames.end) separately
   std::sort(frames.begin(), end);
   std::sort(end, frames.end());
 
@@ -777,18 +776,8 @@ void TFDisplay::updateFrame(FrameInfo* frame)
       ;                              // nothing more to do
     else if (!frame->tree_property_) // create new property
     {
-      auto name = QString::fromStdString(frame->name_);
-      // try to find existing property node
-      for (int i = 0, end = parent_tree_property->numChildren(); i != end; ++i)
-      {
-        if (parent_tree_property->childAtUnchecked(i)->getName() == name)
-        {
-          frame->tree_property_ = parent_tree_property->childAtUnchecked(i);
-          break;
-        }
-      }
-      if (!frame->tree_property_) // only create a new node otherwise
-        frame->tree_property_ = new Property(name, QVariant(), "", parent_tree_property);
+      frame->tree_property_ =
+          new Property(QString::fromStdString(frame->name_), QVariant(), "", parent_tree_property);
     }
     else // update property
     {
