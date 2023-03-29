@@ -401,16 +401,12 @@ void TFDisplay::updateFrames()
     }
   }
 
+  for (auto frame_it = frames_.begin(), frame_end = frames_.end(); frame_it != frame_end;)
   {
-    M_FrameInfo::iterator frame_it = frames_.begin();
-    M_FrameInfo::iterator frame_end = frames_.end();
-    while (frame_it != frame_end)
-    {
-      if (current_frames.find(frame_it->second) == current_frames.end())
-        frame_it = deleteFrame(frame_it, true);
-      else
-        ++frame_it;
-    }
+    if (current_frames.find(frame_it->second) == current_frames.end())
+      frame_it = deleteFrame(frame_it, true);
+    else
+      ++frame_it;
   }
 
   context_->queueRender();
@@ -722,6 +718,12 @@ TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it
   if (delete_properties)
   {
     delete frame->enabled_property_;
+    // re-parent all children to root tree node
+    for (int i = frame->tree_property_->numChildren() - 1; i >= 0; --i)
+    {
+      auto* child = frame->tree_property_->takeChild(frame->tree_property_->childAtUnchecked(i));
+      tree_category_->insertChildSorted(child);
+    }
     delete frame->tree_property_;
   }
   delete frame;
