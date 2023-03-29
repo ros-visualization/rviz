@@ -465,8 +465,6 @@ void TFDisplay::updateFrames()
       ++it;
   }
 
-  std::sort(frames.begin(), end);
-
   S_FrameInfo current_frames;
   for (it = frames.begin(); it != end; ++it)
   {
@@ -521,8 +519,9 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
 
   info->enabled_property_ = new BoolProperty(QString::fromStdString(info->name_), true,
-                                             "Enable or disable this individual frame.",
-                                             frames_category_, SLOT(updateVisibilityFromFrame()), info);
+                                             "Enable or disable this individual frame.", nullptr,
+                                             SLOT(updateVisibilityFromFrame()), info);
+  frames_category_->insertChildSorted(info->enabled_property_);
 
   info->parent_property_ =
       new StringProperty("Parent", "", "Parent of this frame.  (Not editable)", info->enabled_property_);
@@ -640,6 +639,9 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
   setStatusStd(StatusProperty::Ok, frame->name_, "Transform OK");
 
+  float scale = scale_property_->getFloat();
+  bool frame_enabled = frame->enabled_property_->getBool();
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->getTransform(frame->name_, ros::Time(), position, orientation))
@@ -652,26 +654,24 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->name_node_->setVisible(false);
     frame->axes_->getSceneNode()->setVisible(false);
     frame->parent_arrow_->getSceneNode()->setVisible(false);
-    return;
   }
+  else
+  {
+    frame->selection_handler_->setPosition(position);
+    frame->selection_handler_->setOrientation(orientation);
 
-  frame->selection_handler_->setPosition(position);
-  frame->selection_handler_->setOrientation(orientation);
+    frame->axes_->setPosition(position);
+    frame->axes_->setOrientation(orientation);
+    frame->axes_->getSceneNode()->setVisible(show_axes_property_->getBool() && frame_enabled);
+    frame->axes_->setScale(Ogre::Vector3(scale, scale, scale));
 
-  bool frame_enabled = frame->enabled_property_->getBool();
+    frame->name_node_->setPosition(position);
+    frame->name_node_->setVisible(show_names_property_->getBool() && frame_enabled);
+    frame->name_node_->setScale(scale, scale, scale);
 
-  frame->axes_->setPosition(position);
-  frame->axes_->setOrientation(orientation);
-  frame->axes_->getSceneNode()->setVisible(show_axes_property_->getBool() && frame_enabled);
-  float scale = scale_property_->getFloat();
-  frame->axes_->setScale(Ogre::Vector3(scale, scale, scale));
-
-  frame->name_node_->setPosition(position);
-  frame->name_node_->setVisible(show_names_property_->getBool() && frame_enabled);
-  frame->name_node_->setScale(scale, scale, scale);
-
-  frame->position_property_->setVector(position);
-  frame->orientation_property_->setQuaternion(orientation);
+    frame->position_property_->setVector(position);
+    frame->orientation_property_->setQuaternion(orientation);
+  }
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
@@ -755,31 +755,29 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->parent_arrow_->getSceneNode()->setVisible(false);
   }
 
-  // If this frame has no tree property or the parent has changed,
-  if (!frame->tree_property_ || old_parent != frame->parent_)
+  // If this frame has no tree property yet or the parent has changed,
+  if (!frame->tree_property_ || old_parent != frame->parent_ ||
+      // or its actual parent was not yet created
+      (has_parent && frame->tree_property_->getParent() == tree_category_))
   {
     // Look up the new parent.
     FrameInfo* parent = has_parent ? getFrameInfo(frame->parent_) : nullptr;
     // Retrieve tree property to add the new child at
-    rviz::Property* parent_tree_property = has_parent ? nullptr : tree_category_;
-    if (parent && parent->tree_property_)
+    rviz::Property* parent_tree_property;
+    if (parent && parent->tree_property_) // parent already created
       parent_tree_property = parent->tree_property_;
-    else if (has_parent) // otherwise reset parent_ to retry if the parent property was created
-      frame->parent_ = old_parent;
+    else // create (temporarily) at root
+      parent_tree_property = tree_category_;
 
-    // If the parent has a tree property, make a new tree property for this frame.
-    if (!parent_tree_property)
-      ;                              // nothing more to do
-    else if (!frame->tree_property_) // create new property
-    {
-      frame->tree_property_ =
-          new Property(QString::fromStdString(frame->name_), QVariant(), "", parent_tree_property);
+    if (!frame->tree_property_)
+    { // create new tree node
+      frame->tree_property_ = new Property(QString::fromStdString(frame->name_));
+      parent_tree_property->insertChildSorted(frame->tree_property_);
     }
-    else // update property
-    {
-      // re-parent the tree property
+    else if (frame->tree_property_->getParent() != parent_tree_property)
+    { // re-parent existing tree property
       frame->tree_property_->getParent()->takeChild(frame->tree_property_);
-      parent_tree_property->addChild(frame->tree_property_);
+      parent_tree_property->insertChildSorted(frame->tree_property_);
     }
   }
 
@@ -800,6 +798,12 @@ TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame(M_FrameInfo::iterator it
   if (delete_properties)
   {
     delete frame->enabled_property_;
+    // re-parent all children to root tree node
+    for (int i = frame->tree_property_->numChildren() - 1; i >= 0; --i)
+    {
+      auto* child = frame->tree_property_->takeChild(frame->tree_property_->childAtUnchecked(i));
+      tree_category_->insertChildSorted(child);
+    }
     delete frame->tree_property_;
   }
   delete frame;
