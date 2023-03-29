@@ -261,7 +261,7 @@ void InteractiveMarker::populateMenu(QMenu* menu, std::vector<uint32_t>& ids)
     {
       IntegerAction* action =
           new IntegerAction(makeMenuString(node.entry.title), menu, (int)node.entry.id);
-      connect(action, SIGNAL(triggered(int)), this, SLOT(handleMenuSelect(int)));
+      connect(action, &IntegerAction::triggered, this, &InteractiveMarker::handleMenuSelect);
       menu->addAction(action);
     }
     else

@@ -251,7 +251,7 @@ VisualizerApp::~VisualizerApp()
 void VisualizerApp::startContinueChecker()
 {
   continue_timer_ = new QTimer(this);
-  connect(continue_timer_, SIGNAL(timeout()), this, SLOT(checkContinue()));
+  connect(continue_timer_, &QTimer::timeout, this, &VisualizerApp::checkContinue);
   continue_timer_->start(100);
 }
 

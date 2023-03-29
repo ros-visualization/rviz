@@ -75,13 +75,11 @@ ViewsPanel::ViewsPanel(QWidget* parent) : Panel(parent), view_man_(nullptr)
   main_layout->addLayout(button_layout);
   setLayout(main_layout);
 
-  connect(remove_button, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
-  connect(rename_button, SIGNAL(clicked()), this, SLOT(renameSelected()));
-  connect(zero_button, SIGNAL(clicked()), this, SLOT(onZeroClicked()));
-  connect(properties_view_, SIGNAL(clicked(const QModelIndex&)), this,
-          SLOT(setCurrentViewFromIndex(const QModelIndex&)));
-  connect(properties_view_, SIGNAL(activated(const QModelIndex&)), this,
-          SLOT(setCurrentViewFromIndex(const QModelIndex&)));
+  connect(remove_button, &QPushButton::clicked, this, &ViewsPanel::onDeleteClicked);
+  connect(rename_button, &QPushButton::clicked, this, &ViewsPanel::renameSelected);
+  connect(zero_button, &QPushButton::clicked, this, &ViewsPanel::onZeroClicked);
+  connect(properties_view_, &PropertyTreeWidget::clicked, this, &ViewsPanel::setCurrentViewFromIndex);
+  connect(properties_view_, &PropertyTreeWidget::activated, this, &ViewsPanel::setCurrentViewFromIndex);
 }
 
 void ViewsPanel::onInitialize()
@@ -93,9 +91,10 @@ void ViewsPanel::setViewManager(ViewManager* view_man)
 {
   if (view_man_)
   {
-    disconnect(save_button_, SIGNAL(clicked()), view_man_, SLOT(copyCurrentToList()));
-    disconnect(camera_type_selector_, SIGNAL(activated(int)), this, SLOT(onTypeSelectorChanged(int)));
-    disconnect(view_man_, SIGNAL(currentChanged()), this, SLOT(onCurrentChanged()));
+    disconnect(save_button_, &QPushButton::clicked, view_man_, &ViewManager::copyCurrentToList);
+    disconnect(camera_type_selector_, qOverload<int>(&QComboBox::activated), this,
+               &ViewsPanel::onTypeSelectorChanged);
+    disconnect(view_man_, &ViewManager::currentChanged, this, &ViewsPanel::onCurrentChanged);
   }
   view_man_ = view_man;
   camera_type_selector_->clear();
@@ -111,9 +110,10 @@ void ViewsPanel::setViewManager(ViewManager* view_man)
                                      id); // send the regular-formatted id as userData.
     }
 
-    connect(save_button_, SIGNAL(clicked()), view_man_, SLOT(copyCurrentToList()));
-    connect(camera_type_selector_, SIGNAL(activated(int)), this, SLOT(onTypeSelectorChanged(int)));
-    connect(view_man_, SIGNAL(currentChanged()), this, SLOT(onCurrentChanged()));
+    connect(save_button_, &QPushButton::clicked, view_man_, &ViewManager::copyCurrentToList);
+    connect(camera_type_selector_, qOverload<int>(&QComboBox::activated), this,
+            &ViewsPanel::onTypeSelectorChanged);
+    connect(view_man_, &ViewManager::currentChanged, this, &ViewsPanel::onCurrentChanged);
   }
   else
   {

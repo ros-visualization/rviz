@@ -50,7 +50,7 @@ TfFrameProperty::TfFrameProperty(const QString& name,
   , include_fixed_frame_string_(include_fixed_frame_string)
 {
   // Parent class EditableEnumProperty has requestOptions() signal.
-  connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillFrameList()));
+  connect(this, &TfFrameProperty::requestOptions, this, &TfFrameProperty::fillFrameList);
   setFrameManager(frame_manager);
 }
 
@@ -70,12 +70,14 @@ void TfFrameProperty::setFrameManager(FrameManager* frame_manager)
 {
   if (frame_manager_ && include_fixed_frame_string_)
   {
-    disconnect(frame_manager_, SIGNAL(fixedFrameChanged()), this, SLOT(handleFixedFrameChange()));
+    disconnect(frame_manager_, &FrameManager::fixedFrameChanged, this,
+               &TfFrameProperty::handleFixedFrameChange);
   }
   frame_manager_ = frame_manager;
   if (frame_manager_ && include_fixed_frame_string_)
   {
-    connect(frame_manager_, SIGNAL(fixedFrameChanged()), this, SLOT(handleFixedFrameChange()));
+    connect(frame_manager_, &FrameManager::fixedFrameChanged, this,
+            &TfFrameProperty::handleFixedFrameChange);
   }
 }
 

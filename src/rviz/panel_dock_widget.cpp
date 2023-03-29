@@ -53,7 +53,7 @@ PanelDockWidget::PanelDockWidget(const QString& name)
   close_button->setIcon(QIcon::fromTheme("window-close"));
   close_button->setIconSize(QSize(10, 10));
 
-  connect(close_button, SIGNAL(clicked()), this, SLOT(close()));
+  connect(close_button, &QToolButton::clicked, this, &PanelDockWidget::close);
 
   title_label_ = new QLabel(name, this);
 
@@ -115,12 +115,12 @@ void PanelDockWidget::setContentWidget(QWidget* child)
 {
   if (widget())
   {
-    disconnect(widget(), SIGNAL(destroyed(QObject*)), this, SLOT(onChildDestroyed(QObject*)));
+    disconnect(widget(), &QObject::destroyed, this, &PanelDockWidget::onChildDestroyed);
   }
   setWidget(child);
   if (child)
   {
-    connect(child, SIGNAL(destroyed(QObject*)), this, SLOT(onChildDestroyed(QObject*)));
+    connect(child, &QObject::destroyed, this, &PanelDockWidget::onChildDestroyed);
   }
 }
 

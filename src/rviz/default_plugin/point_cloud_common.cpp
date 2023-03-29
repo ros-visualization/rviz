@@ -352,15 +352,15 @@ PointCloudCommon::PointCloudCommon(Display* display)
       new EnumProperty("Position Transformer", "",
                        "Set the transformer to use to set the position of the points.", display_,
                        SLOT(updateXyzTransformer()), this);
-  connect(xyz_transformer_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(setXyzTransformerOptions(EnumProperty*)));
+  connect(xyz_transformer_property_, &EnumProperty::requestOptions, this,
+          &PointCloudCommon::setXyzTransformerOptions);
 
   color_transformer_property_ =
       new EnumProperty("Color Transformer", "",
                        "Set the transformer to use to set the color of the points.", display_,
                        SLOT(updateColorTransformer()), this);
-  connect(color_transformer_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(setColorTransformerOptions(EnumProperty*)));
+  connect(color_transformer_property_, &EnumProperty::requestOptions, this,
+          &PointCloudCommon::setColorTransformerOptions);
 }
 
 void PointCloudCommon::initialize(DisplayContext* context, Ogre::SceneNode* scene_node)
@@ -404,7 +404,8 @@ void PointCloudCommon::loadTransformers()
 
     PointCloudTransformerPtr trans(transformer_class_loader_->createUnmanagedInstance(lookup_name));
     trans->init();
-    connect(trans.get(), SIGNAL(needRetransform()), this, SLOT(causeRetransform()));
+    connect(trans.get(), &PointCloudTransformer::needRetransform, this,
+            &PointCloudCommon::causeRetransform);
 
     TransformerInfo info;
     info.transformer = trans;

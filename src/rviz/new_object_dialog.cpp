@@ -107,15 +107,14 @@ NewObjectDialog::NewObjectDialog(Factory* factory,
   setLayout(main_layout);
 
   //***** Connections
-  connect(tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this,
-          SLOT(onDisplaySelected(QTreeWidgetItem*)));
-  connect(tree, SIGNAL(itemActivated(QTreeWidgetItem*, int)), this, SLOT(accept()));
-  connect(button_box_, SIGNAL(accepted()), this, SLOT(accept()));
-  connect(button_box_, SIGNAL(rejected()), this, SLOT(reject()));
+  connect(tree, &QTreeWidget::currentItemChanged, this, &NewObjectDialog::onDisplaySelected);
+  connect(tree, &QTreeWidget::itemActivated, this, &NewObjectDialog::accept);
+  connect(button_box_, &QDialogButtonBox::accepted, this, &NewObjectDialog::accept);
+  connect(button_box_, &QDialogButtonBox::rejected, this, &NewObjectDialog::reject);
 
   if (display_name_output_)
   {
-    connect(name_editor_, SIGNAL(textEdited(const QString&)), this, SLOT(onNameChanged()));
+    connect(name_editor_, &QLineEdit::textEdited, this, &NewObjectDialog::onNameChanged);
   }
 }
 

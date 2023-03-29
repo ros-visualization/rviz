@@ -51,8 +51,8 @@ ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages
   transport_property_ = new EnumProperty("Transport Hint", "raw", "Preferred method of sending images.",
                                          this, SLOT(updateTopic()));
 
-  connect(transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(transport_property_, &EnumProperty::requestOptions, this,
+          &ImageDisplayBase::fillTransportOptionList);
 
   queue_size_property_ =
       new IntProperty("Queue Size", 2,

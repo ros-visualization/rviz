@@ -126,10 +126,11 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
   panel_factory_ = new PanelFactory();
 
   installEventFilter(geom_change_detector_);
-  connect(geom_change_detector_, SIGNAL(changed()), this, SLOT(setDisplayConfigModified()));
+  connect(geom_change_detector_, &WidgetGeometryChangeDetector::changed, this,
+          &VisualizationFrame::setDisplayConfigModified);
 
   post_load_timer_->setSingleShot(true);
-  connect(post_load_timer_, SIGNAL(timeout()), this, SLOT(markLoadingDone()));
+  connect(post_load_timer_, &QTimer::timeout, this, [this] { loading_ = false; });
 
   package_path_ = ros::package::getPath("rviz");
   help_path_ = QString::fromStdString((fs::path(package_path_) / "help/help.html").string());
@@ -139,11 +140,11 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
   reset_button->setText("Reset");
   reset_button->setContentsMargins(0, 0, 0, 0);
   statusBar()->addPermanentWidget(reset_button, 0);
-  connect(reset_button, SIGNAL(clicked(bool)), this, SLOT(reset()));
+  connect(reset_button, &QToolButton::clicked, this, &VisualizationFrame::reset);
 
   status_label_ = new QLabel("");
   statusBar()->addPermanentWidget(status_label_, 1);
-  connect(this, SIGNAL(statusUpdate(const QString&)), status_label_, SLOT(setText(const QString&)));
+  connect(this, &VisualizationFrame::statusUpdate, status_label_, &QLabel::setText);
 
   fps_label_ = new QLabel("");
   fps_label_->setMinimumWidth(40);
@@ -252,7 +253,8 @@ void VisualizationFrame::initialize(const QString& display_config_file)
     QPixmap splash_image(splash_path_);
     splash_ = new SplashScreen(splash_image);
     splash_->show();
-    connect(this, SIGNAL(statusUpdate(const QString&)), splash_, SLOT(showMessage(const QString&)));
+    connect(this, &VisualizationFrame::statusUpdate, splash_,
+            [this](const QString& message) { splash_->showMessage(message); });
   }
   Q_EMIT statusUpdate("Initializing");
 
@@ -284,7 +286,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   hide_left_dock_button_->setAutoRaise(true);
   hide_left_dock_button_->setCheckable(true);
 
-  connect(hide_left_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideLeftDock(bool)));
+  connect(hide_left_dock_button_, &QToolButton::toggled, this, &VisualizationFrame::hideLeftDock);
 
   hide_right_dock_button_ = new QToolButton();
   hide_right_dock_button_->setContentsMargins(0, 0, 0, 0);
@@ -294,7 +296,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   hide_right_dock_button_->setAutoRaise(true);
   hide_right_dock_button_->setCheckable(true);
 
-  connect(hide_right_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideRightDock(bool)));
+  connect(hide_right_dock_button_, &QToolButton::toggled, this, &VisualizationFrame::hideRightDock);
 
   central_layout->addWidget(hide_left_dock_button_, 0);
   central_layout->addWidget(render_panel_, 1);
@@ -322,7 +324,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
 
   manager_ = new VisualizationManager(render_panel_, this);
   manager_->setHelpPath(help_path_);
-  connect(manager_, SIGNAL(escapePressed()), this, SLOT(exitFullScreen()));
+  connect(manager_, &VisualizationManager::escapePressed, this, &VisualizationFrame::exitFullScreen);
 
   // Periodically process events for the splash screen.
   QCoreApplication::processEvents();
@@ -334,11 +336,12 @@ void VisualizationFrame::initialize(const QString& display_config_file)
 
   ToolManager* tool_man = manager_->getToolManager();
 
-  connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
-  connect(tool_man, SIGNAL(toolAdded(Tool*)), this, SLOT(addTool(Tool*)));
-  connect(tool_man, SIGNAL(toolRemoved(Tool*)), this, SLOT(removeTool(Tool*)));
-  connect(tool_man, SIGNAL(toolRefreshed(Tool*)), this, SLOT(refreshTool(Tool*)));
-  connect(tool_man, SIGNAL(toolChanged(Tool*)), this, SLOT(indicateToolIsCurrent(Tool*)));
+  connect(manager_, &VisualizationManager::configChanged, this,
+          &VisualizationFrame::setDisplayConfigModified);
+  connect(tool_man, &ToolManager::toolAdded, this, &VisualizationFrame::addTool);
+  connect(tool_man, &ToolManager::toolRemoved, this, &VisualizationFrame::removeTool);
+  connect(tool_man, &ToolManager::toolRefreshed, this, &VisualizationFrame::refreshTool);
+  connect(tool_man, &ToolManager::toolChanged, this, &VisualizationFrame::indicateToolIsCurrent);
 
   manager_->initialize();
 
@@ -364,8 +367,8 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   initialized_ = true;
   Q_EMIT statusUpdate("RViz is ready.");
 
-  connect(manager_, SIGNAL(preUpdate()), this, SLOT(updateFps()));
-  connect(manager_, SIGNAL(statusUpdate(const QString&)), this, SIGNAL(statusUpdate(const QString&)));
+  connect(manager_, &VisualizationManager::preUpdate, this, &VisualizationFrame::updateFps);
+  connect(manager_, &VisualizationManager::statusUpdate, this, &VisualizationFrame::statusUpdate);
 }
 
 void VisualizationFrame::initConfigs()
@@ -478,7 +481,7 @@ void VisualizationFrame::initMenus()
   fullscreen_action->setCheckable(true);
   this->addAction(
       fullscreen_action); // Also add to window, or the shortcut doest work when the menu is hidden.
-  connect(this, SIGNAL(fullScreenChange(bool)), fullscreen_action, SLOT(setChecked(bool)));
+  connect(this, &VisualizationFrame::fullScreenChange, fullscreen_action, &QAction::setChecked);
   view_menu_->addSeparator();
 
   QMenu* help_menu = menuBar()->addMenu("&Help");
@@ -501,7 +504,8 @@ void VisualizationFrame::initToolbars()
   toolbar_->setObjectName("Tools");
   toolbar_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
   toolbar_actions_ = new QActionGroup(this);
-  connect(toolbar_actions_, SIGNAL(triggered(QAction*)), this, SLOT(onToolbarActionTriggered(QAction*)));
+  connect(toolbar_actions_, &QActionGroup::triggered, this,
+          &VisualizationFrame::onToolbarActionTriggered);
   view_menu_->addAction(toolbar_->toggleViewAction());
 
   toolbar_separator_ = toolbar_->addSeparator();
@@ -510,7 +514,7 @@ void VisualizationFrame::initToolbars()
   add_tool_button->setToolTip("Add a new tool");
   add_tool_button->setIcon(loadPixmap("package://rviz/icons/plus.png"));
   toolbar_->addWidget(add_tool_button);
-  connect(add_tool_button, SIGNAL(clicked()), this, SLOT(openNewToolDialog()));
+  connect(add_tool_button, &QToolButton::clicked, this, &VisualizationFrame::openNewToolDialog);
 
   remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
@@ -519,7 +523,7 @@ void VisualizationFrame::initToolbars()
   remove_tool_button->setToolTip("Remove a tool from the toolbar");
   remove_tool_button->setIcon(loadPixmap("package://rviz/icons/minus.png"));
   toolbar_->addWidget(remove_tool_button);
-  connect(remove_tool_menu_, SIGNAL(triggered(QAction*)), this, SLOT(onToolbarRemoveTool(QAction*)));
+  connect(remove_tool_menu_, &QMenu::triggered, this, &VisualizationFrame::onToolbarRemoveTool);
 
   QMenu* button_style_menu = new QMenu(toolbar_);
   QAction* action_tool_button_icon_only = new QAction("Icon only", toolbar_actions_);
@@ -541,7 +545,7 @@ void VisualizationFrame::initToolbars()
   button_style_button->setToolTip("Set toolbar style");
   button_style_button->setIcon(loadPixmap("package://rviz/icons/visibility.svg"));
   toolbar_->addWidget(button_style_button);
-  connect(button_style_menu, SIGNAL(triggered(QAction*)), this, SLOT(onButtonStyleTool(QAction*)));
+  connect(button_style_menu, &QMenu::triggered, this, &VisualizationFrame::onButtonStyleTool);
 }
 
 void VisualizationFrame::hideDockImpl(Qt::DockWidgetArea area, bool hide)
@@ -634,7 +638,7 @@ void VisualizationFrame::openNewPanelDialog()
     QDockWidget* dock = addPanelByName(display_name, class_id);
     if (dock)
     {
-      connect(dock, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(onDockPanelChange()));
+      connect(dock, &QDockWidget::dockLocationChanged, this, &VisualizationFrame::onDockPanelChange);
     }
   }
   manager_->startUpdate();
@@ -679,7 +683,7 @@ void VisualizationFrame::updateRecentConfigMenu()
       QString qdisplay_name = QString::fromStdString(display_name);
       QAction* action = new QAction(qdisplay_name, this);
       action->setData(QString::fromStdString(*it));
-      connect(action, SIGNAL(triggered()), this, SLOT(onRecentConfigSelected()));
+      connect(action, &QAction::triggered, this, &VisualizationFrame::onRecentConfigSelected);
       recent_configs_menu_->addAction(action);
     }
   }
@@ -748,7 +752,7 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, c
   {
     dialog.reset(new LoadingDialog(this));
     dialog->show();
-    connect(this, SIGNAL(statusUpdate(const QString&)), dialog.get(), SLOT(showMessage(const QString&)));
+    connect(this, &VisualizationFrame::statusUpdate, dialog.get(), &LoadingDialog::showMessage);
 
     // make the window correctly appear although running a long-term function
     QCoreApplication::processEvents();
@@ -771,11 +775,6 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, c
   post_load_timer_->start(1000);
 
   return true;
-}
-
-void VisualizationFrame::markLoadingDone()
-{
-  loading_ = false;
 }
 
 void VisualizationFrame::setImageSaveDirectory(const QString& directory)
@@ -951,7 +950,7 @@ void VisualizationFrame::loadPanels(const Config& config)
       // qobject_cast.
       if (dock)
       {
-        connect(dock, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(onDockPanelChange()));
+        connect(dock, &QDockWidget::dockLocationChanged, this, &VisualizationFrame::onDockPanelChange);
         Panel* panel = qobject_cast<Panel*>(dock->widget());
         if (panel)
         {
@@ -1126,8 +1125,7 @@ void VisualizationFrame::onSaveImage()
 {
   ScreenshotDialog* dialog =
       new ScreenshotDialog(this, render_panel_, QString::fromStdString(last_image_dir_));
-  connect(dialog, SIGNAL(savedInDirectory(const QString&)), this,
-          SLOT(setImageSaveDirectory(const QString&)));
+  connect(dialog, &ScreenshotDialog::savedInDirectory, this, &VisualizationFrame::setImageSaveDirectory);
   dialog->show();
 }
 
@@ -1252,7 +1250,7 @@ void VisualizationFrame::showHelpPanel()
   {
     QDockWidget* dock = addPanelByName("Help", "rviz/Help");
     show_help_action_ = dock->toggleViewAction();
-    connect(dock, SIGNAL(destroyed(QObject*)), this, SLOT(onHelpDestroyed()));
+    connect(dock, &QObject::destroyed, this, &VisualizationFrame::onHelpDestroyed);
   }
   else
   {
@@ -1383,7 +1381,7 @@ QDockWidget* VisualizationFrame::addPanelByName(const QString& name,
     panel = new FailedPanel(class_id, error);
   }
   panel->setName(name);
-  connect(panel, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
+  connect(panel, &Panel::configChanged, this, &VisualizationFrame::setDisplayConfigModified);
 
   PanelRecord record;
   record.dock = addPane(name, panel, area, floating);
@@ -1413,14 +1411,15 @@ VisualizationFrame::addPane(const QString& name, QWidget* panel, Qt::DockWidgetA
   dock->setObjectName(name); // QMainWindow::saveState() needs objectName to be set.
 
   // we want to know when that panel becomes visible
-  connect(dock, SIGNAL(visibilityChanged(bool)), this, SLOT(onDockPanelVisibilityChange(bool)));
-  connect(this, SIGNAL(fullScreenChange(bool)), dock, SLOT(overrideVisibility(bool)));
+  connect(dock, &PanelDockWidget::visibilityChanged, this,
+          &VisualizationFrame::onDockPanelVisibilityChange);
+  connect(this, &VisualizationFrame::fullScreenChange, dock, &PanelDockWidget::overrideVisibility);
 
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction(toggle_action);
 
-  connect(toggle_action, SIGNAL(triggered(bool)), this, SLOT(setDisplayConfigModified()));
-  connect(dock, SIGNAL(closed()), this, SLOT(setDisplayConfigModified()));
+  connect(toggle_action, &QAction::triggered, this, &VisualizationFrame::setDisplayConfigModified);
+  connect(dock, &PanelDockWidget::closed, this, &VisualizationFrame::setDisplayConfigModified);
 
   dock->installEventFilter(geom_change_detector_);
 

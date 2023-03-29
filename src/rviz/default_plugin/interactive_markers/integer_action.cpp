@@ -33,7 +33,7 @@ namespace rviz
 IntegerAction::IntegerAction(const QString& text, QObject* parent, int id)
   : QAction(text, parent), id_(id)
 {
-  connect(this, SIGNAL(triggered(bool)), this, SLOT(emitId()));
+  connect(this, &QAction::triggered, this, &IntegerAction::emitId);
 }
 
 void IntegerAction::emitId()

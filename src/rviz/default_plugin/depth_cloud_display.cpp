@@ -94,8 +94,8 @@ DepthCloudDisplay::DepthCloudDisplay()
       new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this,
                        SLOT(updateTopic()));
 
-  connect(depth_transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(depth_transport_property_, &EnumProperty::requestOptions, this,
+          &DepthCloudDisplay::fillTransportOptionList);
 
   depth_transport_property_->setStdString("raw");
 
@@ -112,8 +112,8 @@ DepthCloudDisplay::DepthCloudDisplay()
       "Color Transport Hint", "raw", "Preferred method of sending images.", this, SLOT(updateTopic()));
 
 
-  connect(color_transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(color_transport_property_, &EnumProperty::requestOptions, this,
+          &DepthCloudDisplay::fillTransportOptionList);
 
   color_transport_property_->setStdString("raw");
 

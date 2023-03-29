@@ -66,8 +66,8 @@ QWidget* EditableEnumProperty::createEditor(QWidget* parent, const QStyleOptionV
   cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
   cb->addItems(strings_);
   cb->setEditText(getValue().toString());
-  QObject::connect(cb, SIGNAL(currentIndexChanged(const QString&)), this,
-                   SLOT(setString(const QString&)));
+  QObject::connect(cb, qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
+                   &EditableEnumProperty::setString);
 
   // TODO: need to better handle string value which is not in list.
   return cb;

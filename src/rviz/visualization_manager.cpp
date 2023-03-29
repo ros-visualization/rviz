@@ -155,15 +155,16 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   root_display_group_->setName("root");
   display_property_tree_model_ = new PropertyTreeModel(root_display_group_);
   display_property_tree_model_->setDragDropClass("display");
-  connect(display_property_tree_model_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
+  connect(display_property_tree_model_, &PropertyTreeModel::configChanged, this,
+          &VisualizationManager::configChanged);
 
   tool_manager_ = new ToolManager(this);
-  connect(tool_manager_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
-  connect(tool_manager_, SIGNAL(toolChanged(Tool*)), this, SLOT(onToolChanged(Tool*)));
+  connect(tool_manager_, &ToolManager::configChanged, this, &VisualizationManager::configChanged);
+  connect(tool_manager_, &ToolManager::toolChanged, this, &VisualizationManager::onToolChanged);
 
   view_manager_ = new ViewManager(this);
   view_manager_->setRenderPanel(render_panel_);
-  connect(view_manager_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
+  connect(view_manager_, &ViewManager::configChanged, this, &VisualizationManager::configChanged);
 
   IconizedProperty* ip = new IconizedProperty("Global Options", QVariant(), "", root_display_group_);
   ip->setIcon(loadPixmap("package://rviz/icons/options.png"));
@@ -200,7 +201,7 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   selection_manager_ = new SelectionManager(this);
 
   update_timer_ = new QTimer;
-  connect(update_timer_, SIGNAL(timeout()), this, SLOT(onUpdate()));
+  connect(update_timer_, &QTimer::timeout, this, &VisualizationManager::onUpdate);
 
   private_->threaded_queue_threads_.create_thread(
       boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));

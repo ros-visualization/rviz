@@ -85,11 +85,12 @@ DisplaysPanel::DisplaysPanel(QWidget* parent) : Panel(parent)
 
   setLayout(layout);
 
-  connect(add_button, SIGNAL(clicked(bool)), this, SLOT(onNewDisplay()));
-  connect(duplicate_button_, SIGNAL(clicked(bool)), this, SLOT(onDuplicateDisplay()));
-  connect(remove_button_, SIGNAL(clicked(bool)), this, SLOT(onDeleteDisplay()));
-  connect(rename_button_, SIGNAL(clicked(bool)), this, SLOT(onRenameDisplay()));
-  connect(property_grid_, SIGNAL(selectionHasChanged()), this, SLOT(onSelectionChanged()));
+  connect(add_button, &QPushButton::clicked, this, &DisplaysPanel::onNewDisplay);
+  connect(duplicate_button_, &QPushButton::clicked, this, &DisplaysPanel::onDuplicateDisplay);
+  connect(remove_button_, &QPushButton::clicked, this, &DisplaysPanel::onDeleteDisplay);
+  connect(rename_button_, &QPushButton::clicked, this, &DisplaysPanel::onRenameDisplay);
+  connect(property_grid_, &PropertyTreeWidget::selectionHasChanged, this,
+          &DisplaysPanel::onSelectionChanged);
 
   // additionally to buttons, allow shortcuts F2 / Del to rename / remove displays
   rename_action_ = new QAction("Rename", this);
@@ -103,8 +104,8 @@ DisplaysPanel::DisplaysPanel(QWidget* parent) : Panel(parent)
   remove_action_->setEnabled(false);
   tree_with_help_->addAction(remove_action_);
 
-  connect(rename_action_, SIGNAL(triggered(bool)), this, SLOT(onRenameDisplay()));
-  connect(remove_action_, SIGNAL(triggered(bool)), this, SLOT(onDeleteDisplay()));
+  connect(rename_action_, &QAction::triggered, this, &DisplaysPanel::onRenameDisplay);
+  connect(remove_action_, &QAction::triggered, this, &DisplaysPanel::onDeleteDisplay);
 }
 
 DisplaysPanel::~DisplaysPanel()

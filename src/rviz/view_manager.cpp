@@ -51,8 +51,8 @@ ViewManager::ViewManager(DisplayContext* context)
   , render_panel_(nullptr)
 {
   property_model_->setDragDropClass("view-controller");
-  connect(property_model_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
-  connect(this, SIGNAL(currentChanged()), this, SIGNAL(configChanged()));
+  connect(property_model_, &PropertyTreeModel::configChanged, this, &ViewManager::configChanged);
+  connect(this, &ViewManager::currentChanged, this, &ViewManager::configChanged);
 }
 
 ViewManager::~ViewManager()
@@ -130,10 +130,10 @@ void ViewManager::setCurrent(ViewController* new_current, bool mimic_view)
     {
       new_current->transitionFrom(previous);
     }
-    disconnect(previous, SIGNAL(destroyed(QObject*)), this, SLOT(onCurrentDestroyed(QObject*)));
+    disconnect(previous, &QObject::destroyed, this, &ViewManager::onCurrentDestroyed);
   }
   new_current->setName("Current View");
-  connect(new_current, SIGNAL(destroyed(QObject*)), this, SLOT(onCurrentDestroyed(QObject*)));
+  connect(new_current, &QObject::destroyed, this, &ViewManager::onCurrentDestroyed);
   current_ = new_current;
   root_property_->addChildToFront(new_current);
   delete previous;

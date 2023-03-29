@@ -267,13 +267,15 @@ void IntensityPCTransformer::updateAutoComputeIntensityBounds()
   max_intensity_property_->setReadOnly(auto_compute);
   if (auto_compute)
   {
-    disconnect(min_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
-    disconnect(max_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
+    disconnect(min_intensity_property_, &Property::changed, this,
+               &IntensityPCTransformer::needRetransform);
+    disconnect(max_intensity_property_, &Property::changed, this,
+               &IntensityPCTransformer::needRetransform);
   }
   else
   {
-    connect(min_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
-    connect(max_intensity_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
+    connect(min_intensity_property_, &Property::changed, this, &IntensityPCTransformer::needRetransform);
+    connect(max_intensity_property_, &Property::changed, this, &IntensityPCTransformer::needRetransform);
   }
   Q_EMIT needRetransform();
 }
@@ -696,13 +698,13 @@ void AxisColorPCTransformer::updateAutoComputeBounds()
   max_value_property_->setHidden(auto_compute);
   if (auto_compute)
   {
-    disconnect(min_value_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
-    disconnect(max_value_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
+    disconnect(min_value_property_, &Property::changed, this, &AxisColorPCTransformer::needRetransform);
+    disconnect(max_value_property_, &Property::changed, this, &AxisColorPCTransformer::needRetransform);
   }
   else
   {
-    connect(min_value_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
-    connect(max_value_property_, SIGNAL(changed()), this, SIGNAL(needRetransform()));
+    connect(min_value_property_, &Property::changed, this, &AxisColorPCTransformer::needRetransform);
+    connect(max_value_property_, &Property::changed, this, &AxisColorPCTransformer::needRetransform);
     auto_compute_bounds_property_->expand();
   }
   Q_EMIT needRetransform();

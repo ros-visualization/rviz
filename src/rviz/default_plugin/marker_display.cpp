@@ -459,7 +459,7 @@ MarkerNamespace::MarkerNamespace(const QString& name, Property* parent_property,
   // Can't do this connect in chained constructor above because at
   // that point it doesn't really know that "this" is a
   // MarkerNamespace*, so the signal doesn't get connected.
-  connect(this, SIGNAL(changed()), this, SLOT(onEnableChanged()));
+  connect(this, &Property::changed, this, &MarkerNamespace::onEnableChanged);
 }
 
 void MarkerNamespace::onEnableChanged()

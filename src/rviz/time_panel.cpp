@@ -100,14 +100,15 @@ TimePanel::TimePanel(QWidget* parent) : Panel(parent)
   layout->setContentsMargins(11, 5, 11, 5);
   this->setLayout(layout);
 
-  connect(pause_button_, SIGNAL(toggled(bool)), this, SLOT(pauseToggled(bool)));
-  connect(sync_mode_selector_, SIGNAL(activated(int)), this, SLOT(syncModeSelected(int)));
-  connect(sync_source_selector_, SIGNAL(activated(int)), this, SLOT(syncSourceSelected(int)));
+  connect(pause_button_, &QPushButton::toggled, this, &TimePanel::pauseToggled);
+  connect(sync_mode_selector_, qOverload<int>(&QComboBox::activated), this, &TimePanel::syncModeSelected);
+  connect(sync_source_selector_, qOverload<int>(&QComboBox::activated), this,
+          &TimePanel::syncSourceSelected);
 }
 
 void TimePanel::onInitialize()
 {
-  connect(vis_manager_, SIGNAL(preUpdate()), this, SLOT(update()));
+  connect(vis_manager_, &VisualizationManager::preUpdate, this, &TimePanel::update);
 
   DisplayGroup* display_group = vis_manager_->getRootDisplayGroup();
   onDisplayAdded(display_group);
@@ -140,10 +141,8 @@ void TimePanel::onDisplayAdded(Display* display)
   DisplayGroup* display_group = qobject_cast<DisplayGroup*>(display);
   if (display_group)
   {
-    connect(display_group, SIGNAL(displayAdded(rviz::Display*)), this,
-            SLOT(onDisplayAdded(rviz::Display*)));
-    connect(display_group, SIGNAL(displayRemoved(rviz::Display*)), this,
-            SLOT(onDisplayRemoved(rviz::Display*)));
+    connect(display_group, &DisplayGroup::displayAdded, this, &TimePanel::onDisplayAdded);
+    connect(display_group, &DisplayGroup::displayRemoved, this, &TimePanel::onDisplayRemoved);
 
     for (int i = 0; i < display_group->numDisplays(); i++)
     {
@@ -153,7 +152,7 @@ void TimePanel::onDisplayAdded(Display* display)
   }
   else
   {
-    connect(display, SIGNAL(timeSignal(ros::Time)), this, SLOT(onTimeSignal(ros::Time)));
+    connect(display, &Display::timeSignal, this, &TimePanel::onTimeSignal);
   }
 }
 

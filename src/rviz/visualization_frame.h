@@ -261,9 +261,6 @@ protected Q_SLOTS:
   void onDeletePanel();
 
 protected Q_SLOTS:
-  /** @brief Set loading_ to false. */
-  void markLoadingDone();
-
   /** @brief Set the default directory in which to save screenshot images. */
   void setImageSaveDirectory(const QString& directory);
 

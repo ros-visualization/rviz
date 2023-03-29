@@ -70,7 +70,7 @@ QWidget* IntProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& 
   QSpinBox* editor = new QSpinBox(parent);
   editor->setFrame(false);
   editor->setRange(min_, max_);
-  connect(editor, SIGNAL(valueChanged(int)), this, SLOT(setInt(int)));
+  connect(editor, qOverload<int>(&QSpinBox::valueChanged), this, &IntProperty::setInt);
   return editor;
 }
 

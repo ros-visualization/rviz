@@ -255,12 +255,10 @@ void InteractiveMarkerDisplay::updateMarkers(
           im_map
               .insert(std::make_pair(marker.name, IMPtr(new InteractiveMarker(getSceneNode(), context_))))
               .first;
-      connect(int_marker_entry->second.get(),
-              SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)), this,
-              SLOT(publishFeedback(visualization_msgs::InteractiveMarkerFeedback&)));
-      connect(int_marker_entry->second.get(),
-              SIGNAL(statusUpdate(StatusProperty::Level, const std::string&, const std::string&)), this,
-              SLOT(onStatusUpdate(StatusProperty::Level, const std::string&, const std::string&)));
+      connect(int_marker_entry->second.get(), &InteractiveMarker::userFeedback, this,
+              &InteractiveMarkerDisplay::publishFeedback);
+      connect(int_marker_entry->second.get(), &InteractiveMarker::statusUpdate, this,
+              &InteractiveMarkerDisplay::onStatusUpdate);
     }
 
     if (int_marker_entry->second->processMessage(marker))

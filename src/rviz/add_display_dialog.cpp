@@ -233,20 +233,19 @@ AddDisplayDialog::AddDisplayDialog(DisplayFactory* factory,
   setLayout(main_layout);
 
   //***** Connections
-  connect(display_tree, SIGNAL(itemChanged(SelectionData*)), this,
-          SLOT(onDisplaySelected(SelectionData*)));
-  connect(display_tree, SIGNAL(itemActivated(QTreeWidgetItem*, int)), this, SLOT(accept()));
+  connect(display_tree, &DisplayTypeTree::itemChanged, this, &AddDisplayDialog::onDisplaySelected);
+  connect(display_tree, &DisplayTypeTree::itemActivated, this, &AddDisplayDialog::accept);
 
-  connect(topic_widget, SIGNAL(itemChanged(SelectionData*)), this, SLOT(onTopicSelected(SelectionData*)));
-  connect(topic_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)), this, SLOT(accept()));
+  connect(topic_widget, &TopicDisplayWidget::itemChanged, this, &AddDisplayDialog::onTopicSelected);
+  connect(topic_widget, &TopicDisplayWidget::itemActivated, this, &AddDisplayDialog::accept);
 
-  connect(button_box_, SIGNAL(accepted()), this, SLOT(accept()));
-  connect(button_box_, SIGNAL(rejected()), this, SLOT(reject()));
+  connect(button_box_, &QDialogButtonBox::accepted, this, &AddDisplayDialog::accept);
+  connect(button_box_, &QDialogButtonBox::rejected, this, &AddDisplayDialog::reject);
 
-  connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(onTabChanged(int)));
+  connect(tab_widget_, &QTabWidget::currentChanged, this, &AddDisplayDialog::onTabChanged);
   if (display_name_output_)
   {
-    connect(name_editor_, SIGNAL(textEdited(const QString&)), this, SLOT(onNameChanged()));
+    connect(name_editor_, &QLineEdit::textEdited, this, &AddDisplayDialog::onNameChanged);
   }
 
   button_box_->button(QDialogButtonBox::Ok)->setEnabled(isValid());
@@ -357,9 +356,7 @@ void AddDisplayDialog::accept()
 DisplayTypeTree::DisplayTypeTree()
 {
   setHeaderHidden(true);
-
-  connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this,
-          SLOT(onCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
+  connect(this, &DisplayTypeTree::currentItemChanged, this, &DisplayTypeTree::onCurrentItemChanged);
 }
 
 void DisplayTypeTree::onCurrentItemChanged(QTreeWidgetItem* curr, QTreeWidgetItem* /*prev*/)
@@ -439,14 +436,12 @@ TopicDisplayWidget::TopicDisplayWidget()
   layout->addWidget(tree_);
   layout->addWidget(enable_hidden_box_);
 
-  connect(tree_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this,
-          SLOT(onCurrentItemChanged(QTreeWidgetItem*)));
   // Forward signals from tree_
-  connect(tree_, SIGNAL(itemActivated(QTreeWidgetItem*, int)), this,
-          SIGNAL(itemActivated(QTreeWidgetItem*, int)));
+  connect(tree_, &QTreeWidget::currentItemChanged, this, &TopicDisplayWidget::onCurrentItemChanged);
+  connect(tree_, &QTreeWidget::itemActivated, this, &TopicDisplayWidget::itemActivated);
 
   // Connect signal from checkbox
-  connect(enable_hidden_box_, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
+  connect(enable_hidden_box_, &QCheckBox::stateChanged, this, &TopicDisplayWidget::stateChanged);
 
   setLayout(layout);
 }
@@ -531,8 +526,7 @@ void TopicDisplayWidget::fill(DisplayFactory* factory)
       if (info.topic_suffixes.size() > 1)
       {
         EmbeddableComboBox* box = new EmbeddableComboBox(row, 1);
-        connect(box, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this,
-                SLOT(onComboBoxClicked(QTreeWidgetItem*)));
+        connect(box, &EmbeddableComboBox::itemClicked, this, &TopicDisplayWidget::onComboBoxClicked);
         for (int i = 0; i < info.topic_suffixes.size(); ++i)
         {
           box->addItem(info.topic_suffixes[i], info.datatypes[i]);

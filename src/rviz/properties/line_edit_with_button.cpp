@@ -46,7 +46,7 @@ LineEditWithButton::LineEditWithButton(QWidget* parent) : QLineEdit(parent)
   button_->setAutoDefault(false);
   button_->setFocusPolicy(Qt::NoFocus);
 
-  connect(button_, SIGNAL(clicked()), this, SLOT(onButtonClick()));
+  connect(button_, &QPushButton::clicked, this, &LineEditWithButton::onButtonClick);
 }
 
 void LineEditWithButton::resizeEvent(QResizeEvent* event)

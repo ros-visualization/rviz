@@ -114,16 +114,16 @@ CovarianceProperty::CovarianceProperty(const QString& name,
                         orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
   orientation_scale_property_->setMin(0);
 
-  connect(this, SIGNAL(changed()), this, SLOT(updateVisibility()));
+  connect(this, &Property::changed, this, qOverload<>(&CovarianceProperty::updateVisibility));
 
   // Connect changed() signal here instead of doing it through the initialization of BoolProperty().
   // We do this here to make changed_slot be called _after_ updateVisibility()
-  if (changed_slot && (parent || receiver))
+  if (changed_slot)
   {
     if (receiver)
-      connect(this, SIGNAL(changed()), receiver, changed_slot);
-    else
-      connect(this, SIGNAL(changed()), parent, changed_slot);
+      connect(receiver, SLOT(changed_slot));
+    else if (parent)
+      connect(parent, SLOT(changed_slot));
   }
 
   setDisableChildrenIfFalse(true);
