@@ -136,6 +136,40 @@ public:
            const char* changed_slot = nullptr,
            QObject* receiver = nullptr);
 
+  using QObject::connect; // inherit QObject's connect functions
+
+  /// Connect changed() signal to given slot of receiver
+  QMetaObject::Connection
+  connect(const QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
+
+  /// Connect changed() signal to given slot member function of receiver object
+  template <typename Func>
+  inline QMetaObject::Connection
+  connect(const typename QtPrivate::FunctionPointer<Func>::Object* receiver,
+          Func&& slot,
+          Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    return QObject::connect(this, &Property::changed, receiver, std::forward<Func>(slot), type);
+  }
+
+  /// Connect changed() signal to given slot functor, considering context
+  template <typename Func>
+  inline typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(const QObject* context, Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    return QObject::connect(this, &Property::changed, context, std::forward<Func>(slot), type);
+  }
+
+  /// Connect changed() signal to given slot functor, using this as context
+  template <typename Func>
+  inline typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    return QObject::connect(this, &Property::changed, this, std::forward<Func>(slot), type);
+  }
+
   /** @brief Destructor.  Removes this property from its parent's list
    * of children.
    */

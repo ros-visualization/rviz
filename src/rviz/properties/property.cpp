@@ -72,17 +72,20 @@ Property::Property(const QString& name,
 {
   Property::setName(name);
   if (parent)
-  {
     parent->addChild(this);
-  }
-  if (receiver == nullptr)
-  {
-    receiver = parent;
-  }
-  if (receiver && changed_slot)
-  {
-    connect(this, SIGNAL(changed()), receiver, changed_slot);
-  }
+
+  connect(receiver, changed_slot);
+}
+
+QMetaObject::Connection
+Property::connect(const QObject* receiver, const char* slot, Qt::ConnectionType type)
+{
+  if (!receiver)
+    receiver = parent_;
+  if (receiver && slot)
+    return QObject::connect(this, SIGNAL(changed()), receiver, slot, type);
+  else
+    return QMetaObject::Connection();
 }
 
 Property::~Property()

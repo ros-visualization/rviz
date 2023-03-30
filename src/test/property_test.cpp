@@ -62,11 +62,33 @@ TEST(Property, value)
   EXPECT_EQ(199, p.getValue().toInt());
 }
 
-TEST(Property, set_value_events)
+TEST(Property, set_value_events_qt4)
 {
   MockPropertyChangeReceiver r;
   Property p("", 0, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
+
+  p.setValue(17);
+  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+}
+
+TEST(Property, set_value_events_lambda)
+{
+  MockPropertyChangeReceiver r;
+  Property p("", 0, "", nullptr);
+  p.connect(&p, &Property::aboutToChange, &r, [&r] { r.aboutToChange(); });
+  p.connect(&r, [&r] { r.changed(); });
+
+  p.setValue(17);
+  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+}
+
+TEST(Property, set_value_events_method_pointer)
+{
+  MockPropertyChangeReceiver r;
+  Property p("", 0, "", nullptr);
+  p.connect(&p, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
+  p.connect(&r, &MockPropertyChangeReceiver::changed);
 
   p.setValue(17);
   EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
