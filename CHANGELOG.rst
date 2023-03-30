@@ -2,6 +2,18 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.20 (2023-03-30)
+--------------------
+* Improvements to TF display (`#1789 <https://github.com/ros-visualization/rviz/issues/1789>`_)
+
+  - Add regex filters (white+black list) to TF Display (`#1744 <https://github.com/ros-visualization/rviz/issues/1744>`_)
+  - Reparent children to root tree node when deleting a frame
+  - Insert frame properties sorted
+  - Create tree nodes also if the frame is not connected to rviz' global frame
+* RobotModel: Fix orientation of joint axis arrow (`#1788 <https://github.com/ros-visualization/rviz/issues/1788>`_)
+* Use static QCoreApplication::processEvents() w/o QApplication instance (`#1772 <https://github.com/ros-visualization/rviz/issues/1772>`_)
+* Contributors: Blaz Potokar, Robert Haschke, Yannis Gerlach
+
 1.14.19 (2022-08-14)
 --------------------
 * Fixup to `#1760 <https://github.com/ros-visualization/rviz/issues/1760>`_, SplitterHandle (`#1766 <https://github.com/ros-visualization/rviz/issues/1766>`_)
