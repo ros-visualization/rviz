@@ -33,13 +33,11 @@
 
 namespace rviz
 {
-class Property;
-
 class MockPropertyChangeReceiver : public QObject
 {
   Q_OBJECT
 public:
-  MockPropertyChangeReceiver(Property* prop);
+  MockPropertyChangeReceiver();
   void reset()
   {
     result_ = "";
@@ -55,7 +53,6 @@ public Q_SLOTS:
 
 private:
   QString result_;
-  Property* property_;
 };
 
 } // end namespace rviz

@@ -64,12 +64,9 @@ TEST(Property, value)
 
 TEST(Property, set_value_events)
 {
-  Property p;
-  p.setValue(0);
-
-  MockPropertyChangeReceiver r(&p);
+  MockPropertyChangeReceiver r;
+  Property p("", 0, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
-  p.connect(&p, SIGNAL(changed()), &r, SLOT(changed()));
 
   p.setValue(17);
   EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
@@ -165,11 +162,9 @@ TEST(VectorProperty, get_child)
 
 TEST(VectorProperty, set_value_events)
 {
-  VectorProperty p;
-
-  MockPropertyChangeReceiver r(&p);
+  MockPropertyChangeReceiver r;
+  VectorProperty p("", Ogre::Vector3::ZERO, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
-  p.connect(&p, SIGNAL(changed()), &r, SLOT(changed()));
 
   p.setVector(Ogre::Vector3(.1, .0001, 1000));
   EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=0.1; 0.0001; 1000", r.result().toStdString());
@@ -248,11 +243,9 @@ TEST(QuaternionProperty, get_child)
 
 TEST(QuaternionProperty, set_value_events)
 {
-  QuaternionProperty p;
-
-  MockPropertyChangeReceiver r(&p);
+  MockPropertyChangeReceiver r;
+  QuaternionProperty p("", Ogre::Quaternion::IDENTITY, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
-  p.connect(&p, SIGNAL(changed()), &r, SLOT(changed()));
 
   p.setQuaternion(Ogre::Quaternion(1, .1, .0001, 1000));
   EXPECT_EQ(" aboutToChange, v=0; 0; 0; 1 changed, v=0.1; 0.0001; 1000; 1", r.result().toStdString());
@@ -315,11 +308,9 @@ TEST(ColorProperty, set_string_limits)
 
 TEST(ColorProperty, set_value_events)
 {
-  ColorProperty p;
-
-  MockPropertyChangeReceiver r(&p);
+  MockPropertyChangeReceiver r;
+  ColorProperty p("", QColor(0, 0, 0), "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
-  p.connect(&p, SIGNAL(changed()), &r, SLOT(changed()));
 
   p.setColor(QColor(1, 2, 3));
   EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=1; 2; 3", r.result().toStdString());
