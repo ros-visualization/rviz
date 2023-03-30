@@ -44,9 +44,7 @@ namespace rviz
 CovarianceProperty::CovarianceProperty(const QString& name,
                                        bool default_value,
                                        const QString& description,
-                                       Property* parent,
-                                       const char* changed_slot,
-                                       QObject* receiver)
+                                       Property* parent)
   // NOTE: changed() signal will only be initialized at the end of this constructor
   : BoolProperty(name, default_value, description, parent)
 {
@@ -115,16 +113,6 @@ CovarianceProperty::CovarianceProperty(const QString& name,
   orientation_scale_property_->setMin(0);
 
   connect(this, &Property::changed, this, qOverload<>(&CovarianceProperty::updateVisibility));
-
-  // Connect changed() signal here instead of doing it through the initialization of BoolProperty().
-  // We do this here to make changed_slot be called _after_ updateVisibility()
-  if (changed_slot)
-  {
-    if (receiver)
-      connect(receiver, SLOT(changed_slot));
-    else if (parent)
-      connect(parent, SLOT(changed_slot));
-  }
 
   setDisableChildrenIfFalse(true);
 }

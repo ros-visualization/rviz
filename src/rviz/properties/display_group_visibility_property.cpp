@@ -49,17 +49,8 @@ DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(uint32_t vis_bit,
                                                                const QString& name,
                                                                bool default_value,
                                                                const QString& description,
-                                                               Property* parent,
-                                                               const char* changed_slot,
-                                                               QObject* receiver)
-  : DisplayVisibilityProperty(vis_bit,
-                              display_group,
-                              name,
-                              default_value,
-                              description,
-                              parent,
-                              changed_slot,
-                              receiver)
+                                                               Property* parent)
+  : DisplayVisibilityProperty(vis_bit, display_group, name, default_value, description, parent)
   , display_group_(display_group)
   , parent_display_(parent_display)
 {

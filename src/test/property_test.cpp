@@ -65,33 +65,88 @@ TEST(Property, value)
 TEST(Property, set_value_events_qt4)
 {
   MockPropertyChangeReceiver r;
-  Property p("", 0, "", nullptr, SLOT(changed()), &r);
+  Property p("", 1, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
-
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  r.reset();
+
+  // initialize from parent
+  Property p2("", 2, "", &p, SIGNAL(changed()));
+  p2.connect(&p2, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
+  p2.setValue(27);
+  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result().toStdString());
+  r.reset();
+
+  // initialize from parent
+  Property p3("", 3, "", &p, SIGNAL(changed()));
+  p3.connect(&p3, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
+  p3.setValue(37);
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=17", r.result().toStdString());
 }
 
 TEST(Property, set_value_events_lambda)
 {
   MockPropertyChangeReceiver r;
-  Property p("", 0, "", nullptr);
+  Property p(
+      "", 1, "", nullptr, [&r] { r.changed(); }, &r);
   p.connect(&p, &Property::aboutToChange, &r, [&r] { r.aboutToChange(); });
-  p.connect(&r, [&r] { r.changed(); });
-
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  r.reset();
+
+  // initialize from parent
+  Property p2("", 2, "", &p, [&r] {
+    r.changed();
+    r.result() += " free lambda";
+  });
+  p2.connect(&p2, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
+  p2.setValue(27);
+  EXPECT_EQ(" aboutToChange, v=2 free lambda", r.result().toStdString());
+  r.reset();
+
+  // initialize from receiver with parent
+  Property p3(
+      "", 3, "", &p, [&r] { r.changed(); }, &r);
+  p3.connect(&p3, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
+  p3.setValue(37);
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result().toStdString());
+  r.reset();
 }
 
 TEST(Property, set_value_events_method_pointer)
 {
   MockPropertyChangeReceiver r;
-  Property p("", 0, "", nullptr);
+  Property p("", 1, "", nullptr, &MockPropertyChangeReceiver::changed, &r);
   p.connect(&p, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
-  p.connect(&r, &MockPropertyChangeReceiver::changed);
-
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=0 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  r.reset();
+
+  // initialize from parent
+  Property p2("", 2, "", &p, &Property::changed);
+  p2.connect(&p2, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
+  p2.setValue(27);
+  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result().toStdString());
+  r.reset();
+
+  // initialize from receiver with parent
+  Property p3("", 3, "", &p, &MockPropertyChangeReceiver::changed, &r);
+  p3.connect(&p3, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
+  p3.setValue(37);
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result().toStdString());
+  r.reset();
+
+#if 0 // This should fail to compile due to receiver type mismatching slot
+  Property mismatching_parent("", 0, "", &p, &MockPropertyChangeReceiver::changed);
+#endif
+
+  // A receiver nullptr is gracefully handled (i.e. ignored) by Qt
+  Property null_receiver("", 4, "", &p, &MockPropertyChangeReceiver::changed,
+                         static_cast<MockPropertyChangeReceiver*>(nullptr));
+  null_receiver.setValue(47);
+  EXPECT_EQ("", r.result.toStdString());
+  r.reset();
 }
 
 TEST(Property, children)

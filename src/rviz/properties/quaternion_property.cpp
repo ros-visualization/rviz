@@ -37,10 +37,8 @@ namespace rviz
 QuaternionProperty::QuaternionProperty(const QString& name,
                                        const Ogre::Quaternion& default_value,
                                        const QString& description,
-                                       Property* parent,
-                                       const char* changed_slot,
-                                       QObject* receiver)
-  : Property(name, QVariant(), description, parent, changed_slot, receiver)
+                                       Property* parent)
+  : Property(name, QVariant(), description, parent)
   , quaternion_(default_value)
   , ignore_child_updates_(false)
 {

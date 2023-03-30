@@ -42,7 +42,7 @@ public:
   {
     result_ = "";
   }
-  QString result()
+  QString& result()
   {
     return result_;
   }

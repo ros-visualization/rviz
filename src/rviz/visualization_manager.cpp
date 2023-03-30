@@ -90,10 +90,9 @@ public:
   IconizedProperty(const QString& name = QString(),
                    const QVariant& default_value = QVariant(),
                    const QString& description = QString(),
-                   Property* parent = nullptr,
-                   const char* changed_slot = nullptr,
-                   QObject* receiver = nullptr)
-    : Property(name, default_value, description, parent, changed_slot, receiver){};
+                   Property* parent = nullptr)
+    : Property(name, default_value, description, parent){};
+
   QVariant getViewData(int column, int role) const override
   {
     return (column == 0 && role == Qt::DecorationRole) ? icon_ : Property::getViewData(column, role);

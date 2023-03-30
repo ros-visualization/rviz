@@ -72,9 +72,31 @@ public:
   CovarianceProperty(const QString& name = "Covariance",
                      bool default_value = false,
                      const QString& description = QString(),
-                     rviz::Property* parent = nullptr,
-                     const char* changed_slot = nullptr,
-                     QObject* receiver = nullptr);
+                     rviz::Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  CovarianceProperty(const QString& name,
+                     bool default_value,
+                     const QString& description,
+                     rviz::Property* parent,
+                     Func&& changed_slot,
+                     const R* receiver)
+    : CovarianceProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  CovarianceProperty(const QString& name,
+               bool default_value,
+               const QString& description,
+               P* parent,
+               Func&& changed_slot)
+    : CovarianceProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   ~CovarianceProperty() override;
 

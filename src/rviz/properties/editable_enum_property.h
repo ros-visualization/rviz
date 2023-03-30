@@ -47,9 +47,31 @@ public:
   EditableEnumProperty(const QString& name = QString(),
                        const QString& default_value = QString(),
                        const QString& description = QString(),
-                       Property* parent = nullptr,
-                       const char* changed_slot = nullptr,
-                       QObject* receiver = nullptr);
+                       Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  EditableEnumProperty(const QString& name,
+                       const QString& default_value,
+                       const QString& description,
+                       Property* parent,
+                       Func&& changed_slot,
+                       const R* receiver)
+    : EditableEnumProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  EditableEnumProperty(const QString& name,
+                       const QString& default_value,
+                       const QString& description,
+                       P* parent,
+                       Func&& changed_slot)
+    : EditableEnumProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   virtual void clearOptions();
   virtual void addOption(const QString& option);

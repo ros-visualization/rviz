@@ -44,9 +44,31 @@ public:
   ColorProperty(const QString& name = QString(),
                 const QColor& default_value = Qt::black,
                 const QString& description = QString(),
-                Property* parent = nullptr,
-                const char* changed_slot = nullptr,
-                QObject* receiver = nullptr);
+                Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  ColorProperty(const QString& name,
+                const QColor& default_value,
+                const QString& description,
+                Property* parent,
+                Func&& changed_slot,
+                const R* receiver)
+    : ColorProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  ColorProperty(const QString& name,
+                const QColor& default_value,
+                const QString& description,
+                P* parent,
+                Func&& changed_slot)
+    : ColorProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   bool setValue(const QVariant& new_value) override;
 

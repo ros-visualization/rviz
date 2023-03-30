@@ -39,12 +39,8 @@ namespace rviz
 IntProperty::IntProperty(const QString& name,
                          int default_value,
                          const QString& description,
-                         Property* parent,
-                         const char* changed_slot,
-                         QObject* receiver)
-  : Property(name, default_value, description, parent, changed_slot, receiver)
-  , min_(INT_MIN)
-  , max_(INT_MAX)
+                         Property* parent)
+  : Property(name, default_value, description, parent), min_(INT_MIN), max_(INT_MAX)
 {
 }
 

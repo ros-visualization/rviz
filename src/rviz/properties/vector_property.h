@@ -43,9 +43,31 @@ public:
   VectorProperty(const QString& name = QString(),
                  const Ogre::Vector3& default_value = Ogre::Vector3::ZERO,
                  const QString& description = QString(),
-                 Property* parent = nullptr,
-                 const char* changed_slot = nullptr,
-                 QObject* receiver = nullptr);
+                 Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  VectorProperty(const QString& name,
+                 const Ogre::Vector3& default_value,
+                 const QString& description,
+                 Property* parent,
+                 Func&& changed_slot,
+                 const R* receiver)
+    : VectorProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  VectorProperty(const QString& name,
+                 const Ogre::Vector3& default_value,
+                 const QString& description,
+                 P* parent,
+                 Func&& changed_slot)
+    : VectorProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   virtual bool setVector(const Ogre::Vector3& vector);
   virtual Ogre::Vector3 getVector() const

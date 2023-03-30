@@ -42,10 +42,8 @@ TfFrameProperty::TfFrameProperty(const QString& name,
                                  const QString& description,
                                  Property* parent,
                                  FrameManager* frame_manager,
-                                 bool include_fixed_frame_string,
-                                 const char* changed_slot,
-                                 QObject* receiver)
-  : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver)
+                                 bool include_fixed_frame_string)
+  : EditableEnumProperty(name, default_value, description, parent)
   , frame_manager_(nullptr)
   , include_fixed_frame_string_(include_fixed_frame_string)
 {

@@ -37,10 +37,8 @@ namespace rviz
 EditableEnumProperty::EditableEnumProperty(const QString& name,
                                            const QString& default_value,
                                            const QString& description,
-                                           Property* parent,
-                                           const char* changed_slot,
-                                           QObject* receiver)
-  : StringProperty(name, default_value, description, parent, changed_slot, receiver)
+                                           Property* parent)
+  : StringProperty(name, default_value, description, parent)
 {
 }
 

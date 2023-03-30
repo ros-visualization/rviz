@@ -54,9 +54,31 @@ public:
   IntProperty(const QString& name = QString(),
               int default_value = 0,
               const QString& description = QString(),
-              Property* parent = nullptr,
-              const char* changed_slot = nullptr,
-              QObject* receiver = nullptr);
+              Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  IntProperty(const QString& name,
+              int default_value,
+              const QString& description,
+              Property* parent,
+              Func&& changed_slot,
+              const R* receiver)
+    : IntProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  IntProperty(const QString& name,
+              int default_value,
+              const QString& description,
+              P* parent,
+              Func&& changed_slot)
+    : IntProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
