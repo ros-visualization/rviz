@@ -382,6 +382,15 @@ void Property::addChild(Property* child, int index)
   Q_EMIT childListChanged(this);
 }
 
+void Property::insertChildSorted(Property* child)
+{
+  auto it = std::lower_bound(children_.cbegin(), children_.cend(), child,
+                             [](Property* element, Property* child) {
+                               return element->getName() < child->getName();
+                             });
+  addChild(child, it - children_.cbegin());
+}
+
 void Property::setModel(PropertyTreeModel* model)
 {
   model_ = model;

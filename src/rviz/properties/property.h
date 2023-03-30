@@ -346,6 +346,9 @@ public:
    *   child will be added at the end. */
   virtual void addChild(Property* child, int index = -1);
 
+  /** @brief Insert a child property, sorted by name */
+  void insertChildSorted(Property* child);
+
   /** @brief Set the model managing this Property and all its child properties, recursively. */
   void setModel(PropertyTreeModel* model);
 

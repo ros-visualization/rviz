@@ -59,6 +59,7 @@ class VectorProperty;
 class FrameInfo;
 class FrameSelectionHandler;
 typedef boost::shared_ptr<FrameSelectionHandler> FrameSelectionHandlerPtr;
+class RegexFilterProperty;
 
 /** @brief Displays a visual representation of the TF hierarchy. */
 class TFDisplay : public Display
@@ -121,6 +122,8 @@ private:
   FloatProperty* scale_property_;
   FloatProperty* alpha_property_;
 
+  RegexFilterProperty* filter_whitelist_property_;
+  RegexFilterProperty* filter_blacklist_property_;
   Property* frames_category_;
   Property* tree_category_;
 
