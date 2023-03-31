@@ -96,7 +96,7 @@ void FrameSelectionHandler::createProperties(const Picked& /*obj*/, Property* pa
       new Property("Frame " + QString::fromStdString(frame_->name_), QVariant(), "", parent_property);
 
   enabled_property_ = new BoolProperty("Enabled", true, "", category_property_,
-                                       SLOT(updateVisibilityFromSelection()), frame_);
+                                       &FrameInfo::updateVisibilityFromSelection, frame_);
 
   parent_property_ = new StringProperty("Parent", "", "", category_property_);
   parent_property_->setReadOnly(true);
@@ -235,15 +235,15 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
 {
   show_names_property_ =
       new BoolProperty("Show Names", true, "Whether or not names should be shown next to the frames.",
-                       this, SLOT(updateShowNames()));
+                       this, &TFDisplay::updateShowNames);
 
   show_axes_property_ =
       new BoolProperty("Show Axes", true, "Whether or not the axes of each frame should be shown.", this,
-                       SLOT(updateShowAxes()));
+                       &TFDisplay::updateShowAxes);
 
   show_arrows_property_ = new BoolProperty("Show Arrows", true,
                                            "Whether or not arrows from child to parent should be shown.",
-                                           this, SLOT(updateShowArrows()));
+                                           this, &TFDisplay::updateShowArrows);
 
   scale_property_ =
       new FloatProperty("Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this);
@@ -273,7 +273,7 @@ TFDisplay::TFDisplay() : Display(), update_timer_(0.0f), changing_single_frame_e
 
   all_enabled_property_ =
       new BoolProperty("All Enabled", true, "Whether all the frames should be enabled or not.",
-                       frames_category_, SLOT(allEnabledChanged()), this);
+                       frames_category_, &TFDisplay::allEnabledChanged, this);
 
   tree_category_ = new Property(
       "Tree", QVariant(), "A tree-view of the frames, showing the parent/child relationships.", this);
@@ -508,7 +508,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->enabled_property_ = new BoolProperty(QString::fromStdString(info->name_), true,
                                              "Enable or disable this individual frame.", nullptr,
-                                             SLOT(updateVisibilityFromFrame()), info);
+                                             &FrameInfo::updateVisibilityFromFrame, info);
   frames_category_->insertChildSorted(info->enabled_property_);
 
   info->parent_property_ =

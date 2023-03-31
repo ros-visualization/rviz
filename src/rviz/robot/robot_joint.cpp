@@ -53,13 +53,14 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
   , axes_(nullptr)
   , axis_(nullptr)
 {
-  joint_property_ = new Property(name_.c_str(), true, "", nullptr, SLOT(updateChildVisibility()), this);
+  joint_property_ =
+      new Property(name_.c_str(), true, "", nullptr, &RobotJoint::updateChildVisibility, this);
   joint_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotJoint.png"));
 
   details_ = new Property("Details", QVariant(), "", nullptr);
 
   axes_property_ = new Property("Show Axes", false, "Enable/disable showing the axes of this joint.",
-                                joint_property_, SLOT(updateAxes()), this);
+                                joint_property_, &RobotJoint::updateAxes, this);
 
   position_property_ =
       new VectorProperty("Position", Ogre::Vector3::ZERO,
@@ -112,7 +113,7 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
   {
     show_axis_property_ =
         new Property("Show Joint Axis", false, "Enable/disable showing the axis of this joint.",
-                     joint_property_, SLOT(updateAxis()), this);
+                     joint_property_, &RobotJoint::updateAxis, this);
 
     axis_property_ =
         new VectorProperty("Joint Axis", Ogre::Vector3(joint->axis.x, joint->axis.y, joint->axis.z),

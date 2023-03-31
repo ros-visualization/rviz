@@ -50,7 +50,7 @@ GridCellsDisplay::GridCellsDisplay() : MFDClass(), last_frame_count_(uint64_t(-1
   color_property_ = new ColorProperty("Color", QColor(25, 255, 0), "Color of the grid cells.", this);
 
   alpha_property_ = new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the cells.",
-                                      this, SLOT(updateAlpha()));
+                                      this, &GridCellsDisplay::updateAlpha);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 }

@@ -53,7 +53,7 @@ InteractionTool::InteractionTool()
   hide_inactive_property_ =
       new BoolProperty("Hide Inactive Objects", true,
                        "While holding down a mouse button, hide all other Interactive Objects.",
-                       getPropertyContainer(), SLOT(hideInactivePropertyChanged()), this);
+                       getPropertyContainer(), &InteractionTool::hideInactivePropertyChanged, this);
 }
 
 InteractionTool::~InteractionTool()

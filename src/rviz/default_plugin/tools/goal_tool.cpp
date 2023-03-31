@@ -44,7 +44,7 @@ GoalTool::GoalTool()
 
   topic_property_ =
       new StringProperty("Topic", "goal", "The topic on which to publish navigation goals.",
-                         getPropertyContainer(), SLOT(updateTopic()), this);
+                         getPropertyContainer(), &GoalTool::updateTopic, this);
 }
 
 void GoalTool::onInitialize()

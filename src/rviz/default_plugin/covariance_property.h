@@ -89,10 +89,10 @@ public:
   // this variant is required to allow omitting the receiver argument
   template <typename Func, typename P>
   CovarianceProperty(const QString& name,
-               bool default_value,
-               const QString& description,
-               P* parent,
-               Func&& changed_slot)
+                     bool default_value,
+                     const QString& description,
+                     P* parent,
+                     Func&& changed_slot)
     : CovarianceProperty(name, default_value, description, parent)
   {
     connect(parent, std::forward<Func>(changed_slot));

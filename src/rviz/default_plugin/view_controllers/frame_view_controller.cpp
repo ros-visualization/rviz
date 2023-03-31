@@ -55,7 +55,7 @@ FrameViewController::FrameViewController()
 {
   axis_property_ = new EnumProperty("Point towards", fmtAxis(6),
                                     "Point the camera along the given axis of the frame.", nullptr,
-                                    SLOT(changedAxis()), this);
+                                    &FrameViewController::changedAxis, this);
   axis_property_->addOption(ANY_AXIS, -1);
   this->addChild(axis_property_, yaw_property_->rowNumberInParent());
   // x,y,z axes get integers from 1..6: +x, -x, +y, -y, +z, -z

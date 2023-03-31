@@ -26,7 +26,7 @@ JointInfo::JointInfo(const std::string& name, rviz::Property* parent_category)
   // info->category_ = new Property( QString::fromStdString( info->name_ ) , QVariant(), "",
   // joints_category_);
   category_ = new rviz::Property(QString::fromStdString(name_), true, "", parent_category,
-                                 SLOT(updateVisibility()), this);
+                                 &JointInfo::updateVisibility, this);
 
   effort_property_ = new rviz::FloatProperty("Effort", 0, "Effort value of this joint.", category_);
   effort_property_->setReadOnly(true);
@@ -81,17 +81,17 @@ JointInfo* EffortDisplay::createJoint(const std::string& joint)
 EffortDisplay::EffortDisplay()
 {
   alpha_property_ = new rviz::FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
-                                            this, SLOT(updateColorAndAlpha()));
+                                            this, &EffortDisplay::updateColorAndAlpha);
 
   width_property_ = new rviz::FloatProperty("Width", 0.02, "Width to drow effort circle", this,
-                                            SLOT(updateColorAndAlpha()));
+                                            &EffortDisplay::updateColorAndAlpha);
 
   scale_property_ = new rviz::FloatProperty("Scale", 1.0, "Scale to drow effort circle", this,
-                                            SLOT(updateColorAndAlpha()));
+                                            &EffortDisplay::updateColorAndAlpha);
 
   history_length_property_ =
       new rviz::IntProperty("History Length", 1, "Number of prior measurements to display.", this,
-                            SLOT(updateHistoryLength()));
+                            &EffortDisplay::updateHistoryLength);
   history_length_property_->setMin(1);
   history_length_property_->setMax(100000);
 
@@ -99,13 +99,13 @@ EffortDisplay::EffortDisplay()
       new rviz::StringProperty("Robot Description", "robot_description",
                                "Name of the parameter to search for to load the robot "
                                "description.",
-                               this, SLOT(updateRobotDescription()));
+                               this, &EffortDisplay::updateRobotDescription);
 
   tf_prefix_property_ = new StringProperty(
       "TF Prefix", "",
       "Robot Model normally assumes the link name is the same as the tf frame name. "
       "This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
-      this, SLOT(updateTfPrefix()));
+      this, &EffortDisplay::updateTfPrefix);
 
   joints_category_ = new rviz::Property("Joints", QVariant(), "", this);
 }
@@ -192,7 +192,7 @@ void EffortDisplay::load()
                   QString("Parameter [%1] does not exist, and was not found by searchParam()")
                       .arg(robot_description_property_->getString()));
         // try again in a second
-        QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+        QTimer::singleShot(1000, this, &EffortDisplay::updateRobotDescription);
         return;
       }
     }

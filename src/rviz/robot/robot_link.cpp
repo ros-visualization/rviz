@@ -168,20 +168,21 @@ RobotLink::RobotLink(Robot* robot,
   , is_selectable_(true)
   , material_mode_flags_(ORIGINAL)
 {
-  link_property_ = new Property(link->name.c_str(), true, "", nullptr, SLOT(updateVisibility()), this);
+  link_property_ =
+      new Property(link->name.c_str(), true, "", nullptr, &RobotLink::updateVisibility, this);
   link_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotLink.png"));
 
   details_ = new Property("Details", QVariant(), "", nullptr);
 
   alpha_property_ = new FloatProperty("Alpha", 1, "Amount of transparency to apply to this link.",
-                                      link_property_, SLOT(updateAlpha()), this);
+                                      link_property_, &RobotLink::updateAlpha, this);
 
   trail_property_ =
       new Property("Show Trail", false, "Enable/disable a 2 meter \"ribbon\" which follows this link.",
-                   link_property_, SLOT(updateTrail()), this);
+                   link_property_, &RobotLink::updateTrail, this);
 
   axes_property_ = new Property("Show Axes", false, "Enable/disable showing the axes of this link.",
-                                link_property_, SLOT(updateAxes()), this);
+                                link_property_, &RobotLink::updateAxes, this);
 
   position_property_ =
       new VectorProperty("Position", Ogre::Vector3::ZERO,

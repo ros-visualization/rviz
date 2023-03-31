@@ -47,22 +47,22 @@ AxesDisplay::AxesDisplay() : Display(), axes_(nullptr), trail_(nullptr)
 {
   frame_property_ = new TfFrameProperty("Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
                                         "The TF frame these axes will use for their origin.", this,
-                                        nullptr, true, SLOT(resetTrail()));
+                                        nullptr, true, [this] { resetTrail(); });
 
-  length_property_ =
-      new FloatProperty("Length", 1.0, "Length of each axis, in meters.", this, SLOT(updateShape()));
+  length_property_ = new FloatProperty("Length", 1.0, "Length of each axis, in meters.", this,
+                                       &AxesDisplay::updateShape);
   length_property_->setMin(0.0001);
 
-  radius_property_ =
-      new FloatProperty("Radius", 0.1, "Radius of each axis, in meters.", this, SLOT(updateShape()));
+  radius_property_ = new FloatProperty("Radius", 0.1, "Radius of each axis, in meters.", this,
+                                       &AxesDisplay::updateShape);
   radius_property_->setMin(0.0001);
 
   trail_property_ =
       new Property("Show Trail", false, "Enable/disable a 2 meter \"ribbon\" which follows this frame.",
-                   this, SLOT(updateTrail()));
+                   this, &AxesDisplay::updateTrail);
 
-  alpha_property_ =
-      new FloatProperty("Alpha", 1.0, "Alpha channel value of each axis.", this, SLOT(updateShape()));
+  alpha_property_ = new FloatProperty("Alpha", 1.0, "Alpha channel value of each axis.", this,
+                                      &AxesDisplay::updateShape);
   alpha_property_->setMin(0.0);
   alpha_property_->setMax(1.0);
 }

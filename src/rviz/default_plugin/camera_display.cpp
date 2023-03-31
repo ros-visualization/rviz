@@ -84,7 +84,7 @@ CameraDisplay::CameraDisplay()
   image_position_property_ =
       new EnumProperty("Image Rendering", BOTH,
                        "Render the image behind all other geometry or overlay it on top, or both.", this,
-                       SLOT(forceRender()));
+                       &CameraDisplay::forceRender);
   image_position_property_->addOption(BACKGROUND);
   image_position_property_->addOption(OVERLAY);
   image_position_property_->addOption(BOTH);
@@ -92,14 +92,14 @@ CameraDisplay::CameraDisplay()
   alpha_property_ = new FloatProperty(
       "Overlay Alpha", 0.5,
       "The amount of transparency to apply to the camera image when rendered as overlay.", this,
-      SLOT(updateAlpha()));
+      &CameraDisplay::updateAlpha);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
   zoom_property_ = new FloatProperty(
       "Zoom Factor", 1.0,
       "Set a zoom factor below 1 to see a larger part of the world, above 1 to magnify the image.", this,
-      SLOT(forceRender()));
+      &CameraDisplay::forceRender);
   zoom_property_->setMin(0.00001);
   zoom_property_->setMax(100000);
 }

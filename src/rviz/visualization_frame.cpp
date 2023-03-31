@@ -140,11 +140,11 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
   reset_button->setText("Reset");
   reset_button->setContentsMargins(0, 0, 0, 0);
   statusBar()->addPermanentWidget(reset_button, 0);
-  connect(reset_button, &QToolButton::clicked, this, &VisualizationFrame::reset);
+  connect(reset_button, &QToolButton::clicked, this, &VisualizationFrame::VisualizationFrame::reset);
 
   status_label_ = new QLabel("");
   statusBar()->addPermanentWidget(status_label_, 1);
-  connect(this, &VisualizationFrame::statusUpdate, status_label_, &QLabel::setText);
+  connect(this, &VisualizationFrame::VisualizationFrame::statusUpdate, status_label_, &QLabel::setText);
 
   fps_label_ = new QLabel("");
   fps_label_->setMinimumWidth(40);
@@ -253,7 +253,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
     QPixmap splash_image(splash_path_);
     splash_ = new SplashScreen(splash_image);
     splash_->show();
-    connect(this, &VisualizationFrame::statusUpdate, splash_,
+    connect(this, &VisualizationFrame::VisualizationFrame::statusUpdate, splash_,
             [this](const QString& message) { splash_->showMessage(message); });
   }
   Q_EMIT statusUpdate("Initializing");
@@ -286,7 +286,8 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   hide_left_dock_button_->setAutoRaise(true);
   hide_left_dock_button_->setCheckable(true);
 
-  connect(hide_left_dock_button_, &QToolButton::toggled, this, &VisualizationFrame::hideLeftDock);
+  connect(hide_left_dock_button_, &QToolButton::toggled, this,
+          &VisualizationFrame::VisualizationFrame::hideLeftDock);
 
   hide_right_dock_button_ = new QToolButton();
   hide_right_dock_button_->setContentsMargins(0, 0, 0, 0);
@@ -296,7 +297,8 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   hide_right_dock_button_->setAutoRaise(true);
   hide_right_dock_button_->setCheckable(true);
 
-  connect(hide_right_dock_button_, &QToolButton::toggled, this, &VisualizationFrame::hideRightDock);
+  connect(hide_right_dock_button_, &QToolButton::toggled, this,
+          &VisualizationFrame::VisualizationFrame::hideRightDock);
 
   central_layout->addWidget(hide_left_dock_button_, 0);
   central_layout->addWidget(render_panel_, 1);
@@ -324,7 +326,8 @@ void VisualizationFrame::initialize(const QString& display_config_file)
 
   manager_ = new VisualizationManager(render_panel_, this);
   manager_->setHelpPath(help_path_);
-  connect(manager_, &VisualizationManager::escapePressed, this, &VisualizationFrame::exitFullScreen);
+  connect(manager_, &VisualizationManager::escapePressed, this,
+          &VisualizationFrame::VisualizationFrame::exitFullScreen);
 
   // Periodically process events for the splash screen.
   QCoreApplication::processEvents();
@@ -338,10 +341,12 @@ void VisualizationFrame::initialize(const QString& display_config_file)
 
   connect(manager_, &VisualizationManager::configChanged, this,
           &VisualizationFrame::setDisplayConfigModified);
-  connect(tool_man, &ToolManager::toolAdded, this, &VisualizationFrame::addTool);
-  connect(tool_man, &ToolManager::toolRemoved, this, &VisualizationFrame::removeTool);
-  connect(tool_man, &ToolManager::toolRefreshed, this, &VisualizationFrame::refreshTool);
-  connect(tool_man, &ToolManager::toolChanged, this, &VisualizationFrame::indicateToolIsCurrent);
+  connect(tool_man, &ToolManager::toolAdded, this, &VisualizationFrame::VisualizationFrame::addTool);
+  connect(tool_man, &ToolManager::toolRemoved, this, &VisualizationFrame::VisualizationFrame::removeTool);
+  connect(tool_man, &ToolManager::toolRefreshed, this,
+          &VisualizationFrame::VisualizationFrame::refreshTool);
+  connect(tool_man, &ToolManager::toolChanged, this,
+          &VisualizationFrame::VisualizationFrame::indicateToolIsCurrent);
 
   manager_->initialize();
 
@@ -367,8 +372,10 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   initialized_ = true;
   Q_EMIT statusUpdate("RViz is ready.");
 
-  connect(manager_, &VisualizationManager::preUpdate, this, &VisualizationFrame::updateFps);
-  connect(manager_, &VisualizationManager::statusUpdate, this, &VisualizationFrame::statusUpdate);
+  connect(manager_, &VisualizationManager::preUpdate, this,
+          &VisualizationFrame::VisualizationFrame::updateFps);
+  connect(manager_, &VisualizationManager::statusUpdate, this,
+          &VisualizationFrame::VisualizationFrame::statusUpdate);
 }
 
 void VisualizationFrame::initConfigs()
@@ -447,32 +454,33 @@ void VisualizationFrame::initMenus()
   file_menu_ = menuBar()->addMenu("&File");
 
   QAction* file_menu_open_action =
-      file_menu_->addAction("&Open Config", this, SLOT(onOpen()), QKeySequence("Ctrl+O"));
+      file_menu_->addAction("&Open Config", this, &VisualizationFrame::onOpen, QKeySequence("Ctrl+O"));
   this->addAction(file_menu_open_action);
   QAction* file_menu_save_action =
-      file_menu_->addAction("&Save Config", this, SLOT(onSave()), QKeySequence("Ctrl+S"));
+      file_menu_->addAction("&Save Config", this, &VisualizationFrame::onSave, QKeySequence("Ctrl+S"));
   this->addAction(file_menu_save_action);
-  QAction* file_menu_save_as_action =
-      file_menu_->addAction("Save Config &As", this, SLOT(onSaveAs()), QKeySequence("Ctrl+Shift+S"));
+  QAction* file_menu_save_as_action = file_menu_->addAction(
+      "Save Config &As", this, &VisualizationFrame::onSaveAs, QKeySequence("Ctrl+Shift+S"));
   this->addAction(file_menu_save_as_action);
 
   recent_configs_menu_ = file_menu_->addMenu("&Recent Configs");
-  file_menu_->addAction("Save &Image", this, SLOT(onSaveImage()));
+  file_menu_->addAction("Save &Image", this, &VisualizationFrame::onSaveImage);
   if (show_choose_new_master_option_)
   {
     file_menu_->addSeparator();
-    file_menu_->addAction("Change &Master", this, SLOT(changeMaster()));
+    file_menu_->addAction("Change &Master", this, &VisualizationFrame::changeMaster);
   }
   file_menu_->addSeparator();
-  file_menu_->addAction("&Preferences", this, SLOT(openPreferencesDialog()), QKeySequence("Ctrl+P"));
+  file_menu_->addAction("&Preferences", this, &VisualizationFrame::openPreferencesDialog,
+                        QKeySequence("Ctrl+P"));
 
   QAction* file_menu_quit_action =
-      file_menu_->addAction("&Quit", this, SLOT(close()), QKeySequence("Ctrl+Q"));
+      file_menu_->addAction("&Quit", this, &VisualizationFrame::close, QKeySequence("Ctrl+Q"));
   file_menu_quit_action->setObjectName("actQuit");
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu("&Panels");
-  view_menu_->addAction("Add &New Panel", this, SLOT(openNewPanelDialog()));
+  view_menu_->addAction("Add &New Panel", this, &VisualizationFrame::openNewPanelDialog);
   delete_view_menu_ = view_menu_->addMenu("&Delete Panel");
   delete_view_menu_->setEnabled(false);
 
@@ -485,10 +493,10 @@ void VisualizationFrame::initMenus()
   view_menu_->addSeparator();
 
   QMenu* help_menu = menuBar()->addMenu("&Help");
-  help_menu->addAction("Show &Help panel", this, SLOT(showHelpPanel()));
-  help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
+  help_menu->addAction("Show &Help panel", this, &VisualizationFrame::showHelpPanel);
+  help_menu->addAction("Open rviz wiki in browser", this, &VisualizationFrame::onHelpWiki);
   help_menu->addSeparator();
-  help_menu->addAction("&About", this, SLOT(onHelpAbout()));
+  help_menu->addAction("&About", this, &VisualizationFrame::onHelpAbout);
 }
 
 void VisualizationFrame::initToolbars()
@@ -514,7 +522,8 @@ void VisualizationFrame::initToolbars()
   add_tool_button->setToolTip("Add a new tool");
   add_tool_button->setIcon(loadPixmap("package://rviz/icons/plus.png"));
   toolbar_->addWidget(add_tool_button);
-  connect(add_tool_button, &QToolButton::clicked, this, &VisualizationFrame::openNewToolDialog);
+  connect(add_tool_button, &QToolButton::clicked, this,
+          &VisualizationFrame::VisualizationFrame::openNewToolDialog);
 
   remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
@@ -523,7 +532,8 @@ void VisualizationFrame::initToolbars()
   remove_tool_button->setToolTip("Remove a tool from the toolbar");
   remove_tool_button->setIcon(loadPixmap("package://rviz/icons/minus.png"));
   toolbar_->addWidget(remove_tool_button);
-  connect(remove_tool_menu_, &QMenu::triggered, this, &VisualizationFrame::onToolbarRemoveTool);
+  connect(remove_tool_menu_, &QMenu::triggered, this,
+          &VisualizationFrame::VisualizationFrame::onToolbarRemoveTool);
 
   QMenu* button_style_menu = new QMenu(toolbar_);
   QAction* action_tool_button_icon_only = new QAction("Icon only", toolbar_actions_);
@@ -545,7 +555,8 @@ void VisualizationFrame::initToolbars()
   button_style_button->setToolTip("Set toolbar style");
   button_style_button->setIcon(loadPixmap("package://rviz/icons/visibility.svg"));
   toolbar_->addWidget(button_style_button);
-  connect(button_style_menu, &QMenu::triggered, this, &VisualizationFrame::onButtonStyleTool);
+  connect(button_style_menu, &QMenu::triggered, this,
+          &VisualizationFrame::VisualizationFrame::onButtonStyleTool);
 }
 
 void VisualizationFrame::hideDockImpl(Qt::DockWidgetArea area, bool hide)
@@ -638,7 +649,8 @@ void VisualizationFrame::openNewPanelDialog()
     QDockWidget* dock = addPanelByName(display_name, class_id);
     if (dock)
     {
-      connect(dock, &QDockWidget::dockLocationChanged, this, &VisualizationFrame::onDockPanelChange);
+      connect(dock, &QDockWidget::dockLocationChanged, this,
+              &VisualizationFrame::VisualizationFrame::onDockPanelChange);
     }
   }
   manager_->startUpdate();
@@ -683,7 +695,8 @@ void VisualizationFrame::updateRecentConfigMenu()
       QString qdisplay_name = QString::fromStdString(display_name);
       QAction* action = new QAction(qdisplay_name, this);
       action->setData(QString::fromStdString(*it));
-      connect(action, &QAction::triggered, this, &VisualizationFrame::onRecentConfigSelected);
+      connect(action, &QAction::triggered, this,
+              &VisualizationFrame::VisualizationFrame::onRecentConfigSelected);
       recent_configs_menu_->addAction(action);
     }
   }
@@ -752,7 +765,8 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string& full_path, c
   {
     dialog.reset(new LoadingDialog(this));
     dialog->show();
-    connect(this, &VisualizationFrame::statusUpdate, dialog.get(), &LoadingDialog::showMessage);
+    connect(this, &VisualizationFrame::VisualizationFrame::statusUpdate, dialog.get(),
+            &LoadingDialog::showMessage);
 
     // make the window correctly appear although running a long-term function
     QCoreApplication::processEvents();
@@ -950,7 +964,8 @@ void VisualizationFrame::loadPanels(const Config& config)
       // qobject_cast.
       if (dock)
       {
-        connect(dock, &QDockWidget::dockLocationChanged, this, &VisualizationFrame::onDockPanelChange);
+        connect(dock, &QDockWidget::dockLocationChanged, this,
+                &VisualizationFrame::VisualizationFrame::onDockPanelChange);
         Panel* panel = qobject_cast<Panel*>(dock->widget());
         if (panel)
         {
@@ -1125,7 +1140,8 @@ void VisualizationFrame::onSaveImage()
 {
   ScreenshotDialog* dialog =
       new ScreenshotDialog(this, render_panel_, QString::fromStdString(last_image_dir_));
-  connect(dialog, &ScreenshotDialog::savedInDirectory, this, &VisualizationFrame::setImageSaveDirectory);
+  connect(dialog, &ScreenshotDialog::savedInDirectory, this,
+          &VisualizationFrame::VisualizationFrame::setImageSaveDirectory);
   dialog->show();
 }
 
@@ -1161,7 +1177,8 @@ void VisualizationFrame::addTool(Tool* tool)
 
   remove_tool_menu_->addAction(tool->getName());
 
-  QObject::connect(tool, &Tool::nameChanged, this, &VisualizationFrame::onToolNameChanged);
+  QObject::connect(tool, &Tool::nameChanged, this,
+                   &VisualizationFrame::VisualizationFrame::onToolNameChanged);
 }
 
 void VisualizationFrame::onToolNameChanged(const QString& name)
@@ -1250,7 +1267,7 @@ void VisualizationFrame::showHelpPanel()
   {
     QDockWidget* dock = addPanelByName("Help", "rviz/Help");
     show_help_action_ = dock->toggleViewAction();
-    connect(dock, &QObject::destroyed, this, &VisualizationFrame::onHelpDestroyed);
+    connect(dock, &QObject::destroyed, this, &VisualizationFrame::VisualizationFrame::onHelpDestroyed);
   }
   else
   {
@@ -1381,14 +1398,16 @@ QDockWidget* VisualizationFrame::addPanelByName(const QString& name,
     panel = new FailedPanel(class_id, error);
   }
   panel->setName(name);
-  connect(panel, &Panel::configChanged, this, &VisualizationFrame::setDisplayConfigModified);
+  connect(panel, &Panel::configChanged, this,
+          &VisualizationFrame::VisualizationFrame::setDisplayConfigModified);
 
   PanelRecord record;
   record.dock = addPane(name, panel, area, floating);
   record.panel = panel;
   record.name = name;
-  record.delete_action = delete_view_menu_->addAction(name, this, SLOT(onDeletePanel()));
-  connect(record.dock, &QObject::destroyed, this, &VisualizationFrame::onPanelDeleted);
+  record.delete_action = delete_view_menu_->addAction(name, this, &VisualizationFrame::onDeletePanel);
+  connect(record.dock, &QObject::destroyed, this,
+          &VisualizationFrame::VisualizationFrame::onPanelDeleted);
   custom_panels_.append(record);
   delete_view_menu_->setEnabled(true);
 
@@ -1413,13 +1432,16 @@ VisualizationFrame::addPane(const QString& name, QWidget* panel, Qt::DockWidgetA
   // we want to know when that panel becomes visible
   connect(dock, &PanelDockWidget::visibilityChanged, this,
           &VisualizationFrame::onDockPanelVisibilityChange);
-  connect(this, &VisualizationFrame::fullScreenChange, dock, &PanelDockWidget::overrideVisibility);
+  connect(this, &VisualizationFrame::VisualizationFrame::fullScreenChange, dock,
+          &PanelDockWidget::overrideVisibility);
 
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction(toggle_action);
 
-  connect(toggle_action, &QAction::triggered, this, &VisualizationFrame::setDisplayConfigModified);
-  connect(dock, &PanelDockWidget::closed, this, &VisualizationFrame::setDisplayConfigModified);
+  connect(toggle_action, &QAction::triggered, this,
+          &VisualizationFrame::VisualizationFrame::setDisplayConfigModified);
+  connect(dock, &PanelDockWidget::closed, this,
+          &VisualizationFrame::VisualizationFrame::setDisplayConfigModified);
 
   dock->installEventFilter(geom_change_detector_);
 

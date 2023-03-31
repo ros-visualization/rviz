@@ -58,7 +58,7 @@ ViewController::ViewController()
   near_clip_property_ =
       new FloatProperty("Near Clip Distance", 0.01f,
                         "Anything closer to the camera than this threshold will not get rendered.", this,
-                        SLOT(updateNearClipDistance()));
+                        &ViewController::updateNearClipDistance);
   near_clip_property_->setMin(0.001);
   near_clip_property_->setMax(10000);
 
@@ -66,19 +66,20 @@ ViewController::ViewController()
                                     "Render the main view in stereo if supported."
                                     "  On Linux this requires a recent version of Ogre and"
                                     " an NVIDIA Quadro card with 3DVision glasses.",
-                                    this, SLOT(updateStereoProperties()));
+                                    this, &ViewController::updateStereoProperties);
   stereo_eye_swap_ = new BoolProperty("Swap Stereo Eyes", false,
                                       "Swap eyes if the monitor shows the left eye on the right.",
-                                      stereo_enable_, SLOT(updateStereoProperties()), this);
+                                      stereo_enable_, &ViewController::updateStereoProperties, this);
   stereo_eye_separation_ =
       new FloatProperty("Stereo Eye Separation", 0.06f, "Distance between eyes for stereo rendering.",
-                        stereo_enable_, SLOT(updateStereoProperties()), this);
-  stereo_focal_distance_ = new FloatProperty("Stereo Focal Distance", 1.0f,
-                                             "Distance from eyes to screen.  For stereo rendering.",
-                                             stereo_enable_, SLOT(updateStereoProperties()), this);
+                        stereo_enable_, &ViewController::updateStereoProperties, this);
+  stereo_focal_distance_ =
+      new FloatProperty("Stereo Focal Distance", 1.0f,
+                        "Distance from eyes to screen.  For stereo rendering.", stereo_enable_,
+                        &ViewController::updateStereoProperties, this);
   invert_z_ =
       new BoolProperty("Invert Z Axis", false, "Invert camera's Z axis for Z-down environments/models.",
-                       this, SLOT(updateStereoProperties()));
+                       this, &ViewController::updateStereoProperties);
 }
 
 void ViewController::initialize(DisplayContext* context)
