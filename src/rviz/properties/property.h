@@ -165,12 +165,13 @@ public:
   connect(const QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
 
   /// Connect changed() signal to given slot member function of receiver object
-  template <typename Func>
-  inline QMetaObject::Connection
-  connect(const typename QtPrivate::FunctionPointer<Func>::Object* receiver,
-          Func&& slot,
-          Qt::ConnectionType type = Qt::AutoConnection)
+  template <typename Func, typename R>
+  inline typename std::enable_if<QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(const R* receiver, Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
   {
+    static_assert(std::is_convertible<R*, typename QtPrivate::FunctionPointer<Func>::Object*>::value,
+                  "receiver type doesn't match that expected by member function");
     return QObject::connect(this, &Property::changed, receiver, std::forward<Func>(slot), type);
   }
 
