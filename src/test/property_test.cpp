@@ -68,21 +68,21 @@ TEST(Property, set_value_events_qt4)
   Property p("", 1, "", nullptr, SLOT(changed()), &r);
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result.toStdString());
   r.reset();
 
   // initialize from parent
   Property p2("", 2, "", &p, SIGNAL(changed()));
   p2.connect(&p2, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
   p2.setValue(27);
-  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result.toStdString());
   r.reset();
 
   // initialize from parent
   Property p3("", 3, "", &p, SIGNAL(changed()));
   p3.connect(&p3, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
   p3.setValue(37);
-  EXPECT_EQ(" aboutToChange, v=3 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=17", r.result.toStdString());
 }
 
 TEST(Property, set_value_events_lambda)
@@ -92,17 +92,17 @@ TEST(Property, set_value_events_lambda)
       "", 1, "", nullptr, [&r] { r.changed(); }, &r);
   p.connect(&p, &Property::aboutToChange, &r, [&r] { r.aboutToChange(); });
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result.toStdString());
   r.reset();
 
   // initialize from parent
   Property p2("", 2, "", &p, [&r] {
     r.changed();
-    r.result() += " free lambda";
+    r.result += " free lambda";
   });
   p2.connect(&p2, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
   p2.setValue(27);
-  EXPECT_EQ(" aboutToChange, v=2 free lambda", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=2 free lambda", r.result.toStdString());
   r.reset();
 
   // initialize from receiver with parent
@@ -110,7 +110,7 @@ TEST(Property, set_value_events_lambda)
       "", 3, "", &p, [&r] { r.changed(); }, &r);
   p3.connect(&p3, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
   p3.setValue(37);
-  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result.toStdString());
   r.reset();
 }
 
@@ -120,21 +120,21 @@ TEST(Property, set_value_events_method_pointer)
   Property p("", 1, "", nullptr, &MockPropertyChangeReceiver::changed, &r);
   p.connect(&p, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
   p.setValue(17);
-  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=1 changed, v=17", r.result.toStdString());
   r.reset();
 
   // initialize from parent
   Property p2("", 2, "", &p, &Property::changed);
   p2.connect(&p2, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
   p2.setValue(27);
-  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=2 changed, v=17", r.result.toStdString());
   r.reset();
 
   // initialize from receiver with parent
   Property p3("", 3, "", &p, &MockPropertyChangeReceiver::changed, &r);
   p3.connect(&p3, &Property::aboutToChange, &r, &MockPropertyChangeReceiver::aboutToChange);
   p3.setValue(37);
-  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=3 changed, v=37", r.result.toStdString());
   r.reset();
 
 #if 0 // This should fail to compile due to receiver type mismatching slot
@@ -244,11 +244,11 @@ TEST(VectorProperty, set_value_events)
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
 
   p.setVector(Ogre::Vector3(.1, .0001, 1000));
-  EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=0.1; 0.0001; 1000", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=0.1; 0.0001; 1000", r.result.toStdString());
   r.reset();
 
   p.subProp("Z")->setValue(2.1);
-  EXPECT_EQ(" aboutToChange, v=0.1; 0.0001; 1000 changed, v=0.1; 0.0001; 2.1", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=0.1; 0.0001; 1000 changed, v=0.1; 0.0001; 2.1", r.result.toStdString());
 }
 
 TEST(QuaternionProperty, default_value)
@@ -325,12 +325,12 @@ TEST(QuaternionProperty, set_value_events)
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
 
   p.setQuaternion(Ogre::Quaternion(1, .1, .0001, 1000));
-  EXPECT_EQ(" aboutToChange, v=0; 0; 0; 1 changed, v=0.1; 0.0001; 1000; 1", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=0; 0; 0; 1 changed, v=0.1; 0.0001; 1000; 1", r.result.toStdString());
   r.reset();
 
   p.subProp("Z")->setValue(2.1);
   EXPECT_EQ(" aboutToChange, v=0.1; 0.0001; 1000; 1 changed, v=0.1; 0.0001; 2.1; 1",
-            r.result().toStdString());
+            r.result.toStdString());
 }
 
 TEST(ColorProperty, default_value)
@@ -390,7 +390,7 @@ TEST(ColorProperty, set_value_events)
   p.connect(&p, SIGNAL(aboutToChange()), &r, SLOT(aboutToChange()));
 
   p.setColor(QColor(1, 2, 3));
-  EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=1; 2; 3", r.result().toStdString());
+  EXPECT_EQ(" aboutToChange, v=0; 0; 0 changed, v=1; 2; 3", r.result.toStdString());
 }
 
 TEST(EnumProperty, basic)

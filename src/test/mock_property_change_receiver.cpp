@@ -33,20 +33,16 @@
 
 namespace rviz
 {
-MockPropertyChangeReceiver::MockPropertyChangeReceiver()
-{
-}
-
 void MockPropertyChangeReceiver::aboutToChange()
 {
   if (Property* p = qobject_cast<Property*>(sender()))
-    result_ += " aboutToChange, v=" + p->getValue().toString();
+    result += " aboutToChange, v=" + p->getValue().toString();
 }
 
 void MockPropertyChangeReceiver::changed()
 {
   if (Property* p = qobject_cast<Property*>(sender()))
-    result_ += " changed, v=" + p->getValue().toString();
+    result += " changed, v=" + p->getValue().toString();
 }
 
 } // end namespace rviz

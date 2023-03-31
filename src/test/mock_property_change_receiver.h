@@ -36,23 +36,18 @@ namespace rviz
 class MockPropertyChangeReceiver : public QObject
 {
   Q_OBJECT
+
 public:
-  MockPropertyChangeReceiver();
+  QString result;
+
   void reset()
   {
-    result_ = "";
-  }
-  QString& result()
-  {
-    return result_;
+    result = "";
   }
 
 public Q_SLOTS:
   void aboutToChange();
   void changed();
-
-private:
-  QString result_;
 };
 
 } // end namespace rviz
