@@ -161,6 +161,9 @@ public:
   using QObject::connect; // inherit QObject's connect functions
 
   /// Connect changed() signal to given slot of receiver
+#ifdef RVIZ_DEPRECATE_QT4_SLOTS
+  [[deprecated("Switch to modern function/functor based slot specification")]]
+#endif
   QMetaObject::Connection
   connect(const QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
 
