@@ -210,7 +210,7 @@ class RegexFilterProperty : public StringProperty
   }
 
 public:
-  RegexFilterProperty(const QString& name, const std::regex regex, Property* parent)
+  RegexFilterProperty(const QString& name, const std::regex& regex, Property* parent)
     : StringProperty(name, "", "regular expression", parent), default_(regex), regex_(regex)
   {
     QObject::connect(this, &RegexFilterProperty::changed, this, [this]() { onValueChanged(); });
