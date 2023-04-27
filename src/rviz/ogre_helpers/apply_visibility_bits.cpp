@@ -31,6 +31,7 @@
 
 #include <OgreMovableObject.h>
 #include <OgreSceneNode.h>
+#include <OgreIteratorWrapper.h>
 
 namespace rviz
 {
