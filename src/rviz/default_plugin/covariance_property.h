@@ -30,6 +30,8 @@
 #ifndef COVARIANCE_PROPERTY_H
 #define COVARIANCE_PROPERTY_H
 
+#include <deque>
+
 #include <QColor>
 
 #include <OgreColourValue.h>
