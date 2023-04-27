@@ -51,7 +51,9 @@
 #include <OgreHardwareBufferManager.h>
 #include <Overlay/OgreFontManager.h>
 #include <Overlay/OgreFont.h>
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
 #include <OgreUTFString.h>
+#endif
 
 #include <sstream>
 
@@ -215,7 +217,11 @@ void MovableText::showOnTop(bool show)
 
 void MovableText::_setupGeometry()
 {
+#if (OGRE_VERSION >= OGRE_VERSION_CHECK(13, 0, 0))
+  Ogre::String utfCaption(mCaption);
+#else
   Ogre::UTFString::utf32string utfCaption(Ogre::UTFString(mCaption).asUTF32());
+#endif
 
   assert(mpFont);
   assert(!mpMaterial.isNull());

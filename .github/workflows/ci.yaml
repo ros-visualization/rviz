@@ -26,10 +26,14 @@ jobs:
             ogre: 1.12
             qt: 6
             cxxflags: -Wno-deprecated-declarations -Werror
+          - distro: noetic
+            ogre: 13.6
+            qt: 5
 
     env:
       CXXFLAGS: "-DRVIZ_DEPRECATE_QT4_SLOTS -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare ${{ matrix.cxxflags}}"
       UPSTREAM_WORKSPACE: ${{ matrix.distro != 'jammy' && 'github:rhaschke/python_qt_binding#silent-external-warnings' || '' }}
+      AFTER_INIT: ${{ startsWith(matrix.ogre, '13') && 'apt install -q -y software-properties-common && add-apt-repository ppa:s-schmeisser/ogre-13-focal -y' || ''}}
       AFTER_INSTALL_TARGET_DEPENDENCIES: apt install -qq -y libogre-${{ matrix.ogre }}-dev
       CATKIN_LINT: true
       CMAKE_ARGS: -DRVIZ_QT_VERSIONS="${{ matrix.qt }}"
