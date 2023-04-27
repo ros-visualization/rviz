@@ -58,7 +58,12 @@ using namespace rviz;
 ImageView::ImageView(QWidget* parent) : QtOgreRenderWindow(parent), texture_it_(nh_)
 {
   setAutoRender(false);
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
   scene_manager_ = ogre_root_->createSceneManager(Ogre::ST_GENERIC, "TestSceneManager");
+#else
+  scene_manager_ = ogre_root_->createSceneManager(Ogre::DefaultSceneManagerFactory::FACTORY_TYPE_NAME,
+                                                  "TestSceneManager");
+#endif
 }
 
 ImageView::~ImageView()

@@ -140,8 +140,11 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   render_panel->setAutoRender(false);
 
   private_->threaded_nh_.setCallbackQueue(&private_->threaded_queue_);
-
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
   scene_manager_ = ogre_root_->createSceneManager(Ogre::ST_GENERIC);
+#else
+  scene_manager_ = ogre_root_->createSceneManager();
+#endif
 
   rviz::RenderSystem::RenderSystem::get()->prepareOverlays(scene_manager_);
 
