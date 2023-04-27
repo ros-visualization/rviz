@@ -52,7 +52,11 @@ MyFrame::MyFrame(QWidget* parent)
 
   try
   {
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
     scene_manager_ = root_->createSceneManager(Ogre::ST_GENERIC, "TestSceneManager");
+#else
+    scene_manager_ = root_->createSceneManager(Ogre::DefaultSceneManagerFactory::FACTORY_TYPE_NAME, "TestSceneManager");
+#endif
 
     render_panel_ = new QtOgreRenderWindow();
     render_panel_->resize(this->size());

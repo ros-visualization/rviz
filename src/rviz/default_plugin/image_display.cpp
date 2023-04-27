@@ -81,7 +81,12 @@ void ImageDisplay::onInitialize()
     static uint32_t count = 0;
     std::stringstream ss;
     ss << "ImageDisplay" << count++;
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
     img_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
+#else
+    img_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::DefaultSceneManagerFactory::FACTORY_TYPE_NAME, ss.str());
+#endif
+
   }
 
   img_scene_node_ = img_scene_manager_->getRootSceneNode()->createChildSceneNode();
