@@ -268,11 +268,11 @@ void RenderSystem::setupResources()
   auto& rgm = Ogre::ResourceGroupManager::getSingleton();
   // todo: need to get from CMake/pkgconfig:  const auto& mediaDir =
   // Ogre::FileSystemLayer::resolveBundlePath(OGRE_MEDIA_DIR); add default locations
-  //  todo: set in OGREBites but does not exist   rgm.addResourceLocation(mediaDir +
-  //  "/usr/share/OGRE-1.12.13/Media/Main", "FileSystem", Ogre::RGN_INTERNAL);
-  rgm.addResourceLocation(/*mediaDir +*/ "/usr/share/OGRE-1.12.13/Media/RTShaderLib/GLSL", "FileSystem",
+  //  todo: set in OGREBites but does not exist
+  rgm.addResourceLocation("/usr/share/OGRE-13.6.4/Media/Main", "FileSystem", Ogre::RGN_INTERNAL);
+  rgm.addResourceLocation(/*mediaDir +*/ "/usr/share/OGRE-13.6.4/Media/RTShaderLib/GLSL", "FileSystem",
                           Ogre::RGN_INTERNAL);
-  rgm.addResourceLocation(/*mediaDir +*/ "/usr/share/OGRE-1.12.13/Media/ShadowVolume", "FileSystem",
+  rgm.addResourceLocation(/*mediaDir +*/ "/usr/share/OGRE-13.6.4/Media/ShadowVolume", "FileSystem",
                           Ogre::RGN_INTERNAL);
 
   std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
