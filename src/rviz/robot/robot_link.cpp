@@ -39,6 +39,7 @@
 #include <OgreTextureManager.h>
 #include <OgreSharedPtr.h>
 #include <OgreTechnique.h>
+#include <OgreRTShaderSystem.h>
 
 #include <ros/console.h>
 
@@ -206,6 +207,8 @@ RobotLink::RobotLink(Robot* robot,
       nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
+  //create RTSS shader
+  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(*color_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   // create the ogre objects to display
 

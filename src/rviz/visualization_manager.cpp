@@ -164,6 +164,12 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   Ogre::MaterialManager::getSingleton().addListener(private_->material_mgr_listener_);
   //}
 
+
+  // forward scheme not found events to the RTSS
+  OgreBites::SGTechniqueResolverListener* schemeNotFoundHandler = new OgreBites::SGTechniqueResolverListener(shadergen);
+  Ogre::MaterialManager::getSingleton().addListener(schemeNotFoundHandler);
+
+
   // We need to wait with resource initialization till the RTShaderSystem is enabled
   rviz::RenderSystem::RenderSystem::get()->initialiseResources();
 
