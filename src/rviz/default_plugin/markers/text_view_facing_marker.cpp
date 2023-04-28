@@ -29,6 +29,10 @@
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <OgreBillboardSet.h>
+#include <OgreVector3.h>
+#include <Overlay/OgreFontManager.h>
+#include <Overlay/OgreFont.h>
 
 #include <ros/assert.h>
 
@@ -62,6 +66,18 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& /*old_message*/,
   {
     text_ = new MovableText(new_message->text);
     text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_CENTER);
+#if (OGRE_VERSION >= OGRE_VERSION_CHECK(13, 0, 0))
+    // builtin replacement for MovableText
+    auto font = Ogre::FontManager::getSingleton().getByName("Liberation Sans");
+    if (font) {
+        auto bbs = context_->getSceneManager()->createBillboardSet();
+        font->putText(bbs, new_message->text, new_message->scale.z);
+        scene_node_
+                ->createChildSceneNode(bbs->getBoundingBox().getHalfSize()*Ogre::Vector3(-1, 1, 0))
+                ->attachObject(bbs);
+    }
+#endif
+
     scene_node_->attachObject(text_);
 
     handler_.reset(
