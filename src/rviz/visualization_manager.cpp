@@ -31,6 +31,7 @@
 
 #include <QApplication>
 #include <QCursor>
+#include <QDebug>
 #include <QPixmap>
 #include <QTimer>
 #include <QWindow>
@@ -49,6 +50,7 @@
 #include <OgreSharedPtr.h>
 #include <OgreSGTechniqueResolverListener.h>
 #include <OgreCamera.h>
+#include <OgreString.h>
 
 #include <boost/filesystem.hpp>
 #include <utility>
@@ -166,7 +168,8 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
 
 
   // forward scheme not found events to the RTSS
-  OgreBites::SGTechniqueResolverListener* schemeNotFoundHandler = new OgreBites::SGTechniqueResolverListener(shadergen);
+  OgreBites::SGTechniqueResolverListener* schemeNotFoundHandler =
+      new OgreBites::SGTechniqueResolverListener(shadergen);
   Ogre::MaterialManager::getSingleton().addListener(schemeNotFoundHandler);
 
 
@@ -404,7 +407,14 @@ void VisualizationManager::onUpdate()
   {
     render_requested_ = 0;
     boost::mutex::scoped_lock lock(private_->render_mutex_);
-    ogre_root_->renderOneFrame();
+    try
+    {
+      ogre_root_->renderOneFrame();
+    }
+    catch (Ogre::Exception& e)
+    {
+      qCritical() << "Ogre exception: " << e.getDescription().c_str();
+    }
   }
 }
 
