@@ -207,8 +207,10 @@ RobotLink::RobotLink(Robot* robot,
       nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
-  //create RTSS shader
-  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(*color_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // create RTSS shader
+  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+      *color_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   // create the ogre objects to display
 
@@ -490,6 +492,10 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
   {
     // clone default material (for modification by link)
     *mat = *Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
+    Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+        *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+        Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
     return mat;
   }
 
@@ -545,6 +551,10 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
     ;
     tex_unit->setTextureName(filename);
   }
+
+  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+      *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   return mat;
 }
@@ -656,6 +666,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     {
       // latest used material becomes the default for this link
       default_material_ = getMaterialForLink(link, material);
+      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+          *default_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
     }
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
@@ -676,6 +689,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       *active = *original;
       sub->setMaterial(active);
       materials_[sub] = std::make_pair(active, original);
+      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+          *active, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
     }
   }
 }
@@ -929,6 +945,10 @@ void RobotLink::setMaterialMode(unsigned char mode_flags)
   auto error_material = Ogre::MaterialManager::getSingleton().getByName(
       "BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   auto material = mode_flags == COLOR ? color_material_ : error_material;
+
+  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+      *material, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   for (const auto& mesh : visual_meshes_)
     mesh->setMaterial(material);
