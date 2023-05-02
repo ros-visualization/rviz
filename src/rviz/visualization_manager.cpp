@@ -172,6 +172,16 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
       new OgreBites::SGTechniqueResolverListener(shadergen);
   Ogre::MaterialManager::getSingleton().addListener(schemeNotFoundHandler);
 
+  auto subdir = "RTShaderCache";
+  auto path = "/home/sis/.ros/ogre/RTShaderCache"; // mFSLayer->getWritablePath(subdir);
+
+  if (!Ogre::FileSystemLayer::fileExists(path))
+  {
+    Ogre::FileSystemLayer::createDirectory(path);
+  }
+  shadergen->setShaderCachePath(path);
+
+  qDebug() << "Shader language: " << shadergen->getTargetLanguage().c_str();
 
   // We need to wait with resource initialization till the RTShaderSystem is enabled
   rviz::RenderSystem::RenderSystem::get()->initialiseResources();
@@ -414,6 +424,8 @@ void VisualizationManager::onUpdate()
     catch (Ogre::Exception& e)
     {
       qCritical() << "Ogre exception: " << e.getDescription().c_str();
+      Ogre::RTShader::ShaderGenerator::getSingleton().validateScheme(
+          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
     }
   }
 }
