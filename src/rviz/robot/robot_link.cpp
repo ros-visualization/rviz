@@ -206,11 +206,11 @@ RobotLink::RobotLink(Robot* robot,
   color_material_ = Ogre::MaterialPtr(new Ogre::Material(
       nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
-  color_material_->getTechnique(0)->setLightingEnabled(true);
+  color_material_->setLightingEnabled(true);
   // create RTSS shader
-  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-      *color_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  //  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+  //      *color_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+  //      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   // create the ogre objects to display
 
@@ -400,8 +400,9 @@ void RobotLink::updateAlpha()
     }
     else
     {
-      Ogre::ColourValue color = active->getTechnique(0)->getPass(0)->getDiffuse();
-      const float material_alpha = original->getTechnique(0)->getPass(0)->getDiffuse().a;
+      Ogre::ColourValue color =
+          Ogre::ColourValue::Green;     // active->getBestTechnique()->getPass(0)->getDiffuse();
+      const float material_alpha = 1.0; // original->getBestTechnique()->getPass(0)->getDiffuse().a;
       color.a = robot_alpha_ * material_alpha * link_alpha;
       active->setDiffuse(color);
 
@@ -422,7 +423,8 @@ void RobotLink::updateAlpha()
     }
   }
 
-  Ogre::ColourValue color = color_material_->getTechnique(0)->getPass(0)->getDiffuse();
+  Ogre::ColourValue color =
+      Ogre::ColourValue::Green; // color_material_->getTechnique(0)->getPass(0)->getDiffuse();
   color.a = robot_alpha_ * link_alpha;
   color_material_->setDiffuse(color);
 
@@ -492,19 +494,19 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
   {
     // clone default material (for modification by link)
     *mat = *Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
-    Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-        *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-        Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+    //    Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+    //        *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+    //        Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
     return mat;
   }
 
-  mat->getTechnique(0)->setLightingEnabled(true);
+  mat->setLightingEnabled(true);
   if (material->texture_filename.empty())
   {
     const urdf::Color& col = material->color;
-    mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
-    mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
+    mat->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
+    mat->setDiffuse(col.r, col.g, col.b, col.a);
   }
   else
   {
@@ -546,15 +548,15 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
       }
     }
 
-    Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
+    Ogre::Pass* pass = mat->getBestTechnique()->getPass(0);
     Ogre::TextureUnitState* tex_unit = pass->createTextureUnitState();
     ;
     tex_unit->setTextureName(filename);
   }
 
-  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-      *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  //  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+  //      *mat, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+  //      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   return mat;
 }
@@ -666,9 +668,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     {
       // latest used material becomes the default for this link
       default_material_ = getMaterialForLink(link, material);
-      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-          *default_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+      //      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+      //          *default_material_, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      //          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
     }
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
@@ -689,9 +691,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       *active = *original;
       sub->setMaterial(active);
       materials_[sub] = std::make_pair(active, original);
-      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-          *active, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+      //      Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+      //          *active, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      //          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
     }
   }
 }
@@ -946,9 +948,9 @@ void RobotLink::setMaterialMode(unsigned char mode_flags)
       "BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   auto material = mode_flags == COLOR ? color_material_ : error_material;
 
-  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
-      *material, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
-      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  //  Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(
+  //      *material, Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+  //      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
   for (const auto& mesh : visual_meshes_)
     mesh->setMaterial(material);
@@ -958,12 +960,12 @@ void RobotLink::setMaterialMode(unsigned char mode_flags)
 
 void RobotLink::setColor(float red, float green, float blue)
 {
-  Ogre::ColourValue color = color_material_->getTechnique(0)->getPass(0)->getDiffuse();
+  Ogre::ColourValue color = color_material_->getBestTechnique()->getPass(0)->getDiffuse();
   color.r = red;
   color.g = green;
   color.b = blue;
-  color_material_->getTechnique(0)->setAmbient(0.5 * color);
-  color_material_->getTechnique(0)->setDiffuse(color);
+  color_material_->setAmbient(0.5 * color);
+  color_material_->setDiffuse(color);
 
   setMaterialMode(COLOR | (material_mode_flags_ & ERROR));
 }

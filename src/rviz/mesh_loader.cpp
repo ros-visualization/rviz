@@ -463,7 +463,7 @@ void loadMaterials(const std::string& resource_path,
         ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     material_table_out.push_back(mat);
 
-    Ogre::Technique* tech = mat->getTechnique(0);
+    Ogre::Technique* tech = mat->getBestTechnique();
     Ogre::Pass* pass = tech->getPass(0);
 
     aiMaterial* amat = scene->mMaterials[i];
