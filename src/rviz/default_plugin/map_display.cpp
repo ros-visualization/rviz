@@ -221,7 +221,7 @@ void Swatch::updateData()
 
 MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(0), height_(0)
 {
-  connect(this, SIGNAL(mapUpdated()), this, SLOT(showMap()));
+  connect(this, SIGNAL(mapUpdated()), this, SLOT(showMap()), Qt::QueuedConnection);
   topic_property_ = new RosTopicProperty(
       "Topic", "", QString::fromStdString(ros::message_traits::datatype<nav_msgs::OccupancyGrid>()),
       "nav_msgs::OccupancyGrid topic to subscribe to.", this, SLOT(updateTopic()));
