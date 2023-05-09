@@ -113,11 +113,11 @@ void ScreenshotDialog::takeScreenshotNow()
 {
   if (save_full_window_)
   {
-    screenshot_ = QPixmap::grabWindow(main_window_->winId());
+    screenshot_ = QScreen::grabWindow(main_window_->winId());
   }
   else
   {
-    screenshot_ = QPixmap::grabWindow(render_window_->winId());
+    screenshot_ = QScreen::grabWindow(render_window_->winId());
   }
   image_widget_->setImage(screenshot_);
 }
