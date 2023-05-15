@@ -109,7 +109,7 @@ void PropertyTreeWidget::setModel(PropertyTreeModel* model)
     m->deleteLater();
 
     connect(model_, SIGNAL(propertyHiddenChanged(const Property*)), this,
-            SLOT(propertyHiddenChanged(const Property*)), Qt::QueuedConnection);
+            SLOT(propertyHiddenChanged(const Property*)));
     connect(model_, SIGNAL(expand(const QModelIndex&)), this, SLOT(expand(const QModelIndex&)));
     connect(model_, SIGNAL(collapse(const QModelIndex&)), this, SLOT(collapse(const QModelIndex&)));
 
