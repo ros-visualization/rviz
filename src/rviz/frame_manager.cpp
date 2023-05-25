@@ -328,7 +328,7 @@ std::string FrameManager::discoverFailureReason(const std::string& frame_id,
     }
   }
 
-  return "Unknown reason for transform failure";
+  return "Unknown reason for transform failure (frame=[" + frame_id + "])";
 }
 
 void FrameManager::messageArrived(const std::string& /*frame_id*/,
