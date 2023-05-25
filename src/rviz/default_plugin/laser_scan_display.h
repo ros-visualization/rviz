@@ -66,6 +66,9 @@ protected:
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
   void processMessage(const sensor_msgs::LaserScanConstPtr& scan) override;
 
+  /** create a status warning when tolerance is larger than 1s */
+  void checkTolerance(int tolerance);
+
   IntProperty* queue_size_property_;
 
   PointCloudCommon* point_cloud_common_;
