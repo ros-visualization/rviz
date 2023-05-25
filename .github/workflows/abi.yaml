@@ -15,7 +15,7 @@ jobs:
         distro: [noetic]
 
     env:
-      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
+      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings github:rr-tom-noble/common_msgs#feature/add-arrow-strip-marker-type
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: /home/runner/work
       DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
