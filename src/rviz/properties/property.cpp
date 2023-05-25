@@ -58,9 +58,7 @@ Property* Property::failprop_ = new FailureProperty;
 Property::Property(const QString& name,
                    const QVariant& default_value,
                    const QString& description,
-                   Property* parent,
-                   const char* changed_slot,
-                   QObject* receiver)
+                   Property* parent)
   : value_(default_value)
   , model_(nullptr)
   , child_indexes_valid_(false)
@@ -72,17 +70,18 @@ Property::Property(const QString& name,
 {
   Property::setName(name);
   if (parent)
-  {
     parent->addChild(this);
-  }
-  if (receiver == nullptr)
-  {
-    receiver = parent;
-  }
-  if (receiver && changed_slot)
-  {
-    connect(this, SIGNAL(changed()), receiver, changed_slot);
-  }
+}
+
+QMetaObject::Connection
+Property::connect(const QObject* receiver, const char* slot, Qt::ConnectionType type)
+{
+  if (!receiver)
+    receiver = parent_;
+  if (receiver && slot)
+    return QObject::connect(this, SIGNAL(changed()), receiver, slot, type);
+  else
+    return QMetaObject::Connection();
 }
 
 Property::~Property()

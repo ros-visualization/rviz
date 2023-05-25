@@ -54,7 +54,7 @@ WaitForMasterDialog::WaitForMasterDialog(QWidget* parent) : QMessageBox(parent)
   setStandardButtons(QMessageBox::Cancel);
 
   QTimer* timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  connect(timer, &QTimer::timeout, this, &WaitForMasterDialog::onTimer);
   timer->start(1000);
 }
 

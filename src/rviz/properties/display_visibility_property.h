@@ -61,9 +61,35 @@ public:
                             const QString& name = QString(),
                             bool default_value = false,
                             const QString& description = QString(),
-                            Property* parent = nullptr,
-                            const char* changed_slot = nullptr,
-                            QObject* receiver = nullptr);
+                            Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  DisplayVisibilityProperty(uint32_t vis_bit,
+                            Display* display,
+                            const QString& name,
+                            bool default_value,
+                            const QString& description,
+                            Property* parent,
+                            Func&& changed_slot,
+                            const R* receiver)
+    : DisplayVisibilityProperty(vis_bit, display, name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  DisplayVisibilityProperty(uint32_t vis_bit,
+                            Display* display,
+                            const QString& name,
+                            bool default_value,
+                            const QString& description,
+                            P* parent,
+                            Func&& changed_slot)
+    : DisplayVisibilityProperty(vis_bit, display, name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   ~DisplayVisibilityProperty() override;
 

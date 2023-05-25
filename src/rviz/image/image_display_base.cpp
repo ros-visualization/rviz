@@ -43,29 +43,28 @@ namespace rviz
 {
 ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages_received_(0)
 {
-  topic_property_ =
-      new RosTopicProperty("Image Topic", "",
-                           QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                           "sensor_msgs::Image topic to subscribe to.", this, SLOT(updateTopic()));
+  topic_property_ = new RosTopicProperty(
+      "Image Topic", "", QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+      "sensor_msgs::Image topic to subscribe to.", this, &ImageDisplayBase::updateTopic);
 
   transport_property_ = new EnumProperty("Transport Hint", "raw", "Preferred method of sending images.",
-                                         this, SLOT(updateTopic()));
+                                         this, &ImageDisplayBase::updateTopic);
 
-  connect(transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(transport_property_, &EnumProperty::requestOptions, this,
+          &ImageDisplayBase::fillTransportOptionList);
 
   queue_size_property_ =
       new IntProperty("Queue Size", 2,
                       "Advanced: set the size of the incoming message queue.  Increasing this "
                       "is useful if your incoming TF data is delayed significantly from your"
                       " image data, but it can greatly increase memory usage if the messages are big.",
-                      this, SLOT(updateQueueSize()));
+                      this, &ImageDisplayBase::updateQueueSize);
   queue_size_property_->setMin(1);
 
   transport_property_->setStdString("raw");
 
-  unreliable_property_ =
-      new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this, SLOT(updateTopic()));
+  unreliable_property_ = new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this,
+                                          &ImageDisplayBase::updateTopic);
 }
 
 ImageDisplayBase::~ImageDisplayBase()

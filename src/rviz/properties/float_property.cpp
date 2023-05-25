@@ -38,12 +38,8 @@ namespace rviz
 FloatProperty::FloatProperty(const QString& name,
                              float default_value,
                              const QString& description,
-                             Property* parent,
-                             const char* changed_slot,
-                             QObject* receiver)
-  : Property(name, default_value, description, parent, changed_slot, receiver)
-  , min_(-FLT_MAX)
-  , max_(FLT_MAX)
+                             Property* parent)
+  : Property(name, default_value, description, parent), min_(-FLT_MAX), max_(FLT_MAX)
 {
 }
 

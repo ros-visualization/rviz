@@ -42,9 +42,31 @@ public:
   QuaternionProperty(const QString& name = QString(),
                      const Ogre::Quaternion& default_value = Ogre::Quaternion::IDENTITY,
                      const QString& description = QString(),
-                     Property* parent = nullptr,
-                     const char* changed_slot = nullptr,
-                     QObject* receiver = nullptr);
+                     Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  QuaternionProperty(const QString& name,
+                     const Ogre::Quaternion& default_value,
+                     const QString& description,
+                     Property* parent,
+                     Func&& changed_slot,
+                     const R* receiver)
+    : QuaternionProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  QuaternionProperty(const QString& name,
+                     const Ogre::Quaternion& default_value,
+                     const QString& description,
+                     P* parent,
+                     Func&& changed_slot)
+    : QuaternionProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   virtual bool setQuaternion(const Ogre::Quaternion& quaternion);
   virtual Ogre::Quaternion getQuaternion() const

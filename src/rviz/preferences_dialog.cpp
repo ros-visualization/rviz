@@ -63,8 +63,8 @@ PreferencesDialog::PreferencesDialog(Factory* factory, Preferences* preferences_
   setLayout(main_layout);
 
   //***** Connections
-  connect(button_box_, SIGNAL(accepted()), this, SLOT(accept()));
-  connect(button_box_, SIGNAL(rejected()), this, SLOT(reject()));
+  connect(button_box_, &QDialogButtonBox::accepted, this, &PreferencesDialog::accept);
+  connect(button_box_, &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
 }
 
 QSize PreferencesDialog::sizeHint() const

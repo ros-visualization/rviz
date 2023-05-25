@@ -73,39 +73,39 @@ Ogre::Quaternion quaternionRosToOgre(geometry_msgs::Quaternion const& quaternion
 PoseArrayDisplay::PoseArrayDisplay() : manual_object_(nullptr)
 {
   shape_property_ = new EnumProperty("Shape", "Arrow (Flat)", "Shape to display the pose as.", this,
-                                     SLOT(updateShapeChoice()));
+                                     &PoseArrayDisplay::updateShapeChoice);
 
   arrow_color_property_ = new ColorProperty("Color", QColor(255, 25, 0), "Color to draw the arrows.",
-                                            this, SLOT(updateArrowColor()));
+                                            this, &PoseArrayDisplay::updateArrowColor);
 
   arrow_alpha_property_ =
       new FloatProperty("Alpha", 1, "Amount of transparency to apply to the displayed poses.", this,
-                        SLOT(updateArrowColor()));
+                        &PoseArrayDisplay::updateArrowColor);
 
   arrow2d_length_property_ = new FloatProperty("Arrow Length", 0.3, "Length of the arrows.", this,
-                                               SLOT(updateArrow2dGeometry()));
+                                               &PoseArrayDisplay::updateArrow2dGeometry);
 
   arrow3d_head_radius_property_ =
       new FloatProperty("Head Radius", 0.03, "Radius of the arrow's head, in meters.", this,
-                        SLOT(updateArrow3dGeometry()));
+                        &PoseArrayDisplay::updateArrow3dGeometry);
 
   arrow3d_head_length_property_ =
       new FloatProperty("Head Length", 0.07, "Length of the arrow's head, in meters.", this,
-                        SLOT(updateArrow3dGeometry()));
+                        &PoseArrayDisplay::updateArrow3dGeometry);
 
   arrow3d_shaft_radius_property_ =
       new FloatProperty("Shaft Radius", 0.01, "Radius of the arrow's shaft, in meters.", this,
-                        SLOT(updateArrow3dGeometry()));
+                        &PoseArrayDisplay::updateArrow3dGeometry);
 
   arrow3d_shaft_length_property_ =
       new FloatProperty("Shaft Length", 0.23, "Length of the arrow's shaft, in meters.", this,
-                        SLOT(updateArrow3dGeometry()));
+                        &PoseArrayDisplay::updateArrow3dGeometry);
 
   axes_length_property_ = new FloatProperty("Axes Length", 0.3, "Length of each axis, in meters.", this,
-                                            SLOT(updateAxesGeometry()));
+                                            &PoseArrayDisplay::updateAxesGeometry);
 
   axes_radius_property_ = new FloatProperty("Axes Radius", 0.01, "Radius of each axis, in meters.", this,
-                                            SLOT(updateAxesGeometry()));
+                                            &PoseArrayDisplay::updateAxesGeometry);
 
   shape_property_->addOption("Arrow (Flat)", ShapeType::Arrow2d);
   shape_property_->addOption("Arrow (3D)", ShapeType::Arrow3d);

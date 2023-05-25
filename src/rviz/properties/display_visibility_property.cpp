@@ -42,12 +42,8 @@ DisplayVisibilityProperty::DisplayVisibilityProperty(uint32_t vis_bit,
                                                      const QString& name,
                                                      bool default_value,
                                                      const QString& description,
-                                                     Property* parent,
-                                                     const char* changed_slot,
-                                                     QObject* receiver)
-  : BoolProperty(name, default_value, description, parent, changed_slot, receiver)
-  , vis_bit_(vis_bit)
-  , display_(display)
+                                                     Property* parent)
+  : BoolProperty(name, default_value, description, parent), vis_bit_(vis_bit), display_(display)
 {
   custom_name_ = (name.size() != 0);
   DisplayVisibilityProperty::update();

@@ -38,7 +38,7 @@ FloatEdit::FloatEdit(QWidget* parent) : QLineEdit(parent)
 {
   setFrame(false);
   setValidator(new QDoubleValidator(this));
-  connect(this, SIGNAL(textEdited(const QString&)), this, SLOT(updateValue()));
+  connect(this, &FloatEdit::textEdited, this, &FloatEdit::updateValue);
 }
 
 void FloatEdit::setValue(float new_value)

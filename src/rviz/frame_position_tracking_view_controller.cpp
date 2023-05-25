@@ -73,7 +73,8 @@ void FramePositionTrackingViewController::onActivate()
   // property so that the view does not jump.  Therefore we make the
   // signal/slot connection from the property here in onActivate()
   // instead of in the constructor.
-  connect(target_frame_property_, SIGNAL(changed()), this, SLOT(updateTargetFrame()));
+  connect(target_frame_property_, &Property::changed, this,
+          &FramePositionTrackingViewController::updateTargetFrame);
 }
 
 void FramePositionTrackingViewController::update(float /*dt*/, float /*ros_dt*/)

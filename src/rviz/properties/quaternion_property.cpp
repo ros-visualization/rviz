@@ -37,10 +37,8 @@ namespace rviz
 QuaternionProperty::QuaternionProperty(const QString& name,
                                        const Ogre::Quaternion& default_value,
                                        const QString& description,
-                                       Property* parent,
-                                       const char* changed_slot,
-                                       QObject* receiver)
-  : Property(name, QVariant(), description, parent, changed_slot, receiver)
+                                       Property* parent)
+  : Property(name, QVariant(), description, parent)
   , quaternion_(default_value)
   , ignore_child_updates_(false)
 {
@@ -49,14 +47,14 @@ QuaternionProperty::QuaternionProperty(const QString& name,
   z_ = new Property("Z", quaternion_.z, "Z coordinate", this);
   w_ = new Property("W", quaternion_.w, "W coordinate", this);
   updateString();
-  connect(x_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(y_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(z_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(w_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(x_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
-  connect(y_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
-  connect(z_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
-  connect(w_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
+  connect(x_, &Property::aboutToChange, this, &QuaternionProperty::emitAboutToChange);
+  connect(y_, &Property::aboutToChange, this, &QuaternionProperty::emitAboutToChange);
+  connect(z_, &Property::aboutToChange, this, &QuaternionProperty::emitAboutToChange);
+  connect(w_, &Property::aboutToChange, this, &QuaternionProperty::emitAboutToChange);
+  connect(x_, &Property::changed, this, &QuaternionProperty::updateFromChildren);
+  connect(y_, &Property::changed, this, &QuaternionProperty::updateFromChildren);
+  connect(z_, &Property::changed, this, &QuaternionProperty::updateFromChildren);
+  connect(w_, &Property::changed, this, &QuaternionProperty::updateFromChildren);
 }
 
 bool QuaternionProperty::setQuaternion(const Ogre::Quaternion& new_quaternion)

@@ -84,18 +84,18 @@ DepthCloudDisplay::DepthCloudDisplay()
   topic_filter_property_ =
       new Property("Topic Filter", true,
                    "List only topics with names that relate to depth and color images", this,
-                   SLOT(updateTopicFilter()));
+                   &DepthCloudDisplay::updateTopicFilter);
 
   depth_topic_property_ = new RosFilteredTopicProperty(
       "Depth Map Topic", "", QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-      "sensor_msgs::Image topic to subscribe to.", depth_filter, this, SLOT(updateTopic()));
+      "sensor_msgs::Image topic to subscribe to.", depth_filter, this, &DepthCloudDisplay::updateTopic);
 
   depth_transport_property_ =
       new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this,
-                       SLOT(updateTopic()));
+                       &DepthCloudDisplay::updateTopic);
 
-  connect(depth_transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(depth_transport_property_, &EnumProperty::requestOptions, this,
+          &DepthCloudDisplay::fillTransportOptionList);
 
   depth_transport_property_->setStdString("raw");
 
@@ -106,14 +106,15 @@ DepthCloudDisplay::DepthCloudDisplay()
   color_topic_property_ = new RosFilteredTopicProperty(
       "Color Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-      "sensor_msgs::Image topic to subscribe to.", color_filter, this, SLOT(updateTopic()));
+      "sensor_msgs::Image topic to subscribe to.", color_filter, this, &DepthCloudDisplay::updateTopic);
 
-  color_transport_property_ = new EnumProperty(
-      "Color Transport Hint", "raw", "Preferred method of sending images.", this, SLOT(updateTopic()));
+  color_transport_property_ =
+      new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this,
+                       &DepthCloudDisplay::updateTopic);
 
 
-  connect(color_transport_property_, SIGNAL(requestOptions(EnumProperty*)), this,
-          SLOT(fillTransportOptionList(EnumProperty*)));
+  connect(color_transport_property_, &EnumProperty::requestOptions, this,
+          &DepthCloudDisplay::fillTransportOptionList);
 
   color_transport_property_->setStdString("raw");
 
@@ -123,29 +124,30 @@ DepthCloudDisplay::DepthCloudDisplay()
                       "Advanced: set the size of the incoming message queue.  Increasing this "
                       "is useful if your incoming TF data is delayed significantly from your"
                       " image data, but it can greatly increase memory usage if the messages are big.",
-                      this, SLOT(updateQueueSize()));
+                      this, &DepthCloudDisplay::updateQueueSize);
   queue_size_property_->setMin(1);
 
   use_auto_size_property_ = new BoolProperty(
       "Auto Size", true,
       "Automatically scale each point based on its depth value and the camera parameters.", this,
-      SLOT(updateUseAutoSize()), this);
+      &DepthCloudDisplay::updateUseAutoSize, this);
 
   auto_size_factor_property_ =
       new FloatProperty("Auto Size Factor", 1, "Scaling factor to be applied to the auto size.",
-                        use_auto_size_property_, SLOT(updateAutoSizeFactor()), this);
+                        use_auto_size_property_, &DepthCloudDisplay::updateAutoSizeFactor, this);
   auto_size_factor_property_->setMin(0.0001);
 
   use_occlusion_compensation_property_ =
       new BoolProperty("Occlusion Compensation", false,
                        "Keep points alive after they have been occluded by a closer point. Points are "
                        "removed after a timeout or when the camera frame moves.",
-                       this, SLOT(updateUseOcclusionCompensation()), this);
+                       this, &DepthCloudDisplay::updateUseOcclusionCompensation, this);
 
   occlusion_shadow_timeout_property_ =
       new FloatProperty("Occlusion Time-Out", 30.0f,
                         "Amount of seconds before removing occluded points from the depth cloud",
-                        use_occlusion_compensation_property_, SLOT(updateOcclusionTimeOut()), this);
+                        use_occlusion_compensation_property_, &DepthCloudDisplay::updateOcclusionTimeOut,
+                        this);
 }
 
 void DepthCloudDisplay::onInitialize()

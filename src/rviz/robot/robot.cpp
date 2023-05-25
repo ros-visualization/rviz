@@ -81,20 +81,20 @@ Robot::Robot(Ogre::SceneNode* root_node,
   link_tree_->hide(); // hide until loaded
 
   link_tree_style_ = new EnumProperty("Link Tree Style", "", "How the list of links is displayed",
-                                      link_tree_, SLOT(changedLinkTreeStyle()), this);
+                                      link_tree_, &Robot::changedLinkTreeStyle, this);
   initLinkTreeStyle();
   expand_tree_ = new BoolProperty("Expand Tree", false, "Expand or collapse link tree", link_tree_,
-                                  SLOT(changedExpandTree()), this);
+                                  &Robot::changedExpandTree, this);
   expand_link_details_ =
       new BoolProperty("Expand Link Details", false,
                        "Expand link details (sub properties) to see all info for all links.", link_tree_,
-                       SLOT(changedExpandLinkDetails()), this);
+                       &Robot::changedExpandLinkDetails, this);
   expand_joint_details_ =
       new BoolProperty("Expand Joint Details", false,
                        "Expand joint details (sub properties) to see all info for all joints.",
-                       link_tree_, SLOT(changedExpandJointDetails()), this);
+                       link_tree_, &Robot::changedExpandJointDetails, this);
   enable_all_links_ = new BoolProperty("All Links Enabled", true, "Turn all links on or off.",
-                                       link_tree_, SLOT(changedEnableAllLinks()), this);
+                                       link_tree_, &Robot::changedEnableAllLinks, this);
 }
 
 Robot::~Robot()

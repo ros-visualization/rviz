@@ -54,7 +54,7 @@ ToolManager::ToolManager(DisplayContext* context)
   , current_tool_(nullptr)
   , default_tool_(nullptr)
 {
-  connect(property_tree_model_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
+  connect(property_tree_model_, &PropertyTreeModel::configChanged, this, &ToolManager::configChanged);
 }
 
 ToolManager::~ToolManager()
@@ -248,8 +248,7 @@ Tool* ToolManager::addTool(const QString& class_id)
   }
 
   Property* container = tool->getPropertyContainer();
-  connect(container, SIGNAL(childListChanged(Property*)), this,
-          SLOT(updatePropertyVisibility(Property*)));
+  connect(container, &Property::childListChanged, this, &ToolManager::updatePropertyVisibility);
   updatePropertyVisibility(container);
 
   Q_EMIT toolAdded(tool);
@@ -262,7 +261,7 @@ Tool* ToolManager::addTool(const QString& class_id)
     setCurrentTool(tool);
   }
 
-  QObject::connect(tool, SIGNAL(close()), this, SLOT(closeTool()));
+  QObject::connect(tool, &Tool::close, this, &ToolManager::closeTool);
 
   Q_EMIT configChanged();
 

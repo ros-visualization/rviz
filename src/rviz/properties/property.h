@@ -132,9 +132,69 @@ public:
   Property(const QString& name = QString(),
            const QVariant& default_value = QVariant(),
            const QString& description = QString(),
-           Property* parent = nullptr,
-           const char* changed_slot = nullptr,
-           QObject* receiver = nullptr);
+           Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  Property(const QString& name,
+           const QVariant& default_value,
+           const QString& description,
+           Property* parent,
+           Func&& changed_slot,
+           const R* receiver)
+    : Property(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  Property(const QString& name,
+           const QVariant& default_value,
+           const QString& description,
+           P* parent,
+           Func&& changed_slot)
+    : Property(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
+
+  using QObject::connect; // inherit QObject's connect functions
+
+  /// Connect changed() signal to given slot of receiver
+#ifdef RVIZ_DEPRECATE_QT4_SLOTS
+  [[deprecated("Switch to modern function/functor based slot specification")]]
+#endif
+  QMetaObject::Connection
+  connect(const QObject* receiver, const char* slot, Qt::ConnectionType type = Qt::AutoConnection);
+
+  /// Connect changed() signal to given slot member function of receiver object
+  template <typename Func, typename R>
+  inline typename std::enable_if<QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(const R* receiver, Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    static_assert(std::is_convertible<R*, typename QtPrivate::FunctionPointer<Func>::Object*>::value,
+                  "receiver type doesn't match that expected by member function");
+    return QObject::connect(this, &Property::changed, receiver, std::forward<Func>(slot), type);
+  }
+
+  /// Connect changed() signal to given slot functor, considering context
+  template <typename Func>
+  inline typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(const QObject* context, Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    return QObject::connect(this, &Property::changed, context, std::forward<Func>(slot), type);
+  }
+
+  /// Connect changed() signal to given slot functor, using this as context
+  template <typename Func>
+  inline typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction,
+                                 QMetaObject::Connection>::type
+  connect(Func&& slot, Qt::ConnectionType type = Qt::AutoConnection)
+  {
+    return QObject::connect(this, &Property::changed, this, std::forward<Func>(slot), type);
+  }
 
   /** @brief Destructor.  Removes this property from its parent's list
    * of children.

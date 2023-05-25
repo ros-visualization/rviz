@@ -56,14 +56,14 @@ MarkerDisplay::MarkerDisplay() : Display(), tf_filter_(nullptr)
       QString::fromStdString(ros::message_traits::datatype<visualization_msgs::Marker>()),
       "visualization_msgs::Marker topic to subscribe to.  <topic>_array will also"
       " automatically be subscribed with type visualization_msgs::MarkerArray.",
-      this, SLOT(updateTopic()));
+      this, &MarkerDisplay::updateTopic);
 
   queue_size_property_ =
       new IntProperty("Queue Size", 100,
                       "Advanced: set the size of the incoming Marker message queue.  Increasing this is"
                       " useful if your incoming TF data is delayed significantly from your Marker data, "
                       "but it can greatly increase memory usage if the messages are big.",
-                      this, SLOT(updateQueueSize()));
+                      this, &MarkerDisplay::updateQueueSize);
   queue_size_property_->setMin(0);
 
   namespaces_category_ = new Property("Namespaces", QVariant(), "", this);
@@ -459,7 +459,7 @@ MarkerNamespace::MarkerNamespace(const QString& name, Property* parent_property,
   // Can't do this connect in chained constructor above because at
   // that point it doesn't really know that "this" is a
   // MarkerNamespace*, so the signal doesn't get connected.
-  connect(this, SIGNAL(changed()), this, SLOT(onEnableChanged()));
+  connect(this, &Property::changed, this, &MarkerNamespace::onEnableChanged);
 }
 
 void MarkerNamespace::onEnableChanged()

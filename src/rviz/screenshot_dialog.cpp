@@ -74,9 +74,9 @@ ScreenshotDialog::ScreenshotDialog(QWidget* main_window,
 
   setLayout(main_layout);
 
-  connect(button_box_, SIGNAL(clicked(QAbstractButton*)), this, SLOT(onButtonClicked(QAbstractButton*)));
-  connect(full_window_checkbox, SIGNAL(toggled(bool)), this, SLOT(setSaveFullWindow(bool)));
-  connect(delay_timer_, SIGNAL(timeout()), this, SLOT(onTimeout()));
+  connect(button_box_, &QDialogButtonBox::clicked, this, &ScreenshotDialog::onButtonClicked);
+  connect(full_window_checkbox, &QCheckBox::toggled, this, &ScreenshotDialog::setSaveFullWindow);
+  connect(delay_timer_, &QTimer::timeout, this, &ScreenshotDialog::onTimeout);
 }
 
 void ScreenshotDialog::showEvent(QShowEvent* event)

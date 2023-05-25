@@ -59,17 +59,17 @@ ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
   normalize_property_ = new BoolProperty(
       "Normalize Range", true,
       "If set to true, will try to estimate the range of possible values from the received images.",
-      this, SLOT(updateNormalizeOptions()));
+      this, &ImageDisplay::updateNormalizeOptions);
 
   min_property_ = new FloatProperty("Min Value", 0.0, "Value which will be displayed as black.", this,
-                                    SLOT(updateNormalizeOptions()));
+                                    &ImageDisplay::updateNormalizeOptions);
 
   max_property_ = new FloatProperty("Max Value", 1.0, "Value which will be displayed as white.", this,
-                                    SLOT(updateNormalizeOptions()));
+                                    &ImageDisplay::updateNormalizeOptions);
 
   median_buffer_size_property_ =
       new IntProperty("Median window", 5, "Window size for median filter used for computin min/max.",
-                      this, SLOT(updateNormalizeOptions()));
+                      this, &ImageDisplay::updateNormalizeOptions);
 
   got_float_image_ = false;
 }

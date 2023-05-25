@@ -47,9 +47,35 @@ public:
                   const QString& description = QString(),
                   Property* parent = nullptr,
                   FrameManager* frame_manager = nullptr,
-                  bool include_fixed_frame_string = false,
-                  const char* changed_slot = nullptr,
-                  QObject* receiver = nullptr);
+                  bool include_fixed_frame_string = false);
+
+  template <typename Func, typename R>
+  TfFrameProperty(const QString& name,
+                  const QString& default_value,
+                  const QString& description,
+                  Property* parent,
+                  FrameManager* frame_manager,
+                  bool include_fixed_frame_string,
+                  Func&& changed_slot,
+                  const R* receiver)
+    : TfFrameProperty(name, default_value, description, parent, frame_manager, include_fixed_frame_string)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  TfFrameProperty(const QString& name,
+                  const QString& default_value,
+                  const QString& description,
+                  P* parent,
+                  FrameManager* frame_manager,
+                  bool include_fixed_frame_string,
+                  Func&& changed_slot)
+    : TfFrameProperty(name, default_value, description, parent, frame_manager, include_fixed_frame_string)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   /** @brief Override from Property to resolve the frame name on the way in. */
   bool setValue(const QVariant& new_value) override;

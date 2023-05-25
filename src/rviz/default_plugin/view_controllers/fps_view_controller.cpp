@@ -52,22 +52,22 @@ FPSViewController::FPSViewController()
   invert_z_->hide();
 
   yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.", this,
-                                    SLOT(changedOrientation()), this);
+                                    &FPSViewController::changedOrientation, this);
   yaw_property_->setMax(Ogre::Math::PI);
   yaw_property_->setMin(-Ogre::Math::PI);
 
   pitch_property_ = new FloatProperty("Pitch", 0, "How much the camera is tipped downward.", this,
-                                      SLOT(changedOrientation()), this);
+                                      &FPSViewController::changedOrientation, this);
   pitch_property_->setMax(Ogre::Math::PI);
   pitch_property_->setMin(-Ogre::Math::PI);
 
   roll_property_ = new FloatProperty("Roll", 0, "Rotation about the camera's view direction.", this,
-                                     SLOT(changedOrientation()), this);
+                                     &FPSViewController::changedOrientation, this);
   roll_property_->setMax(Ogre::Math::PI);
   roll_property_->setMin(-Ogre::Math::PI);
 
   position_property_ = new VectorProperty("Position", Ogre::Vector3::ZERO, "Position of the camera.",
-                                          this, SLOT(changedPosition()), this);
+                                          this, &FPSViewController::changedPosition, this);
 }
 
 void FPSViewController::onInitialize()

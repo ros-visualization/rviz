@@ -58,12 +58,12 @@ RobotModelDisplay::RobotModelDisplay()
 {
   visual_enabled_property_ =
       new Property("Visual Enabled", true, "Whether to display the visual representation of the robot.",
-                   this, SLOT(updateVisualVisible()));
+                   this, &RobotModelDisplay::updateVisualVisible);
 
   collision_enabled_property_ =
       new Property("Collision Enabled", false,
                    "Whether to display the collision representation of the robot.", this,
-                   SLOT(updateCollisionVisible()));
+                   &RobotModelDisplay::updateCollisionVisible);
 
   update_rate_property_ = new FloatProperty("Update Interval", 0,
                                             "Interval at which to update the links, in seconds. "
@@ -72,20 +72,20 @@ RobotModelDisplay::RobotModelDisplay()
   update_rate_property_->setMin(0);
 
   alpha_property_ = new FloatProperty("Alpha", 1, "Amount of transparency to apply to the links.", this,
-                                      SLOT(updateAlpha()));
+                                      &RobotModelDisplay::updateAlpha);
   alpha_property_->setMin(0.0);
   alpha_property_->setMax(1.0);
 
   robot_description_property_ =
       new StringProperty("Robot Description", "robot_description",
                          "Name of the parameter to search for to load the robot description.", this,
-                         SLOT(updateRobotDescription()));
+                         &RobotModelDisplay::updateRobotDescription);
 
   tf_prefix_property_ = new StringProperty(
       "TF Prefix", "",
       "Robot Model normally assumes the link name is the same as the tf frame name. "
       " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
-      this, SLOT(updateTfPrefix()));
+      this, &RobotModelDisplay::updateTfPrefix);
 }
 
 RobotModelDisplay::~RobotModelDisplay()
@@ -155,7 +155,7 @@ void RobotModelDisplay::load()
                   QString("Parameter [%1] does not exist, and was not found by searchParam()")
                       .arg(robot_description_property_->getString()));
         // try again in a second
-        QTimer::singleShot(1000, this, SLOT(updateRobotDescription()));
+        QTimer::singleShot(1000, this, &RobotModelDisplay::updateRobotDescription);
         return;
       }
     }

@@ -53,7 +53,7 @@ PathDisplay::PathDisplay()
 {
   style_property_ =
       new EnumProperty("Line Style", "Lines", "The rendering operation to use to draw the grid lines.",
-                       this, SLOT(updateStyle()));
+                       this, &PathDisplay::updateStyle);
 
   style_property_->addOption("Lines", LINES);
   style_property_->addOption("Billboards", BILLBOARDS);
@@ -61,7 +61,7 @@ PathDisplay::PathDisplay()
   line_width_property_ = new FloatProperty(
       "Line Width", 0.03,
       "The width, in meters, of each path line. Only works with the 'Billboards' style.", this,
-      SLOT(updateLineWidth()), this);
+      &PathDisplay::updateLineWidth, this);
   line_width_property_->setMin(0.001);
   line_width_property_->hide();
 
@@ -71,36 +71,37 @@ PathDisplay::PathDisplay()
       new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the path.", this);
 
   buffer_length_property_ = new IntProperty("Buffer Length", 1, "Number of paths to display.", this,
-                                            SLOT(updateBufferLength()));
+                                            &PathDisplay::updateBufferLength);
   buffer_length_property_->setMin(1);
 
   offset_property_ = new VectorProperty(
       "Offset", Ogre::Vector3::ZERO,
       "Allows you to offset the path from the origin of the reference frame.  In meters.", this,
-      SLOT(updateOffset()));
+      &PathDisplay::updateOffset);
 
   pose_style_property_ = new EnumProperty("Pose Style", "None", "Shape to display the pose as.", this,
-                                          SLOT(updatePoseStyle()));
+                                          &PathDisplay::updatePoseStyle);
   pose_style_property_->addOption("None", NONE);
   pose_style_property_->addOption("Axes", AXES);
   pose_style_property_->addOption("Arrows", ARROWS);
 
   pose_axes_length_property_ = new rviz::FloatProperty("Length", 0.3, "Length of the axes.", this,
-                                                       SLOT(updatePoseAxisGeometry()));
+                                                       &PathDisplay::updatePoseAxisGeometry);
   pose_axes_radius_property_ = new rviz::FloatProperty("Radius", 0.03, "Radius of the axes.", this,
-                                                       SLOT(updatePoseAxisGeometry()));
+                                                       &PathDisplay::updatePoseAxisGeometry);
 
   pose_arrow_color_property_ =
       new ColorProperty("Pose Color", QColor(255, 85, 255), "Color to draw the poses.", this,
-                        SLOT(updatePoseArrowColor()));
+                        &PathDisplay::updatePoseArrowColor);
   pose_arrow_shaft_length_property_ = new rviz::FloatProperty(
-      "Shaft Length", 0.1, "Length of the arrow shaft.", this, SLOT(updatePoseArrowGeometry()));
+      "Shaft Length", 0.1, "Length of the arrow shaft.", this, &PathDisplay::updatePoseArrowGeometry);
   pose_arrow_head_length_property_ = new rviz::FloatProperty(
-      "Head Length", 0.2, "Length of the arrow head.", this, SLOT(updatePoseArrowGeometry()));
-  pose_arrow_shaft_diameter_property_ = new rviz::FloatProperty(
-      "Shaft Diameter", 0.1, "Diameter of the arrow shaft.", this, SLOT(updatePoseArrowGeometry()));
+      "Head Length", 0.2, "Length of the arrow head.", this, &PathDisplay::updatePoseArrowGeometry);
+  pose_arrow_shaft_diameter_property_ =
+      new rviz::FloatProperty("Shaft Diameter", 0.1, "Diameter of the arrow shaft.", this,
+                              &PathDisplay::updatePoseArrowGeometry);
   pose_arrow_head_diameter_property_ = new rviz::FloatProperty(
-      "Head Diameter", 0.3, "Diameter of the arrow head.", this, SLOT(updatePoseArrowGeometry()));
+      "Head Diameter", 0.3, "Diameter of the arrow head.", this, &PathDisplay::updatePoseArrowGeometry);
   pose_axes_length_property_->hide();
   pose_axes_radius_property_->hide();
   pose_arrow_color_property_->hide();

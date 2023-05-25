@@ -36,11 +36,8 @@ namespace rviz
 BoolProperty::BoolProperty(const QString& name,
                            bool default_value,
                            const QString& description,
-                           Property* parent,
-                           const char* changed_slot,
-                           QObject* receiver)
-  : Property(name, default_value, description, parent, changed_slot, receiver)
-  , disable_children_if_false_(false)
+                           Property* parent)
+  : Property(name, default_value, description, parent), disable_children_if_false_(false)
 {
 }
 

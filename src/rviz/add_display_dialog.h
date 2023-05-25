@@ -212,17 +212,11 @@ class EmbeddableComboBox : public QComboBox
 public:
   EmbeddableComboBox(QTreeWidgetItem* parent, int col) : parent_(parent), column_(col)
   {
-    connect(this, SIGNAL(activated(int)), this, SLOT(onActivated(int)));
+    connect(this, qOverload<int>(&QComboBox::activated), this, [this] { itemClicked(parent_, column_); });
   }
 
 Q_SIGNALS:
   void itemClicked(QTreeWidgetItem* item, int column);
-
-private Q_SLOTS:
-  void onActivated(int /*index*/)
-  {
-    Q_EMIT itemClicked(parent_, column_);
-  }
 
 private:
   QTreeWidgetItem* parent_;

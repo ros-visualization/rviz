@@ -37,23 +37,19 @@ namespace rviz
 VectorProperty::VectorProperty(const QString& name,
                                const Ogre::Vector3& default_value,
                                const QString& description,
-                               Property* parent,
-                               const char* changed_slot,
-                               QObject* receiver)
-  : Property(name, QVariant(), description, parent, changed_slot, receiver)
-  , vector_(default_value)
-  , ignore_child_updates_(false)
+                               Property* parent)
+  : Property(name, QVariant(), description, parent), vector_(default_value), ignore_child_updates_(false)
 {
   x_ = new Property("X", vector_.x, "X coordinate", this);
   y_ = new Property("Y", vector_.y, "Y coordinate", this);
   z_ = new Property("Z", vector_.z, "Z coordinate", this);
   updateString();
-  connect(x_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(y_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(z_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
-  connect(x_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
-  connect(y_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
-  connect(z_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
+  connect(x_, &Property::aboutToChange, this, &VectorProperty::emitAboutToChange);
+  connect(y_, &Property::aboutToChange, this, &VectorProperty::emitAboutToChange);
+  connect(z_, &Property::aboutToChange, this, &VectorProperty::emitAboutToChange);
+  connect(x_, &Property::changed, this, &VectorProperty::updateFromChildren);
+  connect(y_, &Property::changed, this, &VectorProperty::updateFromChildren);
+  connect(z_, &Property::changed, this, &VectorProperty::updateFromChildren);
 }
 
 bool VectorProperty::setVector(const Ogre::Vector3& new_vector)

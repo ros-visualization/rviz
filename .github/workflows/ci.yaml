@@ -22,7 +22,7 @@ jobs:
               CLANG_TIDY: true
 
     env:
-      CXXFLAGS: "-Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
+      CXXFLAGS: "-DRVIZ_DEPRECATE_QT4_SLOTS -Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
       UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
       AFTER_INSTALL_TARGET_DEPENDENCIES: apt install -qq -y libogre-${{ matrix.ogre }}-dev
       CATKIN_LINT: true

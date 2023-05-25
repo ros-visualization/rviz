@@ -46,13 +46,14 @@ namespace rviz
 RangeDisplay::RangeDisplay()
 {
   color_property_ = new ColorProperty("Color", Qt::white, "Color to draw the range.", this,
-                                      SLOT(updateColorAndAlpha()));
+                                      &RangeDisplay::updateColorAndAlpha);
 
   alpha_property_ = new FloatProperty("Alpha", 0.5, "Amount of transparency to apply to the range.",
-                                      this, SLOT(updateColorAndAlpha()));
+                                      this, &RangeDisplay::updateColorAndAlpha);
 
-  buffer_length_property_ = new IntProperty(
-      "Buffer Length", 1, "Number of prior measurements to display.", this, SLOT(updateBufferLength()));
+  buffer_length_property_ =
+      new IntProperty("Buffer Length", 1, "Number of prior measurements to display.", this,
+                      &RangeDisplay::updateBufferLength);
   buffer_length_property_->setMin(1);
 }
 

@@ -90,7 +90,7 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   depth_pixel_box_.data = nullptr;
 
   QTimer* timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(updateProperties()));
+  connect(timer, &QTimer::timeout, this, &SelectionManager::updateProperties);
   timer->start(200);
 }
 

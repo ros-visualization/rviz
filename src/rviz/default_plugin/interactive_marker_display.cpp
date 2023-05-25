@@ -81,27 +81,29 @@ bool validateQuaternions(const visualization_msgs::InteractiveMarker& marker)
 
 InteractiveMarkerDisplay::InteractiveMarkerDisplay() : Display()
 {
-  marker_update_topic_property_ = new RosTopicProperty(
-      "Update Topic", "", ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>(),
-      "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.", this, SLOT(updateTopic()));
+  marker_update_topic_property_ =
+      new RosTopicProperty("Update Topic", "",
+                           ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>(),
+                           "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.", this,
+                           &InteractiveMarkerDisplay::updateTopic);
 
   show_descriptions_property_ =
       new BoolProperty("Show Descriptions", true,
                        "Whether or not to show the descriptions of each Interactive Marker.", this,
-                       SLOT(updateShowDescriptions()));
+                       &InteractiveMarkerDisplay::updateShowDescriptions);
 
   show_axes_property_ =
       new BoolProperty("Show Axes", false, "Whether or not to show the axes of each Interactive Marker.",
-                       this, SLOT(updateShowAxes()));
+                       this, &InteractiveMarkerDisplay::updateShowAxes);
 
   show_visual_aids_property_ = new BoolProperty(
       "Show Visual Aids", false,
       "Whether or not to show visual helpers while moving/rotating Interactive Markers.", this,
-      SLOT(updateShowVisualAids()));
+      &InteractiveMarkerDisplay::updateShowVisualAids);
   enable_transparency_property_ = new BoolProperty(
       "Enable Transparency", true,
       "Whether or not to allow transparency for auto-completed markers (e.g. rings and arrows).", this,
-      SLOT(updateEnableTransparency()));
+      &InteractiveMarkerDisplay::updateEnableTransparency);
 }
 
 void InteractiveMarkerDisplay::onInitialize()
@@ -255,12 +257,10 @@ void InteractiveMarkerDisplay::updateMarkers(
           im_map
               .insert(std::make_pair(marker.name, IMPtr(new InteractiveMarker(getSceneNode(), context_))))
               .first;
-      connect(int_marker_entry->second.get(),
-              SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)), this,
-              SLOT(publishFeedback(visualization_msgs::InteractiveMarkerFeedback&)));
-      connect(int_marker_entry->second.get(),
-              SIGNAL(statusUpdate(StatusProperty::Level, const std::string&, const std::string&)), this,
-              SLOT(onStatusUpdate(StatusProperty::Level, const std::string&, const std::string&)));
+      connect(int_marker_entry->second.get(), &InteractiveMarker::userFeedback, this,
+              &InteractiveMarkerDisplay::publishFeedback);
+      connect(int_marker_entry->second.get(), &InteractiveMarker::statusUpdate, this,
+              &InteractiveMarkerDisplay::onStatusUpdate);
     }
 
     if (int_marker_entry->second->processMessage(marker))

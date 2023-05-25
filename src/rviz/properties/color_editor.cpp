@@ -44,7 +44,7 @@ namespace rviz
 ColorEditor::ColorEditor(ColorProperty* property, QWidget* parent)
   : LineEditWithButton(parent), property_(property)
 {
-  connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(parseText()));
+  connect(this, &QLineEdit::textChanged, this, &ColorEditor::parseText);
 }
 
 void ColorEditor::paintEvent(QPaintEvent* event)
@@ -111,17 +111,15 @@ void ColorEditor::onButtonClick()
 
   QColorDialog dialog(color_, window());
 
-  connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), property_, SLOT(setColor(const QColor&)));
+  connect(&dialog, &QColorDialog::currentColorChanged, property_, &ColorProperty::setColor);
 
   // Without this connection the PropertyTreeWidget does not update
-  // the color info "live" when it changes in the dialog and the 3D
-  // view.
-  connect(&dialog, SIGNAL(currentColorChanged(const QColor&)), parentWidget(), SLOT(update()));
+  // the color info "live" when it changes in the dialog and the 3D view.
+  connect(&dialog, &QColorDialog::currentColorChanged, [this]() { parentWidget()->update(); });
 
-  // On the TWM window manager under linux, and on OSX, this
-  // ColorEditor object is destroyed when (or soon after) the dialog
-  // opens.  Therefore, here we delete this ColorEditor immediately to
-  // force them all to act the same.
+  // On the TWM window manager under linux, and on OSX, this ColorEditor object is destroyed
+  // when (or soon after) the dialog opens.
+  // Therefore, here we delete this ColorEditor immediately to force them all to act the same.
   deleteLater();
 
   // dialog->exec() will call an event loop internally, so

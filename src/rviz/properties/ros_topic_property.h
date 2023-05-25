@@ -44,9 +44,33 @@ public:
                    const QString& default_value = QString(),
                    const QString& message_type = QString(),
                    const QString& description = QString(),
-                   Property* parent = nullptr,
-                   const char* changed_slot = nullptr,
-                   QObject* receiver = nullptr);
+                   Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  RosTopicProperty(const QString& name,
+                   const QString& default_value,
+                   const QString& message_type,
+                   const QString& description,
+                   Property* parent,
+                   Func&& changed_slot,
+                   const R* receiver)
+    : RosTopicProperty(name, default_value, message_type, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  RosTopicProperty(const QString& name,
+                   const QString& default_value,
+                   const QString& message_type,
+                   const QString& description,
+                   P* parent,
+                   Func&& changed_slot)
+    : RosTopicProperty(name, default_value, message_type, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   void setMessageType(const QString& message_type);
   QString getMessageType() const

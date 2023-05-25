@@ -45,9 +45,9 @@ namespace rviz
 PolygonDisplay::PolygonDisplay()
 {
   color_property_ = new ColorProperty("Color", QColor(25, 255, 0), "Color to draw the polygon.", this,
-                                      SLOT(queueRender()));
+                                      &PolygonDisplay::queueRender);
   alpha_property_ = new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the polygon.",
-                                      this, SLOT(queueRender()));
+                                      this, &PolygonDisplay::queueRender);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 }

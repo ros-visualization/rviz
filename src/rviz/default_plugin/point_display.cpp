@@ -17,17 +17,17 @@ namespace rviz
 PointStampedDisplay::PointStampedDisplay()
 {
   color_property_ = new rviz::ColorProperty("Color", QColor(204, 41, 204), "Color of a point", this,
-                                            SLOT(updateColorAndAlpha()));
+                                            &PointStampedDisplay::updateColorAndAlpha);
 
   alpha_property_ = new rviz::FloatProperty("Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
-                                            this, SLOT(updateColorAndAlpha()));
+                                            this, &PointStampedDisplay::updateColorAndAlpha);
 
-  radius_property_ =
-      new rviz::FloatProperty("Radius", 0.2, "Radius of a point", this, SLOT(updateColorAndAlpha()));
+  radius_property_ = new rviz::FloatProperty("Radius", 0.2, "Radius of a point", this,
+                                             &PointStampedDisplay::updateColorAndAlpha);
 
   history_length_property_ =
       new rviz::IntProperty("History Length", 1, "Number of prior measurements to display.", this,
-                            SLOT(updateHistoryLength()));
+                            &PointStampedDisplay::updateHistoryLength);
   history_length_property_->setMin(1);
   history_length_property_->setMax(100000);
 }

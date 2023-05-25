@@ -50,9 +50,31 @@ public:
   EnumProperty(const QString& name = QString(),
                const QString& default_value = QString(),
                const QString& description = QString(),
-               Property* parent = nullptr,
-               const char* changed_slot = nullptr,
-               QObject* receiver = nullptr);
+               Property* parent = nullptr);
+
+  template <typename Func, typename R>
+  EnumProperty(const QString& name,
+               const QString& default_value,
+               const QString& description,
+               Property* parent,
+               Func&& changed_slot,
+               const R* receiver)
+    : EnumProperty(name, default_value, description, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  EnumProperty(const QString& name,
+               const QString& default_value,
+               const QString& description,
+               P* parent,
+               Func&& changed_slot)
+    : EnumProperty(name, default_value, description, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
+  }
 
   /** @brief Clear the list of options.
    *

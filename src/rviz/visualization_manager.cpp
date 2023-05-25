@@ -90,10 +90,9 @@ public:
   IconizedProperty(const QString& name = QString(),
                    const QVariant& default_value = QVariant(),
                    const QString& description = QString(),
-                   Property* parent = nullptr,
-                   const char* changed_slot = nullptr,
-                   QObject* receiver = nullptr)
-    : Property(name, default_value, description, parent, changed_slot, receiver){};
+                   Property* parent = nullptr)
+    : Property(name, default_value, description, parent){};
+
   QVariant getViewData(int column, int role) const override
   {
     return (column == 0 && role == Qt::DecorationRole) ? icon_ : Property::getViewData(column, role);
@@ -155,36 +154,36 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   root_display_group_->setName("root");
   display_property_tree_model_ = new PropertyTreeModel(root_display_group_);
   display_property_tree_model_->setDragDropClass("display");
-  connect(display_property_tree_model_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
+  connect(display_property_tree_model_, &PropertyTreeModel::configChanged, this,
+          &VisualizationManager::configChanged);
 
   tool_manager_ = new ToolManager(this);
-  connect(tool_manager_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
-  connect(tool_manager_, SIGNAL(toolChanged(Tool*)), this, SLOT(onToolChanged(Tool*)));
+  connect(tool_manager_, &ToolManager::configChanged, this, &VisualizationManager::configChanged);
+  connect(tool_manager_, &ToolManager::toolChanged, this, &VisualizationManager::onToolChanged);
 
   view_manager_ = new ViewManager(this);
   view_manager_->setRenderPanel(render_panel_);
-  connect(view_manager_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
+  connect(view_manager_, &ViewManager::configChanged, this, &VisualizationManager::configChanged);
 
   IconizedProperty* ip = new IconizedProperty("Global Options", QVariant(), "", root_display_group_);
   ip->setIcon(loadPixmap("package://rviz/icons/options.png"));
   global_options_ = ip;
 
-  fixed_frame_property_ =
-      new TfFrameProperty("Fixed Frame", "map",
-                          "Frame into which all data is transformed before being displayed.",
-                          global_options_, frame_manager_, false, SLOT(updateFixedFrame()), this);
+  fixed_frame_property_ = new TfFrameProperty(
+      "Fixed Frame", "map", "Frame into which all data is transformed before being displayed.",
+      global_options_, frame_manager_, false, &VisualizationManager::updateFixedFrame, this);
 
   background_color_property_ =
       new ColorProperty("Background Color", QColor(48, 48, 48), "Background color for the 3D view.",
-                        global_options_, SLOT(updateBackgroundColor()), this);
+                        global_options_, &VisualizationManager::updateBackgroundColor, this);
 
   fps_property_ =
       new IntProperty("Frame Rate", 30, "RViz will try to render this many frames per second.",
-                      global_options_, SLOT(updateFps()), this);
+                      global_options_, &VisualizationManager::updateFps, this);
 
   default_light_enabled_property_ =
       new BoolProperty("Default Light", true, "Light source attached to the current 3D view.",
-                       global_options_, SLOT(updateDefaultLightVisible()), this);
+                       global_options_, &VisualizationManager::updateDefaultLightVisible, this);
 
   root_display_group_->initialize(
       this); // only initialize() a Display after its sub-properties are created.
@@ -200,7 +199,7 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   selection_manager_ = new SelectionManager(this);
 
   update_timer_ = new QTimer;
-  connect(update_timer_, SIGNAL(timeout()), this, SLOT(onUpdate()));
+  connect(update_timer_, &QTimer::timeout, this, &VisualizationManager::onUpdate);
 
   private_->threaded_queue_threads_.create_thread(
       boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));

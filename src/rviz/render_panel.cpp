@@ -189,7 +189,7 @@ void RenderPanel::contextMenuEvent(QContextMenuEvent* /*event*/)
 
   if (context_menu)
   {
-    connect(context_menu.get(), SIGNAL(aboutToHide()), this, SLOT(onContextMenuHide()));
+    connect(context_menu.get(), &QMenu::aboutToHide, this, &RenderPanel::onContextMenuHide);
     context_menu->exec(QCursor::pos());
   }
 }

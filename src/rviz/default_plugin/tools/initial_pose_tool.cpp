@@ -45,7 +45,7 @@ InitialPoseTool::InitialPoseTool()
 
   topic_property_ =
       new StringProperty("Topic", "initialpose", "The topic on which to publish initial pose estimates.",
-                         getPropertyContainer(), SLOT(updateTopic()), this);
+                         getPropertyContainer(), &InitialPoseTool::updateTopic, this);
   std_dev_x_ = new FloatProperty("X std deviation", 0.5, "X standard deviation for initial pose [m]",
                                  getPropertyContainer());
   std_dev_y_ = new FloatProperty("Y std deviation", 0.5, "Y standard deviation for initial pose [m]",

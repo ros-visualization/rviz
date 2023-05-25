@@ -224,18 +224,18 @@ MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(
   // HACK: Using a direct connection triggers a segfault on NVIDIA hardware (#1793) when rendering
   //       *and* having performed a depth rendering before (e.g. due to raycasting for selections)
   // A queued connection delays the update of renderables after the current VisualizationManager::onUpdate() call
-  connect(this, SIGNAL(mapUpdated()), this, SLOT(showMap()), Qt::QueuedConnection);
+  connect(this, &MapDisplay::mapUpdated, this, &MapDisplay::showMap, Qt::QueuedConnection);
   topic_property_ = new RosTopicProperty(
       "Topic", "", QString::fromStdString(ros::message_traits::datatype<nav_msgs::OccupancyGrid>()),
-      "nav_msgs::OccupancyGrid topic to subscribe to.", this, SLOT(updateTopic()));
+      "nav_msgs::OccupancyGrid topic to subscribe to.", this, &MapDisplay::updateTopic);
 
   alpha_property_ = new FloatProperty("Alpha", 0.7, "Amount of transparency to apply to the map.", this,
-                                      SLOT(updateAlpha()));
+                                      &MapDisplay::updateAlpha);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
   color_scheme_property_ = new EnumProperty("Color Scheme", "map", "How to color the occupancy values.",
-                                            this, SLOT(updatePalette()));
+                                            this, &MapDisplay::updatePalette);
   // Option values here must correspond to indices in palette_textures_ array in onInitialize() below.
   color_scheme_property_->addOption("map", 0);
   color_scheme_property_->addOption("costmap", 1);
@@ -244,7 +244,7 @@ MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(
   draw_under_property_ = new Property(
       "Draw Behind", false,
       "Rendering option, controls whether or not the map is always drawn behind everything else.", this,
-      SLOT(updateDrawUnder()));
+      &MapDisplay::updateDrawUnder);
 
   resolution_property_ =
       new FloatProperty("Resolution", 0, "Resolution of the map. (not editable)", this);
@@ -266,11 +266,12 @@ MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(
                                                  "Orientation of the map. (not editable)", this);
   orientation_property_->setReadOnly(true);
 
-  unreliable_property_ =
-      new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this, SLOT(updateTopic()));
+  unreliable_property_ = new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this,
+                                          &MapDisplay::updateTopic);
 
-  transform_timestamp_property_ = new BoolProperty(
-      "Use Timestamp", false, "Use map header timestamp when transforming", this, SLOT(transformMap()));
+  transform_timestamp_property_ =
+      new BoolProperty("Use Timestamp", false, "Use map header timestamp when transforming", this,
+                       &MapDisplay::transformMap);
 }
 
 MapDisplay::~MapDisplay()

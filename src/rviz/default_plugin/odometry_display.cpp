@@ -66,46 +66,46 @@ OdometryDisplay::OdometryDisplay()
   keep_property_->setMin(0);
 
   shape_property_ = new EnumProperty("Shape", "Arrow", "Shape to display the pose as.", this,
-                                     SLOT(updateShapeChoice()));
+                                     &OdometryDisplay::updateShapeChoice);
   shape_property_->addOption("Arrow", ArrowShape);
   shape_property_->addOption("Axes", AxesShape);
 
   color_property_ = new ColorProperty("Color", QColor(255, 25, 0), "Color of the arrows.",
-                                      shape_property_, SLOT(updateColorAndAlpha()), this);
+                                      shape_property_, &OdometryDisplay::updateColorAndAlpha, this);
 
   alpha_property_ = new FloatProperty("Alpha", 1, "Amount of transparency to apply to the arrow.",
-                                      shape_property_, SLOT(updateColorAndAlpha()), this);
+                                      shape_property_, &OdometryDisplay::updateColorAndAlpha, this);
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
   shaft_length_property_ =
       new FloatProperty("Shaft Length", 1, "Length of the each arrow's shaft, in meters.",
-                        shape_property_, SLOT(updateArrowsGeometry()), this);
+                        shape_property_, &OdometryDisplay::updateArrowsGeometry, this);
 
   // aleeper: default changed from 0.1 to match change in arrow.cpp
   shaft_radius_property_ =
       new FloatProperty("Shaft Radius", 0.05, "Radius of the each arrow's shaft, in meters.",
-                        shape_property_, SLOT(updateArrowsGeometry()), this);
+                        shape_property_, &OdometryDisplay::updateArrowsGeometry, this);
 
   head_length_property_ =
       new FloatProperty("Head Length", 0.3, "Length of the each arrow's head, in meters.",
-                        shape_property_, SLOT(updateArrowsGeometry()), this);
+                        shape_property_, &OdometryDisplay::updateArrowsGeometry, this);
 
   // aleeper: default changed from 0.2 to match change in arrow.cpp
   head_radius_property_ =
       new FloatProperty("Head Radius", 0.1, "Radius of the each arrow's head, in meters.",
-                        shape_property_, SLOT(updateArrowsGeometry()), this);
+                        shape_property_, &OdometryDisplay::updateArrowsGeometry, this);
 
   axes_length_property_ = new FloatProperty("Axes Length", 1, "Length of each axis, in meters.",
-                                            shape_property_, SLOT(updateAxisGeometry()), this);
+                                            shape_property_, &OdometryDisplay::updateAxisGeometry, this);
 
   axes_radius_property_ = new FloatProperty("Axes Radius", 0.1, "Radius of each axis, in meters.",
-                                            shape_property_, SLOT(updateAxisGeometry()), this);
+                                            shape_property_, &OdometryDisplay::updateAxisGeometry, this);
 
   covariance_property_ =
       new CovarianceProperty("Covariance", true,
                              "Whether or not the covariances of the messages should be shown.", this,
-                             SLOT(queueRender()));
+                             &OdometryDisplay::queueRender);
 }
 
 OdometryDisplay::~OdometryDisplay()

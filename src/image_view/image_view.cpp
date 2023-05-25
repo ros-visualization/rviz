@@ -125,7 +125,7 @@ void ImageView::showEvent(QShowEvent* event)
   node->setVisible(true);
 
   QTimer* timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  connect(timer, &QTimer::timeout, this, &ImageView::onTimer);
   timer->start(33);
 }
 

@@ -41,10 +41,8 @@ namespace rviz
 ColorProperty::ColorProperty(const QString& name,
                              const QColor& default_value,
                              const QString& description,
-                             Property* parent,
-                             const char* changed_slot,
-                             QObject* receiver)
-  : Property(name, QVariant(), description, parent, changed_slot, receiver), color_(default_value)
+                             Property* parent)
+  : Property(name, QVariant(), description, parent), color_(default_value)
 {
   updateString();
 }

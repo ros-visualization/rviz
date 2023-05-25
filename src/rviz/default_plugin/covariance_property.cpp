@@ -44,24 +44,24 @@ namespace rviz
 CovarianceProperty::CovarianceProperty(const QString& name,
                                        bool default_value,
                                        const QString& description,
-                                       Property* parent,
-                                       const char* changed_slot,
-                                       QObject* receiver)
+                                       Property* parent)
   // NOTE: changed() signal will only be initialized at the end of this constructor
   : BoolProperty(name, default_value, description, parent)
 {
   position_property_ =
       new BoolProperty("Position", true, "Whether or not to show the position part of covariances", this,
-                       SLOT(updateVisibility()));
+                       qOverload<>(&CovarianceProperty::updateVisibility));
   position_property_->setDisableChildrenIfFalse(true);
 
   position_color_property_ =
       new ColorProperty("Color", QColor(204, 51, 204), "Color to draw the position covariance ellipse.",
-                        position_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        position_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
 
   position_alpha_property_ =
       new FloatProperty("Alpha", 0.3f, "0 is fully transparent, 1.0 is fully opaque.",
-                        position_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        position_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
   position_alpha_property_->setMin(0);
   position_alpha_property_->setMax(1);
 
@@ -69,34 +69,38 @@ CovarianceProperty::CovarianceProperty(const QString& name,
       new FloatProperty("Scale", 1.0f,
                         "Scale factor to be applied to covariance ellipse. "
                         "Corresponds to the number of standard deviations to display",
-                        position_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        position_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
   position_scale_property_->setMin(0);
 
   orientation_property_ =
       new BoolProperty("Orientation", true, "Whether or not to show the orientation part of covariances",
-                       this, SLOT(updateVisibility()));
+                       this, qOverload<>(&CovarianceProperty::updateVisibility));
   orientation_property_->setDisableChildrenIfFalse(true);
 
   orientation_frame_property_ =
       new EnumProperty("Frame", "Local", "The frame used to display the orientation covariance.",
-                       orientation_property_, SLOT(updateOrientationFrame()), this);
+                       orientation_property_, qOverload<>(&CovarianceProperty::updateOrientationFrame),
+                       this);
   orientation_frame_property_->addOption("Local", Local);
   orientation_frame_property_->addOption("Fixed", Fixed);
 
   orientation_colorstyle_property_ = new EnumProperty(
       "Color Style", "Unique",
       "Style to color the orientation covariance: XYZ with same unique color or following RGB order",
-      orientation_property_, SLOT(updateColorStyleChoice()), this);
+      orientation_property_, &CovarianceProperty::updateColorStyleChoice, this);
   orientation_colorstyle_property_->addOption("Unique", Unique);
   orientation_colorstyle_property_->addOption("RGB", RGB);
 
   orientation_color_property_ =
       new ColorProperty("Color", QColor(255, 255, 127), "Color to draw the covariance ellipse.",
-                        orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        orientation_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
 
   orientation_alpha_property_ =
       new FloatProperty("Alpha", 0.5f, "0 is fully transparent, 1.0 is fully opaque.",
-                        orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        orientation_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
   orientation_alpha_property_->setMin(0);
   orientation_alpha_property_->setMax(1);
 
@@ -104,27 +108,19 @@ CovarianceProperty::CovarianceProperty(const QString& name,
       "Offset", 1.0f,
       "For 3D poses is the distance where to position the ellipses representing orientation covariance. "
       "For 2D poses is the height of the triangle representing the variance on yaw.",
-      orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+      orientation_property_, qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset),
+      this);
   orientation_offset_property_->setMin(0);
 
   orientation_scale_property_ =
       new FloatProperty("Scale", 1.0f,
                         "Scale factor to be applied to orientation covariance shapes. "
                         "Corresponds to the number of standard deviations to display.",
-                        orientation_property_, SLOT(updateColorAndAlphaAndScaleAndOffset()), this);
+                        orientation_property_,
+                        qOverload<>(&CovarianceProperty::updateColorAndAlphaAndScaleAndOffset), this);
   orientation_scale_property_->setMin(0);
 
-  connect(this, SIGNAL(changed()), this, SLOT(updateVisibility()));
-
-  // Connect changed() signal here instead of doing it through the initialization of BoolProperty().
-  // We do this here to make changed_slot be called _after_ updateVisibility()
-  if (changed_slot && (parent || receiver))
-  {
-    if (receiver)
-      connect(this, SIGNAL(changed()), receiver, changed_slot);
-    else
-      connect(this, SIGNAL(changed()), parent, changed_slot);
-  }
+  connect(this, &Property::changed, this, qOverload<>(&CovarianceProperty::updateVisibility));
 
   setDisableChildrenIfFalse(true);
 }

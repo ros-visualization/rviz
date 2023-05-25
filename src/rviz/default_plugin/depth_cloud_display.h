@@ -82,13 +82,39 @@ public:
                            const QString& message_type = QString(),
                            const QString& description = QString(),
                            const QRegExp& filter = QRegExp(),
-                           Property* parent = nullptr,
-                           const char* changed_slot = nullptr,
-                           QObject* receiver = nullptr)
-    : RosTopicProperty(name, default_value, message_type, description, parent, changed_slot, receiver)
+                           Property* parent = nullptr)
+    : RosTopicProperty(name, default_value, message_type, description, parent)
     , filter_(filter)
     , filter_enabled_(true)
   {
+  }
+
+  template <typename Func, typename R>
+  RosFilteredTopicProperty(const QString& name,
+                           const QString& default_value,
+                           const QString& message_type,
+                           const QString& description,
+                           const QRegExp& filter,
+                           Property* parent,
+                           Func&& changed_slot,
+                           const R* receiver)
+    : RosFilteredTopicProperty(name, default_value, message_type, description, filter, parent)
+  {
+    connect(receiver, std::forward<Func>(changed_slot));
+  }
+
+  // this variant is required to allow omitting the receiver argument
+  template <typename Func, typename P>
+  RosFilteredTopicProperty(const QString& name,
+                           const QString& default_value,
+                           const QString& message_type,
+                           const QString& description,
+                           const QRegExp& filter,
+                           P* parent,
+                           Func&& changed_slot)
+    : RosFilteredTopicProperty(name, default_value, message_type, description, filter, parent)
+  {
+    connect(parent, std::forward<Func>(changed_slot));
   }
 
 public:

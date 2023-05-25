@@ -36,10 +36,8 @@ namespace rviz
 EnumProperty::EnumProperty(const QString& name,
                            const QString& default_value,
                            const QString& description,
-                           Property* parent,
-                           const char* changed_slot,
-                           QObject* receiver)
-  : StringProperty(name, default_value, description, parent, changed_slot, receiver)
+                           Property* parent)
+  : StringProperty(name, default_value, description, parent)
 {
 }
 
@@ -74,8 +72,8 @@ QWidget* EnumProperty::createEditor(QWidget* parent, const QStyleOptionViewItem&
   ComboBox* cb = new ComboBox(parent);
   cb->addItems(strings_);
   cb->setCurrentIndex(strings_.indexOf(getValue().toString()));
-  QObject::connect(cb, SIGNAL(currentIndexChanged(const QString&)), this,
-                   SLOT(setString(const QString&)));
+  QObject::connect(cb, qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
+                   &EnumProperty::setString);
 
   // TODO: need to better handle string value which is not in list.
   return cb;
