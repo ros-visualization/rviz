@@ -77,6 +77,16 @@ void LaserScanDisplay::updateQueueSize()
   tf_filter_->setQueueSize((uint32_t)queue_size_property_->getInt());
 }
 
+void LaserScanDisplay::checkTolerance(int tolerance)
+{
+  if (tolerance > 1)
+    setStatus(StatusProperty::Warn, "Scan Time",
+              QString(
+                  "Laser scan time, computed from time_increment * len(ranges), is rather large: %1s.\n"
+                  "The display of any message will be delayed by this amount of time!")
+                  .arg(tolerance));
+}
+
 void LaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan)
 {
   sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
@@ -89,6 +99,7 @@ void LaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan
   {
     filter_tolerance_ = tolerance;
     tf_filter_->setTolerance(filter_tolerance_);
+    checkTolerance(filter_tolerance_.toSec());
   }
 
   try
@@ -127,6 +138,7 @@ void LaserScanDisplay::reset()
 {
   MFDClass::reset();
   point_cloud_common_->reset();
+  checkTolerance(filter_tolerance_.toSec());
 }
 
 } // namespace rviz
