@@ -171,7 +171,7 @@ void ImageDisplay::onDisable()
 void ImageDisplay::toggleFullScreen()
 {
   auto* panel = getAssociatedWidgetPanel();
-  if (panel->windowState() & Qt::WindowFullScreen)
+  if (panel->windowState() & Qt::WindowMaximized)
   {
     panel->setFloating(false);
     panel->showNormal();
@@ -179,7 +179,7 @@ void ImageDisplay::toggleFullScreen()
   else
   {
     panel->setFloating(true);
-    panel->showFullScreen();
+    panel->showMaximized();
   }
 }
 
