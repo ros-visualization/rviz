@@ -42,8 +42,12 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
+#include <QToolButton>
+#include <QHBoxLayout>
+
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
+#include <rviz/panel_dock_widget.h>
 #include <rviz/ogre_helpers/compatibility.h>
 #include <rviz/render_panel.h>
 #include <rviz/validate_floats.h>
@@ -126,6 +130,14 @@ void ImageDisplay::onInitialize()
 
   setAssociatedWidget(render_panel_);
 
+  // fullscreen button
+  QToolButton* fullscreen_button = new QToolButton();
+  fullscreen_button->setText("FullScreen");
+  fullscreen_button->setIconSize(QSize(10, 10));
+  connect(fullscreen_button, &QToolButton::clicked, this, &ImageDisplay::toggleFullScreen);
+  dynamic_cast<QHBoxLayout*>(getAssociatedWidgetPanel()->titleBarWidget()->layout())
+      ->insertWidget(2, fullscreen_button);
+
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance(0.01f);
@@ -154,6 +166,21 @@ void ImageDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
   reset();
+}
+
+void ImageDisplay::toggleFullScreen()
+{
+  auto* panel = getAssociatedWidgetPanel();
+  if (panel->windowState() & Qt::WindowFullScreen)
+  {
+    panel->setFloating(false);
+    panel->showNormal();
+  }
+  else
+  {
+    panel->setFloating(true);
+    panel->showFullScreen();
+  }
 }
 
 void ImageDisplay::updateNormalizeOptions()
