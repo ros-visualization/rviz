@@ -41,7 +41,7 @@ repos:
       - id: clang-format
         name: clang-format
         description: Format files with ClangFormat.
-        entry: clang-format-10
+        entry: clang-format-12
         language: system
         files: \.(c|cc|cxx|cpp|h|hpp|hxx|ih|ispc|ipp)$
         args: ["-fallback-style=none", "-i"]

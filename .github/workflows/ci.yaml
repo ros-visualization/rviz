@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [noetic]
+        distro: [noetic, jammy]
         ogre: ["1.9", "1.12"]
         include:
           - distro: noetic
@@ -23,12 +23,12 @@ jobs:
 
     env:
       CXXFLAGS: "-DRVIZ_DEPRECATE_QT4_SLOTS -Werror -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing -Wno-sign-compare"
-      UPSTREAM_WORKSPACE: github:rhaschke/python_qt_binding#silent-external-warnings
+      UPSTREAM_WORKSPACE: ${{ matrix.distro != 'jammy' && 'github:rhaschke/python_qt_binding#silent-external-warnings' || '' }}
       AFTER_INSTALL_TARGET_DEPENDENCIES: apt install -qq -y libogre-${{ matrix.ogre }}-dev
       CATKIN_LINT: true
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: /home/runner/work
-      DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-${{ matrix.repo || 'ros' }}
+      DOCKER_IMAGE: rhaschke/ici:rviz-${{ matrix.distro }}-ros
       CACHE_PREFIX: ${{ matrix.distro }}
       # perform full clang-tidy check only on manual trigger (workflow_dispatch), PRs do check changed files, otherwise nothing
       CLANG_TIDY_BASE_REF: ${{ github.event_name != 'workflow_dispatch' && (github.base_ref || github.ref) || '' }}
@@ -51,7 +51,6 @@ jobs:
 
       - name: industrial_ci
         uses: rhaschke/industrial_ci@master
-        env: ${{ matrix.env || env }}
 
       - name: Upload test artifacts (on failure)
         uses: actions/upload-artifact@v3
