@@ -116,7 +116,7 @@ struct PluginGroup
   QMap<QString, Info> plugins;
 };
 
-void getPluginGroups(const QMap<QString, QString>& datatype_plugins,
+void getPluginGroups(const QMultiMap<QString, QString>& datatype_plugins,
                      QList<PluginGroup>* groups,
                      QList<ros::master::TopicInfo>* unvisualizable)
 {
@@ -563,7 +563,7 @@ void TopicDisplayWidget::findPlugins(DisplayFactory* factory)
     Q_FOREACH (QString topic_type, topic_types)
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
-      datatype_plugins_.insertMulti(topic_type, lookup_name);
+      datatype_plugins_.insert(topic_type, lookup_name);
     }
   }
 }

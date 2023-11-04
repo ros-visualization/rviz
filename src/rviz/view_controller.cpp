@@ -141,7 +141,7 @@ QString ViewController::formatClassId(const QString& class_id)
 
 QVariant ViewController::getViewData(int column, int role) const
 {
-  if (role == Qt::TextColorRole)
+  if (role == Qt::ForegroundRole)
     return QVariant();
 
   if (is_active_)

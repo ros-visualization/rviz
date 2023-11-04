@@ -143,7 +143,7 @@ int InteractionTool::processMouseEvent(ViewportMouseEvent& event)
   bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
 
   // We are dragging if a button was down and is still down
-  Qt::MouseButtons buttons = event.buttons_down & (Qt::LeftButton | Qt::RightButton | Qt::MidButton);
+  Qt::MouseButtons buttons = event.buttons_down & (Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
   if (event.type == QEvent::MouseButtonPress)
     buttons &= ~event.acting_button;
   bool dragging = buttons != 0;

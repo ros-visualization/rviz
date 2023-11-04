@@ -239,7 +239,7 @@ void Property::setParent(Property* new_parent)
 
 QVariant Property::getViewData(int column, int role) const
 {
-  if (role == Qt::TextColorRole && parent_ && parent_->getDisableChildren())
+  if (role == Qt::ForegroundRole && parent_ && parent_->getDisableChildren())
     return QApplication::palette().brush(QPalette::Disabled, QPalette::Text);
 
   switch (column)
