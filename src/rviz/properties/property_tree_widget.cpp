@@ -37,6 +37,7 @@
 #include <rviz/properties/status_list.h>
 
 #include <rviz/properties/property_tree_widget.h>
+#include <ros/console.h>
 
 namespace rviz
 {
@@ -122,7 +123,12 @@ void PropertyTreeWidget::propertyHiddenChanged(const Property* property)
 {
   if (model_)
   {
-    setRowHidden(property->rowNumberInParent(), model_->parentIndex(property), property->getHidden());
+    const auto& parent_index = model_->parentIndex(property);
+    if (parent_index.isValid())
+      setRowHidden(property->rowNumberInParent(), parent_index, property->getHidden());
+    else
+      ROS_WARN_STREAM("Trying to hide property '" << qPrintable(property->getName())
+                                                  << "' that is not part of the model.");
   }
 }
 
