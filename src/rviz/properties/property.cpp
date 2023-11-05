@@ -34,6 +34,7 @@
 #include <QPalette>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QTimer>
 
 #include <rviz/properties/float_edit.h>
 #include <rviz/properties/property_tree_model.h>
@@ -395,7 +396,8 @@ void Property::setModel(PropertyTreeModel* model)
   model_ = model;
   if (model_ && hidden_)
   {
-    model_->emitPropertyHiddenChanged(this);
+    // process propertyHiddenChanged after insertion into model has finished
+    QTimer::singleShot(0, model_, [this]() { model_->emitPropertyHiddenChanged(this); });
   }
   int num_children = numChildren();
   for (int i = 0; i < num_children; i++)
