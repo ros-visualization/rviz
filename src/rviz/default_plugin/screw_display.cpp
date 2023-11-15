@@ -175,17 +175,14 @@ void ScrewDisplay<MessageType>::processMessagePrivate(const std_msgs::Header& he
   visual->setFramePosition(position);
   visual->setFrameOrientation(orientation);
   float alpha = alpha_property_->getFloat();
-  float linear_scale = linear_scale_property_->getFloat();
-  float angular_scale = angular_scale_property_->getFloat();
-  float width = width_property_->getFloat();
   Ogre::ColourValue linear_color = linear_color_property_->getOgreColor();
   Ogre::ColourValue angular_color = angular_color_property_->getOgreColor();
   visual->setLinearColor(linear_color.r, linear_color.g, linear_color.b, alpha);
   visual->setAngularColor(angular_color.r, angular_color.g, angular_color.b, alpha);
-  visual->setLinearScale(linear_scale);
-  visual->setAngularScale(angular_scale);
-  visual->setWidth(width);
-  visual->setScrew(linear, angular);
+  visual->setLinearScale(linear_scale_property_->getFloat());
+  visual->setAngularScale(angular_scale_property_->getFloat());
+  visual->setWidth(width_property_->getFloat());
+  visual->setHideSmallValues(hide_small_values_property_->getBool());
 
   // And send it to the end of the circular buffer
   visuals_.push_back(visual);
