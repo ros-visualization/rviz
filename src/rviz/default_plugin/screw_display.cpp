@@ -186,6 +186,7 @@ void ScrewDisplay<MessageType>::processMessagePrivate(const std_msgs::Header& he
   visual->setAngularScale(angular_scale);
   visual->setWidth(width);
   visual->setScrew(linear, angular);
+  visual->setHideSmallValues(hide_small_values_property_->getBool());
 
   // And send it to the end of the circular buffer
   visuals_.push_back(visual);
