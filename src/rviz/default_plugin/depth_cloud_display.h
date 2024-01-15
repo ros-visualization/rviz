@@ -54,6 +54,7 @@
 #endif
 
 #include <QMap>
+#include <QtCore/QRegularExpression>
 
 using namespace message_filters::sync_policies;
 
@@ -81,7 +82,7 @@ public:
                            const QString& default_value = QString(),
                            const QString& message_type = QString(),
                            const QString& description = QString(),
-                           const QRegExp& filter = QRegExp(),
+                           const QRegularExpression& filter = QRegularExpression(),
                            Property* parent = nullptr)
     : RosTopicProperty(name, default_value, message_type, description, parent)
     , filter_(filter)
@@ -94,7 +95,7 @@ public:
                            const QString& default_value,
                            const QString& message_type,
                            const QString& description,
-                           const QRegExp& filter,
+                           const QRegularExpression& filter,
                            Property* parent,
                            Func&& changed_slot,
                            const R* receiver)
@@ -109,7 +110,7 @@ public:
                            const QString& default_value,
                            const QString& message_type,
                            const QString& description,
-                           const QRegExp& filter,
+                           const QRegularExpression& filter,
                            P* parent,
                            Func&& changed_slot)
     : RosFilteredTopicProperty(name, default_value, message_type, description, filter, parent)
@@ -124,7 +125,7 @@ public:
     fillTopicList();
   }
 
-  QRegExp filter() const
+  QRegularExpression filter() const
   {
     return filter_;
   }
@@ -142,7 +143,7 @@ protected Q_SLOTS:
   }
 
 private:
-  QRegExp filter_;
+  QRegularExpression filter_;
   bool filter_enabled_;
 };
 
