@@ -105,9 +105,12 @@ find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
-set(QT_LIBRARIES Qt5::Widgets)
-set(QTVERSION ${Qt5Widgets_VERSION})
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
+# in theory: find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+message(STATUS "Found Qt ${Qt${QT_VERSION_MAJOR}_VERSION}")
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets OpenGL)
+set(QT_LIBRARIES Qt${QT_VERSION_MAJOR}::Widgets)
+set(QTVERSION ${Qt${QT_VERSION_MAJOR}Widgets_VERSION})
 add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED
