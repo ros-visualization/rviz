@@ -54,7 +54,7 @@ public:
     : panel(p)
     , viewport(vp)
     , type(e->type())
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     , x(e->position().x())
     , y(e->position().y())
 #else
