@@ -97,7 +97,7 @@ if(APPLE)
   add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 endif()
 
-# Prefer newer vender-specific OpenGL library
+# Prefer newer vendor-specific OpenGL library
 if (POLICY CMP0072)
   cmake_policy(SET CMP0072 NEW)
 endif()
@@ -105,12 +105,16 @@ find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
-# in theory: find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-message(STATUS "Found Qt ${Qt${QT_VERSION_MAJOR}_VERSION}")
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets OpenGL)
-set(QT_LIBRARIES Qt${QT_VERSION_MAJOR}::Widgets)
-set(QTVERSION ${Qt${QT_VERSION_MAJOR}Widgets_VERSION})
+find_package(Qt6 COMPONENTS Core Widgets OpenGL)
+if (NOT Qt6_FOUND)
+  find_package(Qt5 COMPONENTS Core Widgets OpenGL)
+  set(QTVERSION ${Qt5_VERSION})
+  set(QT_LIBRARIES Qt5::Widgets)
+else()
+  set(QTVERSION ${Qt6_VERSION})
+  set(QT_LIBRARIES Qt6::Widgets)
+endif()
+message(STATUS "Found Qt ${QTVERSION}")
 add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED
