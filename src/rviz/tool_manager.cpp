@@ -28,7 +28,7 @@
  */
 
 #include <QKeyEvent>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include <ros/assert.h>
 
@@ -42,7 +42,7 @@ namespace rviz
 {
 QString addSpaceToCamelCase(QString input)
 {
-  QRegExp re = QRegExp("([A-Z])([a-z]*)");
+  QRegularExpression re = QRegularExpression("([A-Z])([a-z]*)");
   input.replace(re, " \\1\\2");
   return input.trimmed();
 }

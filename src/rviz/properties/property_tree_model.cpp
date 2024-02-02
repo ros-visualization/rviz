@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 
+#include <QIODevice>
 #include <QStringList>
 #include <QMimeData>
 

@@ -54,8 +54,13 @@ public:
     : panel(p)
     , viewport(vp)
     , type(e->type())
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    , x(e->position().x())
+    , y(e->position().y())
+#else
     , x(e->x())
     , y(e->y())
+#endif
     , wheel_delta(0)
     , acting_button(e->button())
     , buttons_down(e->buttons())

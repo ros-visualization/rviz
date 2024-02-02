@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <QObject>
+#include <QRegularExpression>
 
 #include "depth_cloud_display.h"
 #include <rviz/visualization_manager.h>
@@ -78,8 +79,7 @@ DepthCloudDisplay::DepthCloudDisplay()
 
 {
   // Depth map properties
-  QRegExp depth_filter("depth");
-  depth_filter.setCaseSensitivity(Qt::CaseInsensitive);
+  QRegularExpression depth_filter("depth", QRegularExpression::CaseInsensitiveOption);
 
   topic_filter_property_ =
       new Property("Topic Filter", true,
@@ -100,8 +100,7 @@ DepthCloudDisplay::DepthCloudDisplay()
   depth_transport_property_->setStdString("raw");
 
   // color image properties
-  QRegExp color_filter("color|rgb|bgr|gray|mono");
-  color_filter.setCaseSensitivity(Qt::CaseInsensitive);
+  QRegularExpression color_filter("color|rgb|bgr|gray|mono", QRegularExpression::CaseInsensitiveOption);
 
   color_topic_property_ = new RosFilteredTopicProperty(
       "Color Image Topic", "",

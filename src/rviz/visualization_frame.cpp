@@ -31,6 +31,7 @@
 #include <memory>
 
 #include <QAction>
+#include <QActionGroup>
 #include <QShortcut>
 #include <QApplication>
 #include <QCoreApplication>
@@ -274,7 +275,7 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   QWidget* central_widget = new QWidget(this);
   QHBoxLayout* central_layout = new QHBoxLayout;
   central_layout->setSpacing(0);
-  central_layout->setMargin(0);
+  central_layout->setContentsMargins(0, 0, 0, 0);
 
   render_panel_ = new RenderPanel(central_widget);
 

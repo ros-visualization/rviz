@@ -21,6 +21,8 @@ RUN --mount=type=bind,target=/tmp/rviz \
     apt-get -q install --no-install-recommends -y \
         # Some basic requirements
         wget git sudo \
+        # Qt6 packages for Jammy
+        $(test "$ROS_DISTRO" = "one" && echo "qt6-base-dev qt6-base-dev-tools libqt6opengl6-dev") \
         # Preferred build tools
         clang clang-format-12 clang-tidy clang-tools ccache && \
     #
