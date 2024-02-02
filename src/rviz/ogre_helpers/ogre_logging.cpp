@@ -106,7 +106,7 @@ void OgreLogging::configureLogging()
   // Printing to standard out is what Ogre does if you don't do any LogManager calls.
   if (preference_ == StandardOut)
   {
-    ll.min_lml = Ogre::LML_NORMAL;
+    ll.min_lml = Ogre::LML_TRIVIAL;
   }
 }
 

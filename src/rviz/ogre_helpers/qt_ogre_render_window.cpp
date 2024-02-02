@@ -39,6 +39,8 @@
 #include <OgreGpuProgramManager.h>
 #include <OgreRenderTargetListener.h>
 
+#include <OgreRTShaderSystem.h>
+
 #include <ros/console.h>
 #include <ros/assert.h>
 
@@ -73,6 +75,8 @@ QtOgreRenderWindow::QtOgreRenderWindow(QWidget* parent)
   viewport_ = render_window_->addViewport(camera_);
   viewport_->setOverlaysEnabled(overlays_enabled_);
   viewport_->setBackgroundColour(background_color_);
+
+  viewport_->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
 #if OGRE_STEREO_ENABLE
   viewport_->setDrawBuffer(Ogre::CBT_BACK);

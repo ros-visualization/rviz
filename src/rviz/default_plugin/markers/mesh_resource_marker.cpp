@@ -133,8 +133,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message,
     Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(
         ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     default_material->setReceiveShadows(false);
-    default_material->getTechnique(0)->setLightingEnabled(true);
-    default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+    default_material->setLightingEnabled(true);
+    default_material->setAmbient(0.5, 0.5, 0.5);
     materials_.insert(default_material);
 
     if (new_message->mesh_use_embedded_materials)
@@ -146,12 +146,12 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message,
         {
           Ogre::MaterialPtr new_material = material->clone(id + material->getName());
           // add a new pass to every custom material to perform the color tinting
-          Ogre::Pass* pass = new_material->getTechnique(0)->createPass();
-          pass->setAmbient(0.0f, 0.0f, 0.0f);
-          pass->setDiffuse(0.0f, 0.0f, 0.0f, 0.0f);
-          pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-          pass->setDepthWriteEnabled(false);
-          pass->setLightingEnabled(true);
+          // Ogre::Pass* pass = new_material->getTechnique(0)->createPass();
+          new_material->setAmbient(0.0f, 0.0f, 0.0f);
+          new_material->setDiffuse(0.0f, 0.0f, 0.0f, 0.0f);
+          new_material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+          new_material->setDepthWriteEnabled(false);
+          new_material->setLightingEnabled(true);
           materials_.insert(new_material);
         }
       }

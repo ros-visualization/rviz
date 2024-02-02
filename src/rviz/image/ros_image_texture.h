@@ -41,6 +41,7 @@
 
 #include <ros/ros.h>
 
+#include <deque>
 #include <stdexcept>
 
 namespace rviz

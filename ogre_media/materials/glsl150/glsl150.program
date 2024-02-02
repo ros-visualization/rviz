@@ -78,3 +78,33 @@ vertex_program rviz/glsl150/pass_pos_color.vert glsl
 {
   source pass_pos_color.vert
 }
+
+fragment_program rviz/glsl150/flat_color.frag glsl
+{
+  source flat_color.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+fragment_program rviz/glsl150/shaded_circle.frag glsl
+{
+  source shaded_circle.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+fragment_program rviz/glsl150/smooth_square.frag glsl
+{
+  source smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}

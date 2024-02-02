@@ -56,6 +56,7 @@ Ogre::Entity* Shape::createEntity(const std::string& name, Type type, Ogre::Scen
     break;
 
   case Cube:
+    // return scene_manager->createEntity(name, Ogre::SceneManager::PT_CUBE);
     mesh_name = "rviz_cube.mesh";
     break;
 
@@ -64,7 +65,8 @@ Ogre::Entity* Shape::createEntity(const std::string& name, Type type, Ogre::Scen
     break;
 
   case Sphere:
-    mesh_name = "rviz_sphere.mesh";
+    return scene_manager->createEntity(name, Ogre::SceneManager::PT_CUBE);
+    //    mesh_name = "rviz_sphere.mesh";
     break;
 
   default:
@@ -98,8 +100,8 @@ Shape::Shape(Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* pare
   material_ = Ogre::MaterialManager::getSingleton().create(
       material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   material_->setReceiveShadows(false);
-  material_->getTechnique(0)->setLightingEnabled(true);
-  material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+  material_->setLightingEnabled(true);
+  material_->setAmbient(0.5, 0.5, 0.5);
 
   if (entity_)
     entity_->setMaterial(material_);
@@ -118,18 +120,18 @@ Shape::~Shape()
 
 void Shape::setColor(const Ogre::ColourValue& c)
 {
-  material_->getTechnique(0)->setAmbient(c * 0.5);
-  material_->getTechnique(0)->setDiffuse(c);
+  material_->setAmbient(c * 0.5);
+  material_->setDiffuse(c);
 
   if (c.a < 0.9998)
   {
-    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    material_->getTechnique(0)->setDepthWriteEnabled(false);
+    material_->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material_->setDepthWriteEnabled(false);
   }
   else
   {
-    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
-    material_->getTechnique(0)->setDepthWriteEnabled(true);
+    material_->setSceneBlending(Ogre::SBT_REPLACE);
+    material_->setDepthWriteEnabled(true);
   }
 }
 

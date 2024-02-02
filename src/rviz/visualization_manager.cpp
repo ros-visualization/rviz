@@ -31,6 +31,7 @@
 
 #include <QApplication>
 #include <QCursor>
+#include <QDebug>
 #include <QPixmap>
 #include <QTimer>
 #include <QWindow>
@@ -45,8 +46,11 @@
 #include <OgreMaterialManager.h>
 #include <OgreMaterial.h>
 #include <OgreRenderWindow.h>
+#include <OgreRTShaderSystem.h>
 #include <OgreSharedPtr.h>
+#include <OgreSGTechniqueResolverListener.h>
 #include <OgreCamera.h>
+#include <OgreString.h>
 
 #include <boost/filesystem.hpp>
 #include <utility>
@@ -114,6 +118,7 @@ public:
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
   boost::mutex render_mutex_;
+  OgreBites::SGTechniqueResolverListener* material_mgr_listener_;
 };
 
 VisualizationManager::VisualizationManager(RenderPanel* render_panel,
@@ -140,10 +145,45 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   render_panel->setAutoRender(false);
 
   private_->threaded_nh_.setCallbackQueue(&private_->threaded_queue_);
-
+#if (OGRE_VERSION < OGRE_VERSION_CHECK(13, 0, 0))
   scene_manager_ = ogre_root_->createSceneManager(Ogre::ST_GENERIC);
+#else
+  scene_manager_ = ogre_root_->createSceneManager();
+#endif
 
   rviz::RenderSystem::RenderSystem::get()->prepareOverlays(scene_manager_);
+
+  using namespace Ogre;
+  // register our scene with the RTSS
+  RTShader::ShaderGenerator::initialize();
+  RTShader::ShaderGenerator* shadergen = RTShader::ShaderGenerator::getSingletonPtr();
+  shadergen->addSceneManager(scene_manager_);
+
+  // Create and register the material manager listener if it doesn't exist yet.
+  // if (!mMaterialMgrListener) {
+  private_->material_mgr_listener_ = new OgreBites::SGTechniqueResolverListener(shadergen);
+  Ogre::MaterialManager::getSingleton().addListener(private_->material_mgr_listener_);
+  //}
+
+
+  // forward scheme not found events to the RTSS
+  OgreBites::SGTechniqueResolverListener* schemeNotFoundHandler =
+      new OgreBites::SGTechniqueResolverListener(shadergen);
+  Ogre::MaterialManager::getSingleton().addListener(schemeNotFoundHandler);
+
+  auto subdir = "RTShaderCache";
+  auto path = "/home/sis/.ros/ogre/RTShaderCache"; // mFSLayer->getWritablePath(subdir);
+
+  if (!Ogre::FileSystemLayer::fileExists(path))
+  {
+    Ogre::FileSystemLayer::createDirectory(path);
+  }
+  shadergen->setShaderCachePath(path);
+
+  qDebug() << "Shader language: " << shadergen->getTargetLanguage().c_str();
+
+  // We need to wait with resource initialization till the RTShaderSystem is enabled
+  rviz::RenderSystem::RenderSystem::get()->initialiseResources();
 
   directional_light_ = scene_manager_->createLight("MainDirectional");
   directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
@@ -376,7 +416,16 @@ void VisualizationManager::onUpdate()
   {
     render_requested_ = 0;
     boost::mutex::scoped_lock lock(private_->render_mutex_);
-    ogre_root_->renderOneFrame();
+    try
+    {
+      ogre_root_->renderOneFrame();
+    }
+    catch (Ogre::Exception& e)
+    {
+      qCritical() << "Ogre exception: " << e.getDescription().c_str();
+      Ogre::RTShader::ShaderGenerator::getSingleton().validateScheme(
+          Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+    }
   }
 }
 
