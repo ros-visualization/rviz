@@ -106,21 +106,16 @@ find_package(OpenGL REQUIRED)
 set(CMAKE_AUTOMOC ON)
 
 set(RVIZ_QT_VERSIONS "5;6" CACHE STRING "List of Qt versions to consider (in order)")
-set(_versions_list ${RVIZ_QT_VERSIONS})
-while(_versions_list)
-  # Pop first element from list _versions_list
-  list(GET _versions_list 0 _current_version)
-  list(REMOVE_AT _versions_list 0)
-  # Try to find this Qt version
+foreach(_current_version ${RVIZ_QT_VERSIONS})
   find_package(Qt${_current_version} QUIET COMPONENTS Core Widgets OpenGL)
   if (Qt${_current_version}_FOUND)
     set(QTVERSION ${Qt${_current_version}_VERSION})
     set(QT_LIBRARIES Qt${_current_version}::Widgets)
-    set(_versions_list) # break from while loop
+    break() # early break from loop
   else()
     message(WARNING "Qt${_current_version} not found.")
   endif()
-endwhile()
+endforeach()
 if(NOT QTVERSION)
   message(FATAL_ERROR "Failed to find a suitable Qt version.")
 endif()
