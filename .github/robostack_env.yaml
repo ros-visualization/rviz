@@ -3,6 +3,7 @@ channels:
   - robostack
   - conda-forge
 dependencies:
+  - python 3.8
   - compilers
   - ninja
   - cmake
