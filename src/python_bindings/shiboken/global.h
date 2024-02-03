@@ -37,7 +37,7 @@
 #define NULL 0
 #endif
 
-#include "pyside_global.h"
+#include "pyside2_global.h"
 
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
