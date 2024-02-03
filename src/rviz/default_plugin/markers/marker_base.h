@@ -95,6 +95,8 @@ public:
     return S_MaterialPtr();
   }
 
+  void setVisible(bool visible);
+
 protected:
   bool transform(const MarkerConstPtr& message,
                  Ogre::Vector3& pos,
