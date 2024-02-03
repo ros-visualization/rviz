@@ -472,6 +472,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   Ogre::AxisAlignedBox aabb;
   aabb.setNull();
+  Ogre::Vector3 point_size_offset(width_/2.0, height_/2.0, depth_/2.0);
   uint32_t current_vertex_count = 0;
   bounding_radius_ = 0.0f;
   uint32_t vertex_size = 0;
@@ -531,8 +532,8 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
       root->convertColourValue(p.color, &color);
     }
 
-    aabb.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
+    aabb.merge(p.position + point_size_offset);
+    aabb.merge(p.position - point_size_offset);
 
     float x = p.position.x;
     float y = p.position.y;
@@ -563,6 +564,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
   bounding_box_.merge(aabb);
+  bounding_radius_ = Ogre::Math::boundingRadiusFromAABB(bounding_box_);
   ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <=
              rend->getBuffer()->getNumVertices());
 
@@ -612,13 +614,12 @@ void PointCloud::popPoints(uint32_t num_points)
 
   // reset bounds
   bounding_box_.setNull();
-  bounding_radius_ = 0.0f;
   for (uint32_t i = 0; i < point_count_; ++i)
   {
     Point& p = points_[i];
     bounding_box_.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
   }
+  bounding_radius_ = Ogre::Math::boundingRadiusFromAABB(bounding_box_);
 
   shrinkRenderables();
 
@@ -793,18 +794,12 @@ Ogre::HardwareVertexBufferSharedPtr PointCloudRenderable::getBuffer()
 
 Ogre::Real PointCloudRenderable::getBoundingRadius() const
 {
-  return Ogre::Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
+  return Ogre::Math::boundingRadiusFromAABB(mBox);
 }
 
 Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) const
 {
-  Ogre::Vector3 vMin, vMax, vMid, vDist;
-  vMin = mBox.getMinimum();
-  vMax = mBox.getMaximum();
-  vMid = ((vMax - vMin) * 0.5) + vMin;
-  vDist = cam->getDerivedPosition() - vMid;
-
-  return vDist.squaredLength();
+  return getWorldBoundingBox().squaredDistance(cam->getDerivedPosition());
 }
 
 void PointCloudRenderable::getWorldTransforms(Ogre::Matrix4* xform) const
