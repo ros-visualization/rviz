@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
   help_panel.cpp
   image/ros_image_texture.cpp
   image/image_display_base.cpp
+  image/mouse_click.cpp
   loading_dialog.cpp
   message_filter_display.h
   mesh_loader.cpp
