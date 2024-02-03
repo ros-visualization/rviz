@@ -7,7 +7,7 @@ material rviz/PointCloudSphere {
       alpha_rejection greater_equal 1
       vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/billboard.geom {}
-      fragment_program_ref rviz/glsl120/shaded_circle.frag {}
+      fragment_program_ref rviz/glsl150/shaded_circle.frag {}
     }
   }
 

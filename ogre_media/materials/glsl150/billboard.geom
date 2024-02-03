@@ -19,12 +19,13 @@ uniform mat4 worldviewproj_matrix;
 uniform vec4 size;
 uniform vec4 auto_size;
 
-in gl_PerVertex {
-	vec4 gl_Position;
-	vec4 gl_FrontColor;
-} gl_in[];
+in VertexData {
+	vec4 color;
+} vdata[];
 
-out vec4 gl_TexCoord[];
+// Use exactly these names to map onto gl_Color and gl_TexCoord used by fragment shaders
+out vec4 color;
+out vec2 TexCoord;
 
 layout(points) in;
 layout(triangle_strip, max_vertices=4) out;
@@ -32,10 +33,10 @@ layout(triangle_strip, max_vertices=4) out;
 void emitVertex( vec3 pos_rel, vec3 tex )
 {
   pos_rel = mat3(inverse_worldview_matrix) * pos_rel;
-  vec4 pos = gl_in[0].gl_Position + vec4(pos_rel,0.0);
+  vec4 pos = gl_in[0].gl_Position + vec4(pos_rel, 0.0);
   gl_Position = worldviewproj_matrix * pos;
-  gl_TexCoord[0] = vec4( tex.xy, 0.0, 0.0 );
-  gl_FrontColor = vec4( gl_in[0].gl_FrontColor );
+  TexCoord = tex.xy;
+  color = vdata[0].color;
   EmitVertex();
 }
 

@@ -173,7 +173,6 @@ void RenderSystem::loadOgrePlugins()
 
 void RenderSystem::detectGlVersion()
 {
-  bool mesa_workaround = false;
   if (force_gl_version_)
   {
     gl_version_ = force_gl_version_;
@@ -186,14 +185,6 @@ void RenderSystem::detectGlVersion()
     int major = caps->getDriverVersion().major;
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
-
-#ifdef __linux__
-    std::string gl_version_string = (const char*)glGetString(GL_VERSION);
-    // The "Mesa 2" string is intended to match "Mesa 20.", "Mesa 21." and so on
-    mesa_workaround = gl_version_string.find("Mesa 2") != std::string::npos && gl_version_ >= 320;
-#else
-    mesa_workaround = false;
-#endif
   }
 
   switch (gl_version_)
@@ -223,15 +214,6 @@ void RenderSystem::detectGlVersion()
       glsl_version_ = 0;
     }
     break;
-  }
-  if (mesa_workaround)
-  { // https://github.com/ros-visualization/rviz/issues/1508
-    ROS_INFO("OpenGl version: %.1f (GLSL %.1f) limited to GLSL 1.4 on Mesa system.",
-             (float)gl_version_ / 100.0, (float)glsl_version_ / 100.0);
-
-    gl_version_ = 310;
-    glsl_version_ = 140;
-    return;
   }
   ROS_INFO("OpenGl version: %.1f (GLSL %.1f).", (float)gl_version_ / 100.0, (float)glsl_version_ / 100.0);
 }
