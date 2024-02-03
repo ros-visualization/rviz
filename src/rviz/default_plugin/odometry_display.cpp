@@ -27,12 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <tf2_eigen/tf2_eigen.h>
+
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/axes.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/validate_floats.h>
 #include <rviz/validate_quaternions.h>
 
@@ -47,6 +50,12 @@ namespace rviz
 {
 OdometryDisplay::OdometryDisplay()
 {
+  continuous_transform_property_ =
+      new BoolProperty("Continuous Transform", false,
+                       "Retransform into fixed frame every timestep. This is particularly useful for "
+                       "messages whose frame moves w.r.t. fixed frame.",
+                       this);
+
   position_tolerance_property_ = new FloatProperty("Position Tolerance", .1,
                                                    "Distance, in meters from the last arrow dropped, "
                                                    "that will cause a new arrow to drop.",
@@ -152,6 +161,10 @@ void OdometryDisplay::clear()
   if (last_used_message_)
   {
     last_used_message_.reset();
+  }
+  if (ref_pose_)
+  {
+    ref_pose_.reset();
   }
 }
 
@@ -278,21 +291,16 @@ void OdometryDisplay::processMessage(const nav_msgs::Odometry::ConstPtr& message
 
   if (last_used_message_)
   {
-    Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x,
-                                last_used_message_->pose.pose.position.y,
-                                last_used_message_->pose.pose.position.z);
-    Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y,
-                                   message->pose.pose.position.z);
-    Eigen::Quaternionf last_orientation(last_used_message_->pose.pose.orientation.w,
-                                        last_used_message_->pose.pose.orientation.x,
-                                        last_used_message_->pose.pose.orientation.y,
-                                        last_used_message_->pose.pose.orientation.z);
-    Eigen::Quaternionf current_orientation(message->pose.pose.orientation.w,
-                                           message->pose.pose.orientation.x,
-                                           message->pose.pose.orientation.y,
-                                           message->pose.pose.orientation.z);
+    // use double precision in case the positions are very large, like for example with UTM coords
+    Eigen::Vector3d last_position, current_position;
+    Eigen::Quaterniond last_orientation, current_orientation;
 
-    if ((last_position - current_position).length() < position_tolerance_property_->getFloat() &&
+    tf2::fromMsg(message->pose.pose.position, current_position);
+    tf2::fromMsg(message->pose.pose.orientation, current_orientation);
+    tf2::fromMsg(last_used_message_->pose.pose.position, last_position);
+    tf2::fromMsg(last_used_message_->pose.pose.orientation, last_orientation);
+
+    if ((last_position - current_position).norm() < position_tolerance_property_->getFloat() &&
         last_orientation.angularDistance(current_orientation) < angle_tolerance_property_->getFloat())
     {
       return;
@@ -301,14 +309,37 @@ void OdometryDisplay::processMessage(const nav_msgs::Odometry::ConstPtr& message
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation))
+  if (!continuous_transform_property_->getBool())
   {
-    ROS_ERROR("Error transforming odometry '%s' from frame '%s' to frame '%s'", qPrintable(getName()),
-              message->header.frame_id.c_str(), qPrintable(fixed_frame_));
-    return;
-  }
+    if (!context_->getFrameManager()->transform(message->header, message->pose.pose, position,
+                                                orientation))
+    {
+      ROS_ERROR("Error transforming odometry '%s' from frame '%s' to frame '%s'", qPrintable(getName()),
+                message->header.frame_id.c_str(), qPrintable(fixed_frame_));
+      return;
+    }
 
-  // If we arrive here, we're good. Continue...
+    // If we arrive here, we're good. Continue...
+  }
+  else
+  {
+    // put the visuals at the pose specified by the message and transform their scene node continuously
+
+    // Use ref pose for very large transforms where float (default in OGRE) has not enough precision.
+    // Such large transforms can occur when converting GPS coordinates to a euclidean coordinate system,
+    // e.g. UTM. The ref pose is set to the position of the first incoming odometry message and is axis
+    // aligned to the parent frame of the odometry message.
+    if (!ref_pose_)
+    {
+      ref_pose_.reset(new geometry_msgs::Pose());
+      ref_pose_->position = message->pose.pose.position;
+    }
+
+    const geometry_msgs::Pose& p = message->pose.pose;
+    position = Ogre::Vector3(p.position.x - ref_pose_->position.x, p.position.y - ref_pose_->position.y,
+                             p.position.z - ref_pose_->position.z);
+    orientation = Ogre::Quaternion(p.orientation.w, p.orientation.x, p.orientation.y, p.orientation.z);
+  }
 
   // Create a scene node, and attach the arrow and the covariance to it
   Axes* axes = new Axes(scene_manager_, scene_node_, axes_length_property_->getFloat(),
@@ -372,6 +403,22 @@ void OdometryDisplay::update(float /*wall_dt*/, float /*ros_dt*/)
 
   assert(arrows_.size() == axes_.size());
   assert(axes_.size() == covariance_property_->sizeVisual());
+
+  // continuously set the scene node's position to ref pose
+  if (!continuous_transform_property_->getBool() || !last_used_message_ || !ref_pose_)
+    return;
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!context_->getFrameManager()->transform(last_used_message_->header.frame_id, ros::Time(),
+                                              *ref_pose_, position, orientation))
+  {
+    // the error output with setStatus is already generated by MessageFilterDisplay
+    return;
+  }
+
+  scene_node_->setPosition(position);
+  scene_node_->setOrientation(orientation);
 }
 
 void OdometryDisplay::reset()
