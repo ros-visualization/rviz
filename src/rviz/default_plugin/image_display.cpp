@@ -132,8 +132,9 @@ void ImageDisplay::onInitialize()
 
   // fullscreen button
   QToolButton* fullscreen_button = new QToolButton();
-  fullscreen_button->setText("FullScreen");
+  fullscreen_button->setIcon(QIcon::fromTheme("view-fullscreen"));
   fullscreen_button->setIconSize(QSize(10, 10));
+  fullscreen_button->setToolTip("Toggle fullscreen");
   connect(fullscreen_button, &QToolButton::clicked, this, &ImageDisplay::toggleFullScreen);
   dynamic_cast<QHBoxLayout*>(getAssociatedWidgetPanel()->titleBarWidget()->layout())
       ->insertWidget(2, fullscreen_button);
