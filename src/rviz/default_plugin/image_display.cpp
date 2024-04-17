@@ -42,9 +42,6 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
-#include <QToolButton>
-#include <QHBoxLayout>
-
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
 #include <rviz/panel_dock_widget.h>
@@ -129,15 +126,7 @@ void ImageDisplay::onInitialize()
   render_panel_->initialize(img_scene_manager_, context_);
 
   setAssociatedWidget(render_panel_);
-
-  // fullscreen button
-  QToolButton* fullscreen_button = new QToolButton();
-  fullscreen_button->setIcon(QIcon::fromTheme("view-fullscreen"));
-  fullscreen_button->setIconSize(QSize(10, 10));
-  fullscreen_button->setToolTip("Toggle fullscreen");
-  connect(fullscreen_button, &QToolButton::clicked, this, &ImageDisplay::toggleFullScreen);
-  dynamic_cast<QHBoxLayout*>(getAssociatedWidgetPanel()->titleBarWidget()->layout())
-      ->insertWidget(2, fullscreen_button);
+  getAssociatedWidgetPanel()->addMaximizeButton();
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -167,21 +156,6 @@ void ImageDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
   reset();
-}
-
-void ImageDisplay::toggleFullScreen()
-{
-  auto* panel = getAssociatedWidgetPanel();
-  if (panel->windowState() & Qt::WindowMaximized)
-  {
-    panel->setFloating(false);
-    panel->showNormal();
-  }
-  else
-  {
-    panel->setFloating(true);
-    panel->showMaximized();
-  }
 }
 
 void ImageDisplay::updateNormalizeOptions()

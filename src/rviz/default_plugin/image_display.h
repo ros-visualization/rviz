@@ -73,7 +73,6 @@ public:
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
-  virtual void toggleFullScreen();
 
 protected:
   // overrides from Display

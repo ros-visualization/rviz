@@ -124,6 +124,30 @@ void PanelDockWidget::setContentWidget(QWidget* child)
   }
 }
 
+void PanelDockWidget::addMaximizeButton()
+{
+  QToolButton* button = new QToolButton();
+  button->setIcon(QIcon::fromTheme("view-fullscreen"));
+  button->setIconSize(QSize(10, 10));
+  button->setToolTip("Toggle maximize");
+  connect(button, &QToolButton::clicked, this, &PanelDockWidget::toggleMaximized);
+  dynamic_cast<QHBoxLayout*>(titleBarWidget()->layout())->insertWidget(2, button);
+}
+
+void PanelDockWidget::toggleMaximized()
+{
+  if (windowState() & Qt::WindowMaximized)
+  {
+    setFloating(false);
+    showNormal();
+  }
+  else
+  {
+    setFloating(true);
+    showMaximized();
+  }
+}
+
 void PanelDockWidget::closeEvent(QCloseEvent* /*event*/)
 {
   Q_EMIT closed();
