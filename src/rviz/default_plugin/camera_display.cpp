@@ -51,6 +51,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/panel_dock_widget.h>
 #include <rviz/render_panel.h>
 #include <rviz/uniform_string_stream.h>
 #include <rviz/validate_floats.h>
@@ -192,6 +193,7 @@ void CameraDisplay::onInitialize()
   render_panel_->initialize(context_->getSceneManager(), context_);
 
   setAssociatedWidget(render_panel_);
+  getAssociatedWidgetPanel()->addMaximizeButton();
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);

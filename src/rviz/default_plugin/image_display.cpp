@@ -44,6 +44,7 @@
 
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
+#include <rviz/panel_dock_widget.h>
 #include <rviz/ogre_helpers/compatibility.h>
 #include <rviz/render_panel.h>
 #include <rviz/validate_floats.h>
@@ -130,6 +131,7 @@ void ImageDisplay::onInitialize()
   render_panel_->initialize(img_scene_manager_, context_);
 
   setAssociatedWidget(render_panel_);
+  getAssociatedWidgetPanel()->addMaximizeButton();
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);

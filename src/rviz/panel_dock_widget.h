@@ -54,6 +54,7 @@ public:
   void setCollapsed(bool collapsed);
 
   void setIcon(const QIcon& icon);
+  void addMaximizeButton();
 
   virtual void save(Config config);
   virtual void load(const Config& config);
@@ -67,6 +68,7 @@ protected:
 public Q_SLOTS:
 
   void setWindowTitle(const QString& title);
+  void toggleMaximized();
 
   /** @ Override the visibility of the widget. **/
   virtual void overrideVisibility(bool hide);
