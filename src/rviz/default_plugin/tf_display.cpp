@@ -556,6 +556,17 @@ Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourVa
   return start * t + end * (1 - t);
 }
 
+bool hasLoop(rviz::Property* child, rviz::Property* parent, rviz::Property* root)
+{
+  while (child != root)
+  {
+    if (child == parent)
+      return true;
+    child = child->getParent();
+  }
+  return false;
+}
+
 void TFDisplay::updateFrame(FrameInfo* frame)
 {
   auto tf = context_->getTF2BufferPtr();
@@ -736,7 +747,11 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     // Retrieve tree property to add the new child at
     rviz::Property* parent_tree_property;
     if (parent && parent->tree_property_) // parent already created
+    {
       parent_tree_property = parent->tree_property_;
+      if (hasLoop(parent_tree_property, frame->tree_property_, tree_category_))
+        parent_tree_property = tree_category_; // insert loops at root node
+    }
     else // create (temporarily) at root
       parent_tree_property = tree_category_;
 
