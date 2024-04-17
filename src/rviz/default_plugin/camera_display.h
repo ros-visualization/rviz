@@ -96,6 +96,8 @@ protected:
   ROSImageTexture texture_;
   RenderPanel* render_panel_;
 
+  Ogre::SceneManager* camera_scene_manager_;
+
 private Q_SLOTS:
   void forceRender();
   void updateAlpha();
@@ -135,6 +137,8 @@ private:
   bool force_render_;
 
   uint32_t vis_bit_;
+
+  bool has_run_once_;
 };
 
 } // namespace rviz

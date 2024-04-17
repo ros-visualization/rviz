@@ -34,6 +34,7 @@
 #include <OgreRectangle2D.h>
 #include <OgreRenderSystem.h>
 #include <OgreRenderWindow.h>
+#include <OgreRoot.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <OgreTextureManager.h>
@@ -103,6 +104,8 @@ CameraDisplay::CameraDisplay()
       &CameraDisplay::forceRender);
   zoom_property_->setMin(0.00001);
   zoom_property_->setMax(100000);
+
+  has_run_once_ = false;
 }
 
 CameraDisplay::~CameraDisplay()
@@ -128,8 +131,15 @@ void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
 
-  bg_scene_node_ = scene_node_->createChildSceneNode();
-  fg_scene_node_ = scene_node_->createChildSceneNode();
+  {
+    static uint32_t count = 0;
+    std::stringstream ss;
+    ss << "CameraDisplay" << count++;
+    camera_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
+  }
+
+  bg_scene_node_ = camera_scene_manager_->getRootSceneNode()->createChildSceneNode();
+  fg_scene_node_ = camera_scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   {
     static int count = 0;
@@ -191,6 +201,7 @@ void CameraDisplay::onInitialize()
   render_panel_->getRenderWindow()->setActive(false);
   render_panel_->resize(640, 480);
   render_panel_->initialize(context_->getSceneManager(), context_);
+  // render_panel_->initialize(camera_scene_manager_, context_);
 
   setAssociatedWidget(render_panel_);
   getAssociatedWidgetPanel()->addMaximizeButton();
@@ -215,8 +226,16 @@ void CameraDisplay::onInitialize()
 void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& /*evt*/)
 {
   QString image_position = image_position_property_->getString();
-  bg_scene_node_->setVisible(caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH));
-  fg_scene_node_->setVisible(caminfo_ok_ && (image_position == OVERLAY || image_position == BOTH));
+
+  if (has_run_once_)
+  {
+    fg_scene_node_->setVisible(caminfo_ok_ && (image_position == OVERLAY || image_position == BOTH));
+    bg_scene_node_->setVisible(caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH));
+  }
+  else
+  {
+    has_run_once_ = true;
+  }
 
   // set view flags on all displays
   visibility_property_->update();
