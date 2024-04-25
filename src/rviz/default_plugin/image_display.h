@@ -39,6 +39,7 @@
 
 #include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"
+#include "rviz/image/mouse_click.h"
 #include "rviz/render_panel.h"
 
 #include "rviz/properties/bool_property.h"
@@ -81,6 +82,7 @@ protected:
 
   /* This is called by incomingMessage(). */
   void processMessage(const sensor_msgs::Image::ConstPtr& msg) override;
+  void updateTopic() override;
 
   Ogre::SceneManager* img_scene_manager_;
 
@@ -98,6 +100,8 @@ private:
   FloatProperty* max_property_;
   IntProperty* median_buffer_size_property_;
   bool got_float_image_;
+
+  MouseClick* mouse_click_;
 };
 
 } // namespace rviz

@@ -138,6 +138,8 @@ void ImageDisplay::onInitialize()
   render_panel_->getCamera()->setNearClipDistance(0.01f);
 
   updateNormalizeOptions();
+
+  mouse_click_ = new MouseClick(render_panel_, update_nh_);
 }
 
 ImageDisplay::~ImageDisplay()
@@ -153,6 +155,8 @@ ImageDisplay::~ImageDisplay()
 void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
+  mouse_click_->enable();
+
   render_panel_->getRenderWindow()->setActive(true);
 }
 
@@ -160,6 +164,8 @@ void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
+  mouse_click_->disable();
+
   reset();
 }
 
@@ -219,6 +225,8 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
     }
 
     render_panel_->getRenderWindow()->update();
+
+    mouse_click_->setDimensions(img_width, img_height, win_width, win_height);
   }
   catch (UnsupportedImageEncoding& e)
   {
@@ -248,6 +256,13 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   }
   texture_.addMessage(msg);
 }
+
+void ImageDisplay::updateTopic()
+{
+  ImageDisplayBase::updateTopic();
+  mouse_click_->setImageTopic(topic_property_->getTopic());
+}
+
 
 } // namespace rviz
 
