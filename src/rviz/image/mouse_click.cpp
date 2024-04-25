@@ -10,24 +10,26 @@ MouseClick::MouseClick(QWidget* widget, const ros::NodeHandle& nh) : QObject(wid
   img_width_ = img_height_ = win_width_ = win_height_ = 0;
   node_handle_ = nh;
   topic_name_ok_ = false;
-  widget->installEventFilter(this);
 }
 
 void MouseClick::enable()
 {
   if (topic_name_ok_)
+  {
     publisher_ = node_handle_.advertise<geometry_msgs::PointStamped>(topic_, 1);
+    parent()->installEventFilter(this);
+  }
 }
 
 void MouseClick::disable()
 {
+  parent()->removeEventFilter(this);
   publisher_.shutdown();
 }
 
 bool MouseClick::eventFilter(QObject* obj, QEvent* event)
 {
-  if (publisher_.operator void*() &&
-      (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseMove))
+  if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseMove)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
     QPointF windowPos = me->windowPos();
