@@ -2,6 +2,24 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.21 (2024-04-25)
+--------------------
+* ImageDisplay: publish mouse clicks (`#1737 <https://github.com/ros-visualization/rviz/issues/1737>`_)
+* Add maximize button to Image and Camera display (`#1803 <https://github.com/ros-visualization/rviz/issues/1803>`_)
+* Gracefully handle loops in TF tree (`#1820 <https://github.com/ros-visualization/rviz/issues/1820>`_)
+* Ogre 13 compatibility
+* Qt6 compatibility (`#1813 <https://github.com/ros-visualization/rviz/issues/1813>`_)
+* Fix Qt 5.15 API deprecation warnings
+* ScrewDisplay: Fix initialization of HideSmallValues property (`#1810 <https://github.com/ros-visualization/rviz/issues/1810>`_)
+* Fix vanishing "Global Options" when adding a RobotModelDisplay (`#1808 <https://github.com/ros-visualization/rviz/issues/1808>`_)
+* Modernize to Qt5 slots (`#1790 <https://github.com/ros-visualization/rviz/issues/1790>`_)
+* Optionally deprecate old-style slots via -DRVIZ_DEPRECATE_QT4_SLOTS
+* Improve error handling in LaserScanDisplay (`#1798 <https://github.com/ros-visualization/rviz/issues/1798>`_)
+* MapDisplay: Fix crash after map update (`#1793 <https://github.com/ros-visualization/rviz/issues/1793>`_)
+* Call propertyHiddenChanged synchronously (`#1795 <https://github.com/ros-visualization/rviz/issues/1795>`_)
+* Replace obsolete QPixmap::grabWindow() with QScreen::grabWindow() (`#1794 <https://github.com/ros-visualization/rviz/issues/1794>`_)
+* Contributors: Miguel Riem de Oliveira, Robert Haschke, Simon Schmeisser, Stefan Fabian, vineet131
+
 1.14.20 (2023-03-30)
 --------------------
 * Improvements to TF display (`#1789 <https://github.com/ros-visualization/rviz/issues/1789>`_)
