@@ -45,7 +45,6 @@ public:
 private:
   virtual bool eventFilter(QObject* obj, QEvent* event);
 
-  bool have_dimensions_;
   int img_width_, img_height_, win_width_, win_height_; // To assess if the clicks are inside the image.
   ros::NodeHandle node_handle_;
   ros::Publisher publisher_;

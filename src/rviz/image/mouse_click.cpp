@@ -7,8 +7,8 @@ namespace rviz
 {
 MouseClick::MouseClick(QWidget* widget, const ros::NodeHandle& nh) : QObject(widget)
 {
+  img_width_ = img_height_ = win_width_ = win_height_ = 0;
   node_handle_ = nh;
-  have_dimensions_ = false;
   topic_name_ok_ = false;
   widget->installEventFilter(this);
 }
@@ -26,7 +26,7 @@ void MouseClick::disable()
 
 bool MouseClick::eventFilter(QObject* obj, QEvent* event)
 {
-  if (have_dimensions_ && publisher_.operator void*() && event->type() == QEvent::MouseButtonPress)
+  if (publisher_.operator void*() && event->type() == QEvent::MouseButtonPress)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
     QPointF windowPos = me->windowPos();
@@ -75,7 +75,6 @@ void MouseClick::setDimensions(int img_width, int img_height, int win_width, int
   img_height_ = img_height;
   win_width_ = win_width;
   win_height_ = win_height;
-  have_dimensions_ = true;
 }
 
 void MouseClick::setImageTopic(const QString& topic)
