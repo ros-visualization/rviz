@@ -26,12 +26,14 @@ void MouseClick::disable()
 
 bool MouseClick::eventFilter(QObject* obj, QEvent* event)
 {
-  if (publisher_.operator void*() && event->type() == QEvent::MouseButtonPress)
+  if (publisher_.operator void*() &&
+      (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseMove))
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
     QPointF windowPos = me->windowPos();
+    bool left_button = me->buttons() == Qt::LeftButton;
 
-    if (img_width_ != 0 && img_height_ != 0 && win_width_ != 0 && win_height_ != 0)
+    if (left_button && img_width_ != 0 && img_height_ != 0 && win_width_ != 0 && win_height_ != 0)
     {
       float img_aspect = float(img_width_) / float(img_height_);
       float win_aspect = float(win_width_) / float(win_height_);
