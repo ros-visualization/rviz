@@ -34,28 +34,23 @@ namespace rviz
 class RVIZ_EXPORT MouseClick : QObject
 {
 public:
-  MouseClick(QObject* parent, const ros::NodeHandle& nh);
-  ~MouseClick();
+  MouseClick(QWidget* widget, const ros::NodeHandle& nh);
 
-  void onInitialize();
-
-  /** @brief ROS topic management. */
-  void publish();
-  void unpublish();
+  void enable();
+  void disable();
 
   void setDimensions(int img_width, int img_height, int win_width, int win_height);
-  void setTopic(const QString& image_topic);
-  void updateTopic(const QString& image_topic);
+  void setImageTopic(const QString& topic);
 
 private:
   virtual bool eventFilter(QObject* obj, QEvent* event);
 
-  bool has_dimensions_;
+  bool have_dimensions_;
   int img_width_, img_height_, win_width_, win_height_; // To assess if the clicks are inside the image.
-  boost::shared_ptr<ros::NodeHandle> node_handle_;
-  boost::shared_ptr<ros::Publisher> publisher_;
+  ros::NodeHandle node_handle_;
+  ros::Publisher publisher_;
   std::string topic_;
-  bool is_topic_name_ok_;
+  bool topic_name_ok_;
 };
 
 } // namespace rviz

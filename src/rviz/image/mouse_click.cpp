@@ -1,52 +1,32 @@
 #include "rviz/image/mouse_click.h"
-
+#include <QWidget>
 #include <ros/names.h>
 
 
 namespace rviz
 {
-MouseClick::MouseClick(QObject* parent, const ros::NodeHandle& nh) : QObject(parent)
+MouseClick::MouseClick(QWidget* widget, const ros::NodeHandle& nh) : QObject(widget)
 {
-  node_handle_.reset(new ros::NodeHandle());
-  *node_handle_ = nh;
-  has_dimensions_ = false;
-  is_topic_name_ok_ = false;
-  setParent(parent);
-  parent->installEventFilter(this);
+  node_handle_ = nh;
+  have_dimensions_ = false;
+  topic_name_ok_ = false;
+  widget->installEventFilter(this);
 }
 
-MouseClick::~MouseClick()
+void MouseClick::enable()
 {
+  if (topic_name_ok_)
+    publisher_ = node_handle_.advertise<geometry_msgs::PointStamped>(topic_, 1);
 }
 
-void MouseClick::onInitialize()
+void MouseClick::disable()
 {
+  publisher_.shutdown();
 }
-
-void MouseClick::publish()
-{
-  if (is_topic_name_ok_)
-  {
-    publisher_.reset(new ros::Publisher(node_handle_->advertise<geometry_msgs::PointStamped>(topic_, 1)));
-  }
-}
-
-void MouseClick::unpublish()
-{
-  publisher_.reset();
-}
-
 
 bool MouseClick::eventFilter(QObject* obj, QEvent* event)
 {
-  if (has_dimensions_ == false)
-    return false; // Cannot compute pixel coordinates.
-
-  if (is_topic_name_ok_ == false)
-    return false; // Cannot publish.
-
-
-  if (event->type() == QEvent::MouseButtonPress)
+  if (have_dimensions_ && publisher_.operator void*() && event->type() == QEvent::MouseButtonPress)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
     QPointF windowPos = me->windowPos();
@@ -82,7 +62,7 @@ bool MouseClick::eventFilter(QObject* obj, QEvent* event)
         point_msg.header.stamp = ros::Time::now();
         point_msg.point.x = pix_x;
         point_msg.point.y = pix_y;
-        publisher_->publish(point_msg);
+        publisher_.publish(point_msg);
       }
     }
   }
@@ -95,30 +75,20 @@ void MouseClick::setDimensions(int img_width, int img_height, int win_width, int
   img_height_ = img_height;
   win_width_ = win_width;
   win_height_ = win_height;
-  has_dimensions_ = true;
+  have_dimensions_ = true;
 }
 
-void MouseClick::setTopic(const QString& image_topic)
+void MouseClick::setImageTopic(const QString& topic)
 {
-  // Build the click full topic name based on the image topic.
-  topic_ = image_topic.toStdString().append("/mouse_click");
+  disable();
+
+  // Build the click full topic name based on the image topic
+  topic_ = topic.toStdString().append("/mouse_click");
 
   std::string error;
-  if (ros::names::validate((const std::string)topic_, error))
-  {
-    is_topic_name_ok_ = true;
-  }
-  else
-  {
-    is_topic_name_ok_ = false;
-  }
-}
+  topic_name_ok_ = ros::names::validate(topic_, error);
 
-void MouseClick::updateTopic(const QString& image_topic)
-{
-  unpublish();
-  setTopic(image_topic);
-  publish();
+  enable();
 }
 
 } // namespace rviz

@@ -131,8 +131,7 @@ void ImageDisplay::onInitialize()
 
   updateNormalizeOptions();
 
-  mouse_click_.reset(new MouseClick(render_panel_, update_nh_));
-  mouse_click_->onInitialize();
+  mouse_click_ = new MouseClick(render_panel_, update_nh_);
 }
 
 ImageDisplay::~ImageDisplay()
@@ -148,7 +147,7 @@ ImageDisplay::~ImageDisplay()
 void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
-  mouse_click_->publish();
+  mouse_click_->enable();
 
   render_panel_->getRenderWindow()->setActive(true);
 }
@@ -157,7 +156,7 @@ void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
-  mouse_click_->unpublish();
+  mouse_click_->disable();
 
   reset();
 }
@@ -250,16 +249,10 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   texture_.addMessage(msg);
 }
 
-void ImageDisplay::setTopic(const QString& topic, const QString& datatype)
-{
-  ImageDisplayBase::setTopic(topic, datatype);
-  mouse_click_->setTopic(topic);
-}
-
 void ImageDisplay::updateTopic()
 {
   ImageDisplayBase::updateTopic();
-  mouse_click_->updateTopic(topic_property_->getTopic());
+  mouse_click_->setImageTopic(topic_property_->getTopic());
 }
 
 

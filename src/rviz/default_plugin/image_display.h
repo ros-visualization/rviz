@@ -82,7 +82,6 @@ protected:
 
   /* This is called by incomingMessage(). */
   void processMessage(const sensor_msgs::Image::ConstPtr& msg) override;
-  void setTopic(const QString& topic, const QString& datatype) override;
   void updateTopic() override;
 
   Ogre::SceneManager* img_scene_manager_;
@@ -102,7 +101,7 @@ private:
   IntProperty* median_buffer_size_property_;
   bool got_float_image_;
 
-  boost::shared_ptr<MouseClick> mouse_click_;
+  MouseClick* mouse_click_;
 };
 
 } // namespace rviz
