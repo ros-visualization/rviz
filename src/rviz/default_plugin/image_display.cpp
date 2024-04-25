@@ -72,7 +72,6 @@ ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
                       this, SLOT(updateNormalizeOptions()));
 
   got_float_image_ = false;
-
 }
 
 void ImageDisplay::onInitialize()
@@ -132,7 +131,6 @@ void ImageDisplay::onInitialize()
 
   updateNormalizeOptions();
 
-  
   mouse_click_.reset(new MouseClick(render_panel_, update_nh_));
   mouse_click_->onInitialize();
 }

@@ -5,7 +5,6 @@
 
 namespace rviz
 {
-
 MouseClick::MouseClick(QObject* parent, const ros::NodeHandle& nh) : QObject(parent)
 {
   node_handle_.reset(new ros::NodeHandle());
@@ -28,8 +27,7 @@ void MouseClick::publish()
 {
   if (is_topic_name_ok_)
   {
-    publisher_.reset(
-        new ros::Publisher(node_handle_->advertise<geometry_msgs::PointStamped>(topic_, 1)));
+    publisher_.reset(new ros::Publisher(node_handle_->advertise<geometry_msgs::PointStamped>(topic_, 1)));
   }
 }
 
