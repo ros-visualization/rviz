@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.22 (2024-04-29)
+--------------------
+* Reenable python bindings
+* Contributors: Robert Haschke
+
 1.14.21 (2024-04-25)
 --------------------
 * ImageDisplay: publish mouse clicks (`#1737 <https://github.com/ros-visualization/rviz/issues/1737>`_)
