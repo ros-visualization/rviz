@@ -18,13 +18,13 @@ jobs:
         os: [ubuntu-20.04, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Build Dependencies
-      uses: mamba-org/provision-with-micromamba@v11
+      uses: mamba-org/provision-with-micromamba@v15
       with:
         environment-file: .github/robostack_env.yaml
-        micromamba-version: "0.17.0"
+        micromamba-version: "1.5.8"
 
     - name: Set up rviz Dependencies on Unix
       if: runner.os == 'Linux' || runner.os == 'macOS'
