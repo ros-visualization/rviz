@@ -221,10 +221,9 @@ void Swatch::updateData()
 
 MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(0), height_(0)
 {
-  // HACK: Using a direct connection triggers a segfault on NVIDIA hardware (#1793) when rendering
+  // TODO: Using a direct connection triggers a segfault on NVIDIA hardware (#1793) when rendering
   //       *and* having performed a depth rendering before (e.g. due to raycasting for selections)
-  // A queued connection delays the update of renderables after the current VisualizationManager::onUpdate() call
-  connect(this, &MapDisplay::mapUpdated, this, &MapDisplay::showMap, Qt::QueuedConnection);
+  connect(this, &MapDisplay::mapUpdated, this, &MapDisplay::showMap);
   topic_property_ = new RosTopicProperty(
       "Topic", "", QString::fromStdString(ros::message_traits::datatype<nav_msgs::OccupancyGrid>()),
       "nav_msgs::OccupancyGrid topic to subscribe to.", this, &MapDisplay::updateTopic);
