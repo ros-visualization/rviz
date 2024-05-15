@@ -122,17 +122,12 @@ public:
 
   void setTopic(const QString& topic, const QString& datatype) override;
 
-Q_SIGNALS:
-  /** @brief Emitted when a new map is received*/
-  void mapUpdated();
-
 protected Q_SLOTS:
   void updateAlpha();
   void updateTopic();
   void updateDrawUnder();
   void updatePalette();
-  /** @brief Show current_map_ in the scene. */
-  void showMap();
+  void updateMap();
   void transformMap();
 
 protected:
@@ -144,10 +139,10 @@ protected:
   virtual void unsubscribe();
   void update(float wall_dt, float ros_dt) override;
 
-  /** @brief Copy msg into current_map_ and call showMap(). */
+  /** @brief Copy msg into current_map_ and set flag map_updated_ */
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
-  /** @brief Copy update's data into current_map_ and call showMap(). */
+  /** @brief Copy update's data into current_map_ and set flag map_updated_ */
   void incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update);
 
   void clear();
@@ -158,6 +153,7 @@ protected:
   std::vector<Ogre::TexturePtr> palette_textures_;
   std::vector<bool> color_scheme_transparency_;
   bool loaded_;
+  bool map_updated_;
 
   std::string topic_;
   float resolution_;
