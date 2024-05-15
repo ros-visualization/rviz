@@ -219,12 +219,9 @@ void Swatch::updateData()
 }
 
 
-MapDisplay::MapDisplay() : Display(), loaded_(false), resolution_(0.0f), width_(0), height_(0)
+MapDisplay::MapDisplay()
+  : Display(), loaded_(false), map_updated_(false), resolution_(0.0f), width_(0), height_(0)
 {
-  // HACK: Using a direct connection triggers a segfault on NVIDIA hardware (#1793) when rendering
-  //       *and* having performed a depth rendering before (e.g. due to raycasting for selections)
-  // A queued connection delays the update of renderables after the current VisualizationManager::onUpdate() call
-  connect(this, &MapDisplay::mapUpdated, this, &MapDisplay::showMap, Qt::QueuedConnection);
   topic_property_ = new RosTopicProperty(
       "Topic", "", QString::fromStdString(ros::message_traits::datatype<nav_msgs::OccupancyGrid>()),
       "nav_msgs::OccupancyGrid topic to subscribe to.", this, &MapDisplay::updateTopic);
@@ -548,6 +545,7 @@ void MapDisplay::clear()
   }
 
   loaded_ = false;
+  map_updated_ = false;
 }
 
 bool validateFloats(const nav_msgs::OccupancyGrid& msg)
@@ -561,9 +559,8 @@ bool validateFloats(const nav_msgs::OccupancyGrid& msg)
 void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
   current_map_ = *msg;
-  // updated via signal in case ros spinner is in a different thread
-  Q_EMIT mapUpdated();
   loaded_ = true;
+  map_updated_ = true;
 }
 
 
@@ -589,8 +586,7 @@ void MapDisplay::incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& u
     memcpy(&current_map_.data[(update->y + y) * current_map_.info.width + update->x],
            &update->data[y * update->width], update->width);
   }
-  // updated via signal in case ros spinner is in a different thread
-  Q_EMIT mapUpdated();
+  map_updated_ = true;
 }
 
 void MapDisplay::createSwatches()
@@ -653,7 +649,7 @@ void MapDisplay::createSwatches()
   }
 }
 
-void MapDisplay::showMap()
+void MapDisplay::updateMap()
 {
   if (current_map_.data.empty())
   {
@@ -758,9 +754,7 @@ void MapDisplay::showMap()
   position_property_->setVector(position);
   orientation_property_->setQuaternion(orientation);
 
-  transformMap();
-
-  context_->queueRender();
+  map_updated_ = false;
 }
 
 void MapDisplay::updatePalette()
@@ -843,6 +837,8 @@ void MapDisplay::setTopic(const QString& topic, const QString& /*datatype*/)
 
 void MapDisplay::update(float /*wall_dt*/, float /*ros_dt*/)
 {
+  if (map_updated_)
+    updateMap();
   transformMap();
 }
 
