@@ -2,10 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.24 (2024-05-15)
+--------------------
+* Fix jitter in Map display updates (`#1826 <https://github.com/ros-visualization/rviz/issues/1826>`_)
+* Contributors: Robert Haschke
+
 1.14.23 (2024-05-09)
 --------------------
 * Fix `#1825 <https://github.com/ros-visualization/rviz/issues/1825>`_
-  model\_ is destroyed between registration of the single-shot timer and its execution
 * Contributors: Robert Haschke
 
 1.14.22 (2024-04-29)
