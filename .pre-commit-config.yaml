@@ -28,12 +28,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/psf/black
-    rev: 24.4.1
+    rev: 24.4.2
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.1.0
+    rev: v3.2.0
     hooks: []
 
   - repo: local

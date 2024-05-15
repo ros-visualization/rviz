@@ -21,7 +21,7 @@ jobs:
     name: "${{ matrix.distro }}"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache ccache
         uses: rhaschke/cache@main
         with:
@@ -37,7 +37,7 @@ jobs:
         uses: rhaschke/industrial_ci@master
 
       - name: Upload test artifacts (on failure)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test-results

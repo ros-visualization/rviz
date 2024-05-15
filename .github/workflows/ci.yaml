@@ -47,7 +47,7 @@ jobs:
     name: "${{ matrix.distro }} • ogre ${{ matrix.ogre }} • Qt ${{ matrix.qt }}${{ matrix.env.CLANG_TIDY && (github.event_name != 'workflow_dispatch' && ' • clang-tidy (delta)' || ' • clang-tidy (all)') || '' }}"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache ccache
         uses: rhaschke/cache@main
@@ -64,7 +64,7 @@ jobs:
         uses: rhaschke/industrial_ci@master
 
       - name: Upload test artifacts (on failure)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test-results
