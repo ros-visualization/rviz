@@ -397,10 +397,7 @@ void Property::setModel(PropertyTreeModel* model)
   if (model_ && hidden_)
   {
     // process propertyHiddenChanged after insertion into model has finished
-    QTimer::singleShot(0, model_, [this]() {
-      if (model_)
-        model_->emitPropertyHiddenChanged(this);
-    });
+    QTimer::singleShot(0, this, [this]() { model_->emitPropertyHiddenChanged(this); });
   }
   int num_children = numChildren();
   for (int i = 0; i < num_children; i++)
