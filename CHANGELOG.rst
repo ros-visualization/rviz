@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.25 (2024-05-21)
+--------------------
+* Fix `#1825 <https://github.com/ros-visualization/rviz/issues/1825>`_/`#1830 <https://github.com/ros-visualization/rviz/issues/1830>`_: segfault when hiding deleted properties (`#1831 <https://github.com/ros-visualization/rviz/issues/1831>`_)
+* Contributors: Robert Haschke
+
 1.14.24 (2024-05-15)
 --------------------
 * Fix jitter in Map display updates (`#1826 <https://github.com/ros-visualization/rviz/issues/1826>`_)
