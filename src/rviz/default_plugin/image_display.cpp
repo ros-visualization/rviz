@@ -131,7 +131,8 @@ void ImageDisplay::onInitialize()
   render_panel_->initialize(img_scene_manager_, context_);
 
   setAssociatedWidget(render_panel_);
-  getAssociatedWidgetPanel()->addMaximizeButton();
+  if (auto* dock = getAssociatedWidgetPanel())
+    dock->addMaximizeButton();
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);

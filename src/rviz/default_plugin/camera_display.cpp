@@ -193,7 +193,8 @@ void CameraDisplay::onInitialize()
   render_panel_->initialize(context_->getSceneManager(), context_);
 
   setAssociatedWidget(render_panel_);
-  getAssociatedWidgetPanel()->addMaximizeButton();
+  if (auto* dock = getAssociatedWidgetPanel())
+    dock->addMaximizeButton();
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
