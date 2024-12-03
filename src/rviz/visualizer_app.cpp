@@ -28,6 +28,7 @@
  */
 
 #include <QApplication>
+#include <QProcessEnvironment> // check env variables
 #include <QTimer>
 
 #include <boost/program_options.hpp>
@@ -54,6 +55,7 @@
 #include <rviz/visualization_frame.h>
 #include <rviz/visualization_manager.h>
 #include <rviz/wait_for_master_dialog.h>
+#include <rviz/noetic_eol_dialog.h>
 #include <rviz/ogre_helpers/render_system.h>
 
 #include <rviz/visualizer_app.h>
@@ -230,6 +232,18 @@ bool VisualizerApp::init(int argc, char** argv)
         "load_config_discarding_changes", &VisualizerApp::loadConfigDiscardingCallback, this);
     save_config_service_ =
         private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
+
+      // Notify users of ROS 1 EOL Date
+      // Get the environment variables
+      QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+      // If environment variable is not set
+      if(env.contains(QString::fromStdString("DISABLE_ROS1_EOL_WARNINGS")) == false)
+      {
+	// Create a warning pop up
+        NoeticEOLDialog eol_dialog;
+        eol_dialog.exec();
+      }
+    
 
 #if CATCH_EXCEPTIONS
   }
