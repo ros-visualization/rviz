@@ -49,7 +49,7 @@ NoeticEOLDialog::NoeticEOLDialog(QWidget* parent) : QMessageBox(parent)
   ss << "Users are encouraged to migrate to ROS 2 as soon as possible!\n\n";
   ss << "For more information see: \n";
   ss << "<some URL TBD>\n\n";
-  ss << "To disable set the DISABLE_ROS1_EOL_WARNINGS environment variable.\n";
+  ss << "To disable this dialog set the DISABLE_ROS1_EOL_WARNINGS environment variable.\n";
   setText(QString::fromStdString(ss.str()));
   setWindowTitle("ROS 1 End-of-Life is May 31st, 2025");
   setStandardButtons(QMessageBox::Ok);
