@@ -45,7 +45,7 @@ NoeticEOLDialog::NoeticEOLDialog(QWidget* parent) : QMessageBox(parent)
 {
   setIcon(QMessageBox::Critical);
   std::stringstream ss;
-  ss << "ROS 1 goes end-of-life 2025-05-31\n\n";
+  ss << "ROS Noetic goes end-of-life 2025-05-31\n\n";
   ss << "Users are encouraged to migrate to ROS 2 as soon as possible!\n\n";
   ss << "For more information see: \n";
   ss << "<some URL TBD>\n\n";
