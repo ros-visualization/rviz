@@ -518,7 +518,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
       {
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
         Ogre::Image image;
-        std::string extension = fs::extension(fs::path(filename));
+        std::string extension = fs::path(filename).extension().string();
 
         if (extension[0] == '.')
         {
