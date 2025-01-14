@@ -38,9 +38,6 @@ class NoeticEOLDialog : public QMessageBox
   Q_OBJECT
 public:
   NoeticEOLDialog(QWidget* parent = nullptr);
-
-  private Q_SLOTS:
-  //void onTimer();
 };
 
 } // end namespace rviz
