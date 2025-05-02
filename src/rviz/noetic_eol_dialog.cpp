@@ -5,14 +5,15 @@ namespace rviz
 NoeticEOLDialog::NoeticEOLDialog(QWidget* parent) : QMessageBox(parent)
 {
   setIcon(QMessageBox::Critical);
-  std::stringstream ss;
-  ss << "ROS Noetic goes end-of-life 2025-05-31\n\n";
-  ss << "Users are encouraged to migrate to ROS 2 as soon as possible!\n";
-  ss << "Alternatively, switch to the ROS One distribution\n\n";
-  ss << "For more information see: \n";
-  ss << "<some URL TBD>\n\n";
-  ss << "To disable this dialog set the DISABLE_ROS1_EOL_WARNINGS environment variable.\n";
-  setText(QString::fromStdString(ss.str()));
+  setTextFormat(Qt::RichText);
+  setText(
+      "<p>ROS Noetic goes end-of-life 2025-05-31.</p>"
+      "<p>Users are encouraged to migrate to ROS 2 as soon as possible!"
+      "Alternatively, switch to the <a href='https://ros.packages.techfak.net'>ROS One "
+      "distribution</a>.</p>"
+      "<p>For more information see <a href='https://www.ros.org/blog/noetic-eol'>this blog post</a>.</p>"
+      "<p>To disable this dialog, set the <code>DISABLE_ROS1_EOL_WARNINGS</code> environment "
+      "variable.</p>");
   setWindowTitle("ROS 1 End-of-Life is May 31st, 2025");
   setStandardButtons(QMessageBox::Ok);
 }
