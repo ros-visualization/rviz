@@ -237,13 +237,12 @@ bool VisualizerApp::init(int argc, char** argv)
       // Get the environment variables
       QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
       // If environment variable is not set
-      if(env.contains("DISABLE_ROS1_EOL_WARNINGS") == false)
+      if(!env.contains("DISABLE_ROS1_EOL_WARNINGS"))
       {
-	// Create a warning pop up
+        // Create a warning pop up
         NoeticEOLDialog eol_dialog;
         eol_dialog.exec();
       }
-    
 
 #if CATCH_EXCEPTIONS
   }
