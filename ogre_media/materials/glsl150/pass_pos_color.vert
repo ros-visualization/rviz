@@ -1,14 +1,17 @@
-#version 150 compatibility
+#version 150
 
-// this merely passes over position and color,
-// as needed by box.geom
+// need to use exactly these names to have OGRE bind the unpacked values:
+// https://ogrecave.github.io/ogre/api/latest/_high-level-_programs.html#Binding-vertex-attributes
+in vec4 vertex;
+in vec4 colour;
 
-out gl_PerVertex {
-	vec4 gl_Position;
-	vec4 gl_FrontColor;
-};
+// this merely passes over position and color as needed by box.geom
+
+out VertexData {
+    vec4 color;
+} vdata;
 
 void main() {
-    gl_Position = gl_Vertex;
-    gl_FrontColor = gl_Color;
+    gl_Position = vertex;
+    vdata.color = colour;
 }
