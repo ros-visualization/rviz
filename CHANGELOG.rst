@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.26 (2025-05-02)
+--------------------
+* Warning Dialog for ROS 1 EOL (`#1843 <https://github.com/ros-visualization/rviz/issues/1843>`_)
+* Bump cmake_minimum_required to 3.5 (`#1847 <https://github.com/ros-visualization/rviz/issues/1847>`_)
+* Replace boost::filesystem::extension() (`#1844 <https://github.com/ros-visualization/rviz/issues/1844>`_)
+* Fix `#1834 <https://github.com/ros-visualization/rviz/issues/1834>`_: segfault on addMaximizeButton
+* Contributors: A K Azad, Arne Hitzmann, Katherine Scott, Robert Haschke
+
 1.14.25 (2024-05-21)
 --------------------
 * Fix `#1825 <https://github.com/ros-visualization/rviz/issues/1825>`_/`#1830 <https://github.com/ros-visualization/rviz/issues/1830>`_: segfault when hiding deleted properties (`#1831 <https://github.com/ros-visualization/rviz/issues/1831>`_)
