@@ -41,7 +41,7 @@
 
 namespace rviz
 {
-ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages_received_(0)
+ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages_received_(0), timeout_tm_(0), is_img_up_(false)
 {
   topic_property_ =
       new RosTopicProperty("Image Topic", "",
@@ -66,6 +66,18 @@ ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages
 
   unreliable_property_ =
       new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this, SLOT(updateTopic()));
+
+  reset_to_property_ = new BoolProperty("Reset When Timed Out", false,
+                                        "Reset when new image has not been received for Timeout [sec].",
+                                        this, SLOT(updateResetTO()));
+
+  timeout_property_ =
+      new FloatProperty("Timeout", 1.0,
+                        "Seconds to wait before resetting when new image has not been received.",
+                        this, SLOT(updateResetTO()));
+
+  reset_to_timer_ = new QTimer(this);
+  connect(reset_to_timer_, &QTimer::timeout, this, &ImageDisplayBase::onResetTOTimer);
 }
 
 ImageDisplayBase::~ImageDisplayBase()
@@ -116,6 +128,8 @@ void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
   emitTimeSignal(msg->header.stamp);
 
   processMessage(msg);
+
+  is_img_up_ = true;
 }
 
 
@@ -139,6 +153,9 @@ void ImageDisplayBase::reset()
 
   messages_received_ = 0;
   setStatus(StatusProperty::Warn, "Image", "No Image received");
+
+  timeout_tm_ = ros::Time(0);
+  is_img_up_ = false;
 }
 
 void ImageDisplayBase::updateQueueSize()
@@ -264,6 +281,18 @@ void ImageDisplayBase::updateTopic()
   context_->queueRender();
 }
 
+void ImageDisplayBase::updateResetTO()
+{
+  if (reset_to_property_->getBool())
+  {
+    reset_to_timer_->start(33);
+  }
+  else
+  {
+    reset_to_timer_->stop();
+  }
+}
+
 void ImageDisplayBase::fillTransportOptionList(EnumProperty* property)
 {
   property->clearOptions();
@@ -305,6 +334,22 @@ void ImageDisplayBase::fillTransportOptionList(EnumProperty* property)
   for (size_t i = 0; i < choices.size(); i++)
   {
     property->addOptionStd(choices[i]);
+  }
+}
+
+void ImageDisplayBase::onResetTOTimer()
+{
+  if (is_img_up_)
+  {
+    is_img_up_ = false;
+    timeout_tm_ = ros::Time::now() + ros::Duration(timeout_property_->getFloat());
+  }
+  else
+  {
+    if ((timeout_tm_ != ros::Time(0)) && (ros::Time::now() > timeout_tm_))
+    {
+      reset();
+    }
   }
 }
 
