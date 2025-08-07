@@ -15,7 +15,7 @@
 repos:
   # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -28,12 +28,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 25.1.0
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.2.0
+    rev: v3.3.7
     hooks: []
 
   - repo: local
@@ -41,7 +41,7 @@ repos:
       - id: clang-format
         name: clang-format
         description: Format files with ClangFormat.
-        entry: clang-format-12
+        entry: clang-format
         language: system
         files: \.(c|cc|cxx|cpp|h|hpp|hxx|ih|ispc|ipp)$
         args: ["-fallback-style=none", "-i"]

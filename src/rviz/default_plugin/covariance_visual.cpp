@@ -176,9 +176,10 @@ void computeShapeScaleAndOrientation2D(const Eigen::Matrix2d& covariance,
   // deviation. The scale of the missing dimension is set to zero.
   if (plane == YZ_PLANE)
   {
-    orientation.FromRotationMatrix(Ogre::Matrix3(1, 0, 0, // clang-format off
-                                                 0, eigenvectors(0, 0), eigenvectors(0, 1),
-                                                 0, eigenvectors(1, 0), eigenvectors(1, 1))); // clang-format on
+    orientation.FromRotationMatrix(Ogre::Matrix3( // clang-format off
+        1, 0, 0,
+        0, eigenvectors(0, 0), eigenvectors(0, 1),
+        0, eigenvectors(1, 0), eigenvectors(1, 1))); // clang-format on
 
     scale.x = 0;
     scale.y = 2 * std::sqrt(eigenvalues[0]);

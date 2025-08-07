@@ -62,7 +62,7 @@ void MarkerArrayDisplay::subscribe()
     {
       array_sub_ = update_nh_.subscribe(
           topic, queue_size_property_->getInt(),
-          (void (MarkerArrayDisplay::*)(const visualization_msgs::MarkerArray::ConstPtr&)) &
+          (void(MarkerArrayDisplay::*)(const visualization_msgs::MarkerArray::ConstPtr&)) &
               MarkerArrayDisplay::incomingMarkerArray,
           this);
       setStatus(StatusProperty::Ok, "Topic", "OK");
