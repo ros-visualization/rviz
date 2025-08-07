@@ -36,22 +36,25 @@ int main(int argc, char** argv)
 {
 #if !OGRE_USE_WAYLAND
   // If Ogre does not support wayland, but we are running on wayland,
-  // explicitly force the xcb platform in Qt unless the user set it
+  // explicitly enforce the xcb platform for Qt unless the user set the platform
   std::vector<char*> args;
   for (int i = 0; i < argc; ++i)
   {
     args.push_back(argv[i]);
   }
+
   auto env = QProcessEnvironment::systemEnvironment();
   if (env.value("XDG_SESSION_TYPE") == "wayland" &&
-      args.end() == std::find(args.begin(), args.end(), "-platform") && !env.contains("QT_QPA_PLATFORM"))
+      std::find(args.begin(), args.end(), "-platform") == args.end() && // no -platform arg
+      !env.contains("QT_QPA_PLATFORM"))                                 // no env setting of platform
   {
+    std::cout << "Enforcing xcb platform instead of wayland." << std::endl;
     static const char* xcb_platform_args[] = {"-platform", "xcb"};
     args.push_back(const_cast<char*>(xcb_platform_args[0]));
     args.push_back(const_cast<char*>(xcb_platform_args[1]));
+    argc = static_cast<int>(args.size());
+    argv = args.data();
   }
-  argc = static_cast<int>(args.size());
-  argv = args.data();
 #endif
 
   QApplication qapp(argc, argv);
