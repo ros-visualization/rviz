@@ -30,6 +30,7 @@
 #define IMAGE_DISPLAY_BASE_H
 
 #include <QObject>
+#include <QTimer>
 
 #ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include <message_filters/subscriber.h>
@@ -44,6 +45,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/int_property.h"
+#include "rviz/properties/float_property.h"
 
 #include "rviz/display.h"
 #include "rviz/rviz_export.h"
@@ -77,8 +79,14 @@ protected Q_SLOTS:
   /** @brief Update queue size of tf filter  */
   virtual void updateQueueSize();
 
+  /** @brief Prepare for or stop resetting when timed out */
+  virtual void updateResetTO();
+
   /** @brief Fill list of available and working transport options */
   void fillTransportOptionList(EnumProperty* property);
+
+  /** @brief Timer function to reset when timed out */
+  void onResetTOTimer();
 
 protected:
   void onInitialize() override;
@@ -131,6 +139,15 @@ protected:
   std::set<std::string> transport_plugin_types_;
 
   BoolProperty* unreliable_property_;
+
+  BoolProperty* reset_to_property_;
+
+  FloatProperty* timeout_property_;
+
+  ros::Time timeout_tm_;
+  bool is_img_up_;
+
+  QTimer* reset_to_timer_;
 };
 
 } // end namespace rviz
