@@ -13,7 +13,7 @@ jobs:
     name: pre-commit
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: rhaschke/install-catkin_lint-action@main
       - run: clang-format --version
       - uses: pre-commit/action@v3.0.1
