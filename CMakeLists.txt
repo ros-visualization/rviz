@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -113,7 +113,7 @@ foreach(_current_version ${RVIZ_QT_VERSIONS})
     set(QT_LIBRARIES Qt${_current_version}::Widgets)
     break() # early break from loop
   else()
-    message(WARNING "Qt${_current_version} not found.")
+    message(STATUS "Qt${_current_version} not found.")
   endif()
 endforeach()
 if(NOT QTVERSION)
@@ -148,8 +148,6 @@ find_package(catkin REQUIRED
   urdf
   visualization_msgs
 )
-
-find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
@@ -230,7 +228,6 @@ include_directories(SYSTEM
   ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
-  ${PYTHON_INCLUDE_PATH}
   ${TinyXML2_INCLUDE_DIRS}
   ${urdfdom_headers_INCLUDE_DIRS}
   ${ASSIMP_INCLUDE_DIRS}
