@@ -41,7 +41,8 @@
 
 namespace rviz
 {
-ImageDisplayBase::ImageDisplayBase() : Display(), sub_(), tf_filter_(), messages_received_(0)
+ImageDisplayBase::ImageDisplayBase()
+  : Display(), sub_(), tf_filter_(), messages_received_(0), last_received_(ros::Time())
 {
   topic_property_ = new RosTopicProperty(
       "Image Topic", "", QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
