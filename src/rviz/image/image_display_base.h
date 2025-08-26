@@ -29,6 +29,7 @@
 #ifndef IMAGE_DISPLAY_BASE_H
 #define IMAGE_DISPLAY_BASE_H
 
+#include <atomic>
 #include <QObject>
 #include <QTimer>
 
@@ -79,14 +80,14 @@ protected Q_SLOTS:
   /** @brief Update queue size of tf filter  */
   virtual void updateQueueSize();
 
-  /** @brief Prepare for or stop resetting when timed out */
-  virtual void updateResetTO();
+  /** @brief Start or stop reset_timer_ */
+  void updateResetTimeout();
 
   /** @brief Fill list of available and working transport options */
   void fillTransportOptionList(EnumProperty* property);
 
-  /** @brief Timer function to reset when timed out */
-  void onResetTOTimer();
+  /** @brief Check for timeout and reset() if necessary */
+  void onResetTimer();
 
 protected:
   void onInitialize() override;
@@ -140,14 +141,9 @@ protected:
 
   BoolProperty* unreliable_property_;
 
-  BoolProperty* reset_to_property_;
-
   FloatProperty* timeout_property_;
-
-  ros::Time timeout_tm_;
-  bool is_img_up_;
-
-  QTimer* reset_to_timer_;
+  std::atomic<ros::Time> last_received_;
+  QTimer* reset_timer_;
 };
 
 } // end namespace rviz
