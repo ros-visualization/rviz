@@ -68,7 +68,7 @@ ImageDisplayBase::ImageDisplayBase()
                                           &ImageDisplayBase::updateTopic);
 
   timeout_property_ =
-      new FloatProperty("Timeout", 1.0,
+      new FloatProperty("Timeout", 0.0,
                         "Seconds to wait before resetting when no new image has been received.\n"
                         "Zero disables the feature.",
                         this, &ImageDisplayBase::updateResetTimeout);
