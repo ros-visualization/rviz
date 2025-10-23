@@ -232,7 +232,7 @@ void EffortDisplay::load()
        it != robot_model_->joints_.end(); it++)
   {
     urdf::JointSharedPtr joint = it->second;
-    if (joint->type == urdf::Joint::REVOLUTE)
+    if (joint->type == urdf::Joint::REVOLUTE || joint->type == urdf::Joint::CONTINUOUS)
     {
       std::string joint_name = it->first;
       urdf::JointLimitsSharedPtr limit = joint->limits;
@@ -295,7 +295,7 @@ void EffortDisplay::processMessage(const sensor_msgs::JointState::ConstPtr& msg)
 
     const urdf::Joint* joint = robot_model_->getJoint(joint_name).get();
     int joint_type = joint->type;
-    if (joint_type == urdf::Joint::REVOLUTE)
+    if (joint_type == urdf::Joint::REVOLUTE || joint_type == urdf::Joint::CONTINUOUS)
     {
       std::string tf_frame_id = concat(tf_prefix_property_->getStdString(), joint->child_link_name);
       Ogre::Quaternion orientation;
