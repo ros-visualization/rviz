@@ -50,7 +50,7 @@ jobs:
         env: ${{ matrix.env || env }}
 
       - name: Upload test results (on failure)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: abi-check
