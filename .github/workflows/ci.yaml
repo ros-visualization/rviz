@@ -50,7 +50,7 @@ jobs:
     name: "${{ matrix.distro }} • ogre ${{ matrix.ogre }} • Qt ${{ matrix.qt }}${{ matrix.env.CLANG_TIDY && (github.event_name != 'workflow_dispatch' && ' • clang-tidy (delta)' || ' • clang-tidy (all)') || '' }}"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Cache ccache
         uses: rhaschke/cache@main
