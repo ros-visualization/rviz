@@ -67,7 +67,7 @@ jobs:
         uses: rhaschke/industrial_ci@master
 
       - name: Upload test artifacts (on failure)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-results
