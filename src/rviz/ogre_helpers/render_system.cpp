@@ -167,7 +167,7 @@ void RenderSystem::loadOgrePlugins()
   ogre_root_->loadPlugin(plugin_prefix + "Plugin_OctreeSceneManager");
   ogre_root_->loadPlugin(plugin_prefix + "Plugin_ParticleFX");
 #if OGRE_VERSION >= OGRE_VERSION_CHECK(1, 11, 0)
-  ogre_root_->loadPlugin(plugin_prefix + "Codec_FreeImage");
+  ogre_root_->loadPlugin(plugin_prefix + "Codec_STBI");
 #endif
 }
 
