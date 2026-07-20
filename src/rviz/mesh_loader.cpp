@@ -459,8 +459,22 @@ void loadMaterials(const std::string& resource_path,
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
-    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(
-        ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+    Ogre::MaterialPtr mat;
+    try
+    {
+      mat = Ogre::MaterialManager::getSingleton().create(
+          ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+    }
+    catch (Ogre::ItemIdentityException& e)
+    {
+      // this is already loaded in the scene through a different code path, so we reuse it
+      // happens when the same robot description is loaded again.
+      // e.g., RobotDisplay showing RobotA, RobotB, and RobotA again.
+      mat = Ogre::MaterialManager::getSingleton().getByName(ss.str());
+      material_table_out.push_back(mat);
+      continue;
+    }
+
     material_table_out.push_back(mat);
 
     Ogre::Technique* tech = mat->getTechnique(0);
