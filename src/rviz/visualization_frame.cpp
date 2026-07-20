@@ -142,6 +142,7 @@ VisualizationFrame::VisualizationFrame(QWidget* parent)
   reset_button->setContentsMargins(0, 0, 0, 0);
   statusBar()->addPermanentWidget(reset_button, 0);
   connect(reset_button, &QToolButton::clicked, this, &VisualizationFrame::VisualizationFrame::reset);
+  reset_button->setShortcut(QKeySequence(QString("Ctrl+Shift+R")));
 
   status_label_ = new QLabel("");
   statusBar()->addPermanentWidget(status_label_, 1);
